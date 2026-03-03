@@ -1,0 +1,3223 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>SPiR Health — Breathing Module</title>
+  <meta name="description"
+    content="SPiR Health breathing module prototype — 4 guided breathing patterns with animated visuals">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    /* ============================================================
+       DESIGN TOKENS — Extract to Unity serialized fields
+       ============================================================ */
+    :root {
+      /* Colors — from BreathworkPanel.cs */
+      --color-inhale: #52ACFF;
+      /* Light blue */
+      --color-hold: #EFF7FF;
+      /* Off-white */
+      --color-exhale: #00FA3A;
+      /* Bright green */
+      --color-circle-default: #FFFFFF;
+
+      /* Background */
+      --color-bg: #0a0a1a;
+      --color-card-bg: rgba(255, 255, 255, 0.06);
+      --color-card-border: rgba(255, 255, 255, 0.1);
+      --color-text-primary: #FFFFFF;
+      --color-text-secondary: rgba(255, 255, 255, 0.6);
+      --color-text-muted: rgba(255, 255, 255, 0.35);
+      --color-dot-inactive: rgba(255, 255, 255, 0.2);
+      --color-dot-active: #FFFFFF;
+      --color-accent: #52ACFF;
+
+      /* Sizing — ADJUSTED from Unity's DOScale(4) which overflows mobile viewport */
+      --circle-base-scale: 1;
+      --circle-max-scale: 2.2;
+      --circle-base-size: 80px;
+      --ring-size: 52px;
+      --ring-stroke-width: 3;
+
+      /* Timing */
+      --transition-fade: 0.5;
+      --color-transition: 1;
+
+      /* XP */
+      --xp-per-set-free: 5;
+      --xp-per-set-pro: 20;
+      --cycles-per-set: 5;
+
+      /* Layout */
+      --viewport-width: 390px;
+      --viewport-height: 844px;
+      --safe-area-top: 54px;
+      --safe-area-bottom: 34px;
+
+      /* Ring progress track */
+      --ring-circumference: 150.796;
+    }
+
+    /* ============================================================
+       RESET + BASE
+       ============================================================ */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #050510;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      overflow: hidden;
+      color: var(--color-text-primary);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* ============================================================
+       MOBILE VIEWPORT SHELL
+       Maps to: BreathworkPanel prefab container
+       ============================================================ */
+    .device-frame {
+      width: var(--viewport-width);
+      height: var(--viewport-height);
+      background: var(--color-bg);
+      position: relative;
+      overflow: hidden;
+      border-radius: 40px;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 25px 80px rgba(0, 0, 0, 0.6),
+        0 0 120px rgba(82, 172, 255, 0.06);
+    }
+
+    .device-frame::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(82, 172, 255, 0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 80%, rgba(130, 80, 220, 0.06) 0%, transparent 50%),
+        radial-gradient(ellipse at 50% 50%, rgba(0, 250, 58, 0.03) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ============================================================
+       HEADER
+       ============================================================ */
+    .header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: calc(var(--safe-area-top) + 44px);
+      padding-top: var(--safe-area-top);
+      display: flex;
+      align-items: center;
+      padding-left: 16px;
+      padding-right: 16px;
+      z-index: 100;
+    }
+
+    .back-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+      color: white;
+      font-size: 18px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+
+    .back-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .back-btn:active {
+      transform: scale(0.92);
+    }
+
+    .header-title {
+      flex: 1;
+      text-align: center;
+      font-size: 16px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      margin-right: 36px;
+    }
+
+    /* ============================================================
+       SCREEN CONTAINER
+       ============================================================ */
+    .screen {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      transition: none;
+      z-index: 1;
+    }
+
+    .screen.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    /* ============================================================
+       SELECTION SCREEN — Enhanced with pattern visualizers
+       ============================================================ */
+    #selection-screen {
+      padding-top: calc(var(--safe-area-top) + 44px);
+      padding-bottom: calc(var(--safe-area-bottom) + 16px);
+    }
+
+    .selection-title {
+      text-align: center;
+      padding: 16px 24px 8px;
+      margin-top: auto;
+    }
+
+    .selection-title h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .selection-title p {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      line-height: 1.4;
+    }
+
+    /* Carousel */
+    .carousel-container {
+      display: flex;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .carousel-track {
+      display: flex;
+      gap: 16px;
+      padding: 0 calc((var(--viewport-width) - 300px) / 2);
+      touch-action: pan-y;
+      will-change: transform;
+    }
+
+    .mode-card {
+      flex-shrink: 0;
+      width: 300px;
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: 24px;
+      padding: 20px 24px 20px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      cursor: pointer;
+      user-select: none;
+      opacity: 0;
+      transform: translateY(30px) scale(0.92);
+    }
+
+    .mode-card.active {
+      border-color: rgba(82, 172, 255, 0.3);
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    .mode-card:not(.active) {
+      transform: scale(0.92);
+      opacity: 0.5;
+    }
+
+    .mode-card.entered {
+      opacity: 1;
+    }
+
+    .mode-card.entered:not(.active) {
+      opacity: 0.5;
+    }
+
+    /* Pattern visualizer canvas on each card */
+    .pattern-viz {
+      width: 100%;
+      height: 80px;
+      border-radius: 14px;
+      background: rgba(0, 0, 0, 0.2);
+      margin-bottom: 14px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .pattern-viz canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+    }
+
+    /* Mini breathing circle preview */
+    .mini-breath-circle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-inhale);
+      left: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      opacity: 0.8;
+      box-shadow: 0 0 8px rgba(82, 172, 255, 0.4);
+    }
+
+    .mode-card h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 3px;
+      letter-spacing: -0.2px;
+    }
+
+    .mode-card .timing-label {
+      font-size: 13px;
+      color: var(--color-accent);
+      font-weight: 500;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+
+    .mode-card .mode-description {
+      font-size: 12px;
+      color: var(--color-text-secondary);
+      line-height: 1.5;
+    }
+
+    .mode-card .mode-tag {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .mode-tag.free {
+      background: rgba(0, 250, 58, 0.1);
+      color: #00FA3A;
+    }
+
+    .mode-tag.premium {
+      background: rgba(82, 172, 255, 0.1);
+      color: #52ACFF;
+    }
+
+    /* Dot indicators */
+    .dots-container {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 0 10px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--color-dot-inactive);
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .dot.active {
+      background: var(--color-dot-active);
+      width: 24px;
+      border-radius: 4px;
+    }
+
+    /* Start button */
+    .start-section {
+      padding: 8px 32px 0;
+      margin-top: auto;
+    }
+
+    .start-btn {
+      width: 100%;
+      height: 52px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(135deg, #52ACFF, #3d8be0);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 4px 24px rgba(82, 172, 255, 0.25);
+    }
+
+    .start-btn:active {
+      transform: scale(0.97);
+    }
+
+    .start-btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    /* Ripple effect for buttons */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(0);
+      pointer-events: none;
+    }
+
+    /* ============================================================
+       COUNTDOWN OVERLAY
+       ============================================================ */
+    .countdown-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 200;
+      background: var(--color-bg);
+      pointer-events: none;
+    }
+
+    .countdown-overlay.hidden {
+      display: none;
+    }
+
+    .countdown-number {
+      font-size: 120px;
+      font-weight: 200;
+      color: var(--color-accent);
+      opacity: 0;
+      text-shadow: 0 0 60px rgba(82, 172, 255, 0.4);
+    }
+
+    .countdown-label {
+      position: absolute;
+      bottom: 200px;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0;
+    }
+
+    /* ============================================================
+       ANIMATION SCREEN
+       Maps to: breathAnimation GameObject
+       ============================================================ */
+    #animation-screen {
+      padding-top: calc(var(--safe-area-top) + 44px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .anim-mode-name {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      margin-top: 16px;
+      letter-spacing: 0.5px;
+    }
+
+    .breathing-visual {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+    }
+
+    .circle-container {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .glow-layer {
+      position: absolute;
+      width: 240px;
+      height: 240px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 40%, transparent 70%);
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .breathing-circle {
+      width: var(--circle-base-size);
+      height: var(--circle-base-size);
+      border-radius: 50%;
+      background: var(--color-circle-default);
+      position: absolute;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 0 40px rgba(255, 255, 255, 0.2);
+      transition: box-shadow 0.8s ease;
+    }
+
+    .breathing-circle.inhale {
+      box-shadow: 0 0 50px rgba(82, 172, 255, 0.35);
+    }
+
+    .breathing-circle.exhale {
+      box-shadow: 0 0 50px rgba(0, 250, 58, 0.3);
+    }
+
+    .breathing-circle.hold {
+      box-shadow: 0 0 40px rgba(239, 247, 255, 0.2);
+    }
+
+    .circle-timer {
+      font-size: 20px;
+      font-weight: 300;
+      color: rgba(0, 0, 0, 0.5);
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.5px;
+    }
+
+    .particle-canvas {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .progress-rings {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+    }
+
+    .progress-ring-svg {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      transform: rotate(-90deg);
+    }
+
+    .ring-track {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.06);
+    }
+
+    .ring-progress {
+      fill: none;
+      stroke-linecap: round;
+      transition: none;
+    }
+
+    .ring-0 .ring-progress {
+      stroke: var(--color-inhale);
+    }
+
+    .ring-1 .ring-progress {
+      stroke: var(--color-hold);
+    }
+
+    .ring-2 .ring-progress {
+      stroke: var(--color-exhale);
+    }
+
+    .ring-3 .ring-progress {
+      stroke: var(--color-hold);
+    }
+
+    .ring-0 .ring-track {
+      stroke: rgba(82, 172, 255, 0.08);
+    }
+
+    .ring-1 .ring-track {
+      stroke: rgba(239, 247, 255, 0.06);
+    }
+
+    .ring-2 .ring-track {
+      stroke: rgba(0, 250, 58, 0.06);
+    }
+
+    .ring-3 .ring-track {
+      stroke: rgba(239, 247, 255, 0.06);
+    }
+
+    .status-text {
+      margin-top: 40px;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 6px;
+      text-align: center;
+      color: var(--color-text-primary);
+      min-height: 30px;
+      text-transform: uppercase;
+    }
+
+    .cycle-counter {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--color-text-secondary);
+      margin-top: 8px;
+      min-height: 20px;
+    }
+
+    .xp-section {
+      width: 100%;
+      padding: 0 40px;
+      margin-bottom: 20px;
+    }
+
+    .xp-bar-container {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .xp-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--color-accent), #7dd3fc);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+    }
+
+    .xp-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+    }
+
+    .xp-text {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--color-accent);
+    }
+
+    .xp-set-label {
+      font-size: 11px;
+      color: var(--color-text-muted);
+    }
+
+    /* Controls */
+    .controls-section {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      padding-bottom: calc(var(--safe-area-bottom) + 16px);
+    }
+
+    .control-btn {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.06);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      transition: background 0.2s;
+    }
+
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .control-btn:active {
+      transform: scale(0.9);
+    }
+
+    .play-btn {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      border: none;
+      background: linear-gradient(135deg, #52ACFF, #3d8be0);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 28px;
+      box-shadow: 0 4px 30px rgba(82, 172, 255, 0.3);
+      transition: transform 0.15s ease;
+    }
+
+    .play-btn:active {
+      transform: scale(0.93);
+    }
+
+    .play-btn.playing {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.06));
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    }
+
+    /* ============================================================
+       SESSION SUMMARY SCREEN
+       ============================================================ */
+    #summary-screen {
+      padding-top: calc(var(--safe-area-top) + 44px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .summary-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px 24px 0;
+      width: 100%;
+    }
+
+    .summary-emoji {
+      font-size: 36px;
+      margin-bottom: 6px;
+      opacity: 0;
+      transform: scale(0.5);
+    }
+
+    .summary-title {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      margin-bottom: 2px;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .summary-subtitle {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin-bottom: 20px;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .summary-stats {
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .stat-card {
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: 14px;
+      padding: 14px 12px;
+      text-align: center;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    .stat-card.wide {
+      grid-column: 1 / -1;
+    }
+
+    .stat-icon {
+      font-size: 18px;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      margin-bottom: 2px;
+    }
+
+    .stat-value.accent {
+      color: var(--color-accent);
+    }
+
+    .stat-value.green {
+      color: var(--color-exhale);
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--color-text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 500;
+    }
+
+    /* XP Celebration — the big reward moment */
+    .xp-celebration {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      padding: 8px 0 12px;
+      margin-bottom: 8px;
+      opacity: 0;
+      transform: scale(0.6);
+    }
+
+    .xp-celebration-canvas {
+      position: absolute;
+      inset: -40px -20px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .xp-celebration-glow {
+      position: absolute;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(82, 172, 255, 0.25) 0%, rgba(82, 172, 255, 0.08) 40%, transparent 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) scale(0);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .xp-label-earned {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      color: var(--color-accent);
+      margin-bottom: 4px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .xp-count-number {
+      font-size: 56px;
+      font-weight: 700;
+      color: white;
+      letter-spacing: -2px;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+      text-shadow: 0 0 30px rgba(82, 172, 255, 0.4);
+    }
+
+    .xp-count-number .xp-plus {
+      font-weight: 400;
+      color: var(--color-accent);
+      font-size: 40px;
+    }
+
+    .xp-count-number .xp-suffix {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--color-accent);
+      margin-left: 4px;
+      letter-spacing: 2px;
+    }
+
+    .xp-session-label {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin-top: 4px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .summary-actions {
+      width: 100%;
+      padding: 0 24px calc(var(--safe-area-bottom) + 12px);
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .summary-btn-primary {
+      width: 100%;
+      height: 50px;
+      border-radius: 14px;
+      border: none;
+      background: linear-gradient(135deg, #52ACFF, #3d8be0);
+      color: white;
+      font-family: 'Inter', sans-serif;
+      font-size: 17px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      box-shadow: 0 4px 24px rgba(82, 172, 255, 0.25);
+      transition: transform 0.15s ease;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .summary-btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    .summary-btn-secondary {
+      width: 100%;
+      height: 44px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.06);
+      color: var(--color-text-secondary);
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.2s;
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .summary-btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Volume control (floating) */
+    .volume-control {
+      position: absolute;
+      top: calc(var(--safe-area-top) + 48px);
+      right: 12px;
+      z-index: 150;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      padding: 6px 12px;
+      opacity: 0;
+      transform: translateX(20px);
+      pointer-events: none;
+    }
+
+    .volume-control.visible {
+      opacity: 1;
+      transform: translateX(0);
+      pointer-events: auto;
+    }
+
+    .volume-control svg {
+      width: 16px;
+      height: 16px;
+      color: var(--color-text-secondary);
+      flex-shrink: 0;
+    }
+
+    .volume-slider {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 80px;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 2px;
+      outline: none;
+    }
+
+    .volume-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: white;
+      cursor: pointer;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media screen and (max-width: 430px) {
+      .device-frame {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        box-shadow: none;
+      }
+    }
+
+    /* MUSIC MODAL */
+    .music-modal-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 200;
+      display: flex;
+      align-items: flex-end;
+      opacity: 1;
+      transition: opacity 0.3s ease;
+    }
+
+    .music-modal-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .music-modal-content {
+      width: 100%;
+      background: var(--color-card-bg);
+      border-top: 1px solid var(--color-card-border);
+      border-radius: 20px 20px 0 0;
+      padding: 24px;
+      transform: translateY(0);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .music-modal-overlay.hidden .music-modal-content {
+      transform: translateY(100%);
+    }
+
+    .music-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .music-header h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .close-modal-btn {
+      background: none;
+      border: none;
+      color: var(--color-text-secondary);
+      cursor: pointer;
+      padding: 4px;
+    }
+
+    .music-options {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .music-option {
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .music-option:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .music-option.active {
+      border-color: var(--color-accent);
+      background: rgba(82, 172, 255, 0.1);
+    }
+
+    .music-option input[type="radio"] {
+      display: none;
+    }
+
+    .music-option span {
+      font-size: 16px;
+      font-weight: 500;
+    }
+
+    .music-option.locked {
+      opacity: 0.6;
+    }
+
+    .music-option.locked span {
+      color: var(--color-text-secondary);
+    }
+
+    .lock-badge {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+    }
+
+    .lock-badge .cost {
+      color: var(--color-accent);
+      font-weight: 700;
+    }
+
+    .music-option:not(.locked) .lock-badge {
+      display: none;
+    }
+
+    .xp-balance-header {
+      font-size: 14px;
+      color: var(--color-accent);
+      font-weight: 600;
+      background: rgba(82, 172, 255, 0.1);
+      padding: 4px 12px;
+      border-radius: 12px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="device-frame" id="app">
+
+    <!-- ============================================================
+       SELECTION SCREEN — Enhanced with pattern visualizers
+       ============================================================ -->
+    <div class="screen" id="selection-screen">
+      <div class="header">
+        <button class="back-btn" id="back-btn-selection" aria-label="Go back">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+        <span class="header-title">Breathwork</span>
+      </div>
+
+      <div class="selection-title" id="selection-title">
+        <h1>Choose Your Breath</h1>
+        <p>Select a breathing pattern to begin your session</p>
+      </div>
+
+      <div class="carousel-container" id="carousel-container">
+        <div class="carousel-track" id="carousel-track">
+
+          <div class="mode-card" data-index="0">
+            <div class="pattern-viz" data-mode="0">
+              <canvas></canvas>
+              <div class="mini-breath-circle"></div>
+            </div>
+            <h2>4-7-8 Breathing</h2>
+            <div class="timing-label">4s · 7s · 8s</div>
+            <p class="mode-description">Inhale 4s, hold 7s, exhale 8s. Calms the nervous system and promotes sleep.</p>
+            <span class="mode-tag premium">Premium</span>
+          </div>
+
+          <div class="mode-card" data-index="1">
+            <div class="pattern-viz" data-mode="1">
+              <canvas></canvas>
+              <div class="mini-breath-circle"></div>
+            </div>
+            <h2>Box Breathing</h2>
+            <div class="timing-label">4s · 4s · 4s · 4s</div>
+            <p class="mode-description">Equal inhale, hold, exhale, hold. Used by Navy SEALs for calm focus.</p>
+            <span class="mode-tag premium">Premium</span>
+          </div>
+
+          <div class="mode-card" data-index="2">
+            <div class="pattern-viz" data-mode="2">
+              <canvas></canvas>
+              <div class="mini-breath-circle"></div>
+            </div>
+            <h2>Huberman Sigh</h2>
+            <div class="timing-label">1s · 1s · 3s · 7s</div>
+            <p class="mode-description">Double inhale + long exhale. Fastest known way to reduce stress in real-time.
+            </p>
+            <span class="mode-tag premium">Premium</span>
+          </div>
+
+          <div class="mode-card" data-index="3">
+            <div class="pattern-viz" data-mode="3">
+              <canvas></canvas>
+              <div class="mini-breath-circle"></div>
+            </div>
+            <h2>Resonant Breathing</h2>
+            <div class="timing-label">5s · 5s</div>
+            <p class="mode-description">Equal inhale and exhale at ~5.5 breaths per minute. Optimizes heart rate
+              variability.</p>
+            <span class="mode-tag free">Free</span>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="dots-container" id="dots-container">
+        <div class="dot active" data-index="0"></div>
+        <div class="dot" data-index="1"></div>
+        <div class="dot" data-index="2"></div>
+        <div class="dot" data-index="3"></div>
+      </div>
+
+      <div class="start-section" id="start-section">
+        <button class="start-btn" id="start-btn">Start Session</button>
+      </div>
+    </div>
+
+    <!-- ============================================================
+       COUNTDOWN OVERLAY — 3, 2, 1 before breathing
+       ============================================================ -->
+    <div class="countdown-overlay hidden" id="countdown-overlay">
+      <div class="countdown-number" id="countdown-number">3</div>
+      <div class="countdown-label" id="countdown-label">Get ready</div>
+    </div>
+
+    <!-- ============================================================
+       ANIMATION SCREEN
+       ============================================================ -->
+    <div class="screen hidden" id="animation-screen">
+      <div class="header">
+        <button class="back-btn" id="back-btn-anim" aria-label="End session">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+        <span class="header-title" id="anim-mode-title">4-7-8 Breathing</span>
+      </div>
+
+      <div class="anim-mode-name" id="anim-mode-subtitle"></div>
+
+      <div class="breathing-visual">
+        <div class="circle-container">
+          <svg class="progress-ring-svg ring-0" viewBox="0 0 240 240" id="ring-0">
+            <circle class="ring-track" cx="120" cy="120" r="105" stroke-width="3" />
+            <circle class="ring-progress" cx="120" cy="120" r="105" stroke-width="3" stroke-dasharray="659.734"
+              stroke-dashoffset="659.734" />
+          </svg>
+          <svg class="progress-ring-svg ring-1" viewBox="0 0 240 240" id="ring-1">
+            <circle class="ring-track" cx="120" cy="120" r="95" stroke-width="3" />
+            <circle class="ring-progress" cx="120" cy="120" r="95" stroke-width="3" stroke-dasharray="596.903"
+              stroke-dashoffset="596.903" />
+          </svg>
+          <svg class="progress-ring-svg ring-2" viewBox="0 0 240 240" id="ring-2">
+            <circle class="ring-track" cx="120" cy="120" r="85" stroke-width="3" />
+            <circle class="ring-progress" cx="120" cy="120" r="85" stroke-width="3" stroke-dasharray="534.071"
+              stroke-dashoffset="534.071" />
+          </svg>
+          <svg class="progress-ring-svg ring-3" viewBox="0 0 240 240" id="ring-3">
+            <circle class="ring-track" cx="120" cy="120" r="75" stroke-width="3" />
+            <circle class="ring-progress" cx="120" cy="120" r="75" stroke-width="3" stroke-dasharray="471.239"
+              stroke-dashoffset="471.239" />
+          </svg>
+
+          <div class="glow-layer" id="glow-layer"></div>
+          <div class="breathing-circle" id="breathing-circle">
+            <span class="circle-timer" id="circle-timer"></span>
+          </div>
+          <canvas class="particle-canvas" id="particle-canvas"></canvas>
+        </div>
+
+        <div class="status-text" id="status-text">START</div>
+        <div class="cycle-counter" id="cycle-counter"></div>
+      </div>
+
+      <div class="xp-section">
+        <div class="xp-bar-container">
+          <div class="xp-bar-fill" id="xp-bar-fill"></div>
+        </div>
+        <div class="xp-label">
+          <span class="xp-text" id="xp-text">+5xp</span>
+          <span class="xp-set-label" id="xp-set-label">0 / 5 cycles</span>
+        </div>
+      </div>
+
+      <div class="controls-section">
+        <button class="control-btn" id="music-btn" aria-label="Music">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M9 18V5l12-2v13" />
+            <circle cx="6" cy="18" r="3" />
+            <circle cx="18" cy="16" r="3" />
+          </svg>
+        </button>
+        <button class="play-btn" id="play-btn" aria-label="Play / Pause">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" id="play-icon">
+            <polygon points="6,3 20,12 6,21" />
+          </svg>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor" id="pause-icon" style="display:none">
+            <rect x="5" y="3" width="5" height="18" rx="1" />
+            <rect x="14" y="3" width="5" height="18" rx="1" />
+          </svg>
+        </button>
+        <button class="control-btn" id="end-btn" aria-label="End session">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Volume control (shown on animation screen) -->
+    <div class="volume-control" id="volume-control">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" />
+      </svg>
+      <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="60">
+    </div>
+
+    <!-- ============================================================
+       SESSION SUMMARY SCREEN
+       ============================================================ -->
+    <div class="screen hidden" id="summary-screen">
+      <div class="header">
+        <button class="back-btn" id="back-btn-summary" aria-label="Back to selection">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 18l-6-6 6-6" />
+          </svg>
+        </button>
+        <span class="header-title">Session Complete</span>
+      </div>
+
+      <div class="summary-content">
+        <div class="summary-emoji" id="summary-emoji">&#x1F33F;</div>
+        <div class="summary-title" id="summary-title">Well Done</div>
+        <div class="summary-subtitle" id="summary-subtitle">You completed your breathing session</div>
+
+        <div class="summary-stats">
+          <div class="stat-card" id="stat-cycles">
+            <div class="stat-icon">&#x1F504;</div>
+            <div class="stat-value accent" id="summary-cycles">0</div>
+            <div class="stat-label">Cycles</div>
+          </div>
+          <div class="stat-card" id="stat-time">
+            <div class="stat-icon">&#x23F1;</div>
+            <div class="stat-value" id="summary-time">0:00</div>
+            <div class="stat-label">Duration</div>
+          </div>
+          <div class="stat-card" id="stat-pattern">
+            <div class="stat-icon">&#x1F4AB;</div>
+            <div class="stat-value" id="summary-pattern" style="font-size: 18px;">—</div>
+            <div class="stat-label">Pattern</div>
+          </div>
+          <div class="stat-card" id="stat-avg">
+            <div class="stat-icon">&#x1F3AF;</div>
+            <div class="stat-value green" id="summary-avg">0s</div>
+            <div class="stat-label">Per Cycle</div>
+          </div>
+        </div>
+
+        <div class="xp-celebration" id="xp-celebration">
+          <canvas class="xp-celebration-canvas" id="xp-celebration-canvas"></canvas>
+          <div class="xp-celebration-glow" id="xp-celebration-glow"></div>
+          <div class="xp-label-earned">XP Earned</div>
+          <div class="xp-count-number">
+            <span class="xp-plus">+</span><span id="xp-count-value">0</span><span class="xp-suffix">XP</span>
+          </div>
+          <div class="xp-session-label" id="xp-session-label">this session</div>
+        </div>
+      </div>
+
+      <div class="summary-actions">
+        <button class="summary-btn-primary" id="summary-restart-btn">Breathe Again</button>
+        <button class="summary-btn-secondary" id="summary-done-btn">Done</button>
+      </div>
+    </div>
+
+    <!-- MUSIC SELECTION MODAL -->
+    <div class="music-modal-overlay hidden" id="music-modal">
+      <div class="music-modal-content">
+        <div class="music-header">
+          <h2>Soundscapes</h2>
+          <div class="xp-balance-header" id="user-total-xp-display">50 XP</div>
+          <button class="close-modal-btn" id="close-music-btn" aria-label="Close modal">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+              stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18" />
+              <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+          </button>
+        </div>
+        <div class="music-options">
+          <label class="music-option active"><input type="radio" name="music" value="none" checked>
+            <span>Silent</span></label>
+          <label class="music-option"><input type="radio" name="music" value="forest"> <span>Forest</span></label>
+          <label class="music-option"><input type="radio" name="music" value="ocean"> <span>Ocean Waves</span></label>
+          <label class="music-option"><input type="radio" name="music" value="meditation"> <span>Meditation
+              Bowl</span></label>
+          <label class="music-option"><input type="radio" name="music" value="binaural"> <span>Binaural
+              Beats</span></label>
+          <!-- Premium Options -->
+          <label class="music-option locked" data-cost="20"><input type="radio" name="music" value="affirmations">
+            <span>Affirmations</span>
+            <div class="lock-badge"><span class="lock-icon">🔒</span> <span class="cost">20 XP</span></div>
+          </label>
+          <label class="music-option locked" data-cost="20"><input type="radio" name="music" value="choir">
+            <span>Ethereal Choir</span>
+            <div class="lock-badge"><span class="lock-icon">🔒</span> <span class="cost">20 XP</span></div>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <audio id="ambient-audio" loop></audio>
+  </div>
+
+  <script>
+    /* ================================================================
+       BREATHING MODULE — Enhanced Web Prototype
+       Mirrors: BreathworkPanel.cs (461 lines)
+    
+       New in this version:
+       - Web Audio API sound system (synthesized tones)
+       - Animated pattern visualizers on selection cards
+       - 3-2-1 countdown before breathing starts
+       - Entrance animations on selection screen
+       - Sound hooks at every interaction point
+       - Volume control
+       ================================================================ */
+
+    // ============================================================
+    // DATA — Breathing patterns (hardcoded, matches Unity)
+    // ============================================================
+    const BREATHING_MODES = [
+      {
+        name: '4-7-8 Breathing',
+        timings: [4, 7, 8, 0],
+        phases: ['INHALE', 'HOLD', 'EXHALE', 'HOLD'],
+        ringsUsed: [true, true, true, false],
+        isHuberman: false,
+        isPremium: true,
+        color: '#52ACFF',
+      },
+      {
+        name: 'Box Breathing',
+        timings: [4, 4, 4, 4],
+        phases: ['INHALE', 'HOLD', 'EXHALE', 'HOLD'],
+        ringsUsed: [true, true, true, true],
+        isHuberman: false,
+        isPremium: true,
+        color: '#7C6FFF',
+      },
+      {
+        name: 'Huberman Sigh',
+        timings: [1, 1, 3, 7],
+        phases: ['INHALE', 'HOLD', 'INHALE', 'EXHALE'],
+        ringsUsed: [true, true, true, true],
+        isHuberman: true,
+        isPremium: true,
+        color: '#FF6B6B',
+      },
+      {
+        name: 'Resonant Breathing',
+        timings: [5, 0, 5, 0],
+        phases: ['INHALE', 'HOLD', 'EXHALE', 'HOLD'],
+        ringsUsed: [true, false, true, false],
+        isHuberman: false,
+        isPremium: false,
+        color: '#00FA3A',
+      }
+    ];
+
+    const PHASE_COLORS = {
+      INHALE: '#52ACFF',
+      HOLD: '#EFF7FF',
+      EXHALE: '#00FA3A',
+    };
+
+    const RING_CIRCUMFERENCES = [
+      2 * Math.PI * 105,
+      2 * Math.PI * 95,
+      2 * Math.PI * 85,
+      2 * Math.PI * 75,
+    ];
+
+    // ============================================================
+    // WEB AUDIO API — Sound System
+    // Synthesized tones, no external files needed
+    // Unity equivalent: AudioSource components with AudioClips
+    // ============================================================
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.masterGain = null;
+        this.volume = 0.6;
+        this.initialized = false;
+        this.ambientOsc = null;
+        this.ambientGain = null;
+      }
+
+      init() {
+        if (this.initialized) return;
+        try {
+          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+          this.masterGain = this.ctx.createGain();
+          this.masterGain.gain.value = this.volume;
+          this.masterGain.connect(this.ctx.destination);
+          this.initialized = true;
+        } catch (e) {
+          console.warn('[SoundEngine] Web Audio API not available:', e);
+        }
+      }
+
+      setVolume(v) {
+        this.volume = v;
+        if (this.masterGain) {
+          this.masterGain.gain.setTargetAtTime(v, this.ctx.currentTime, 0.05);
+        }
+      }
+
+      // Soft bell tone — used for countdown, phase transitions
+      playBell(freq = 528, duration = 0.8, volume = 0.3) {
+        if (!this.initialized) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, now);
+        // Slight frequency drift for organic feel
+        osc.frequency.exponentialRampToValueAtTime(freq * 0.98, now + duration);
+
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(volume, now + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + duration);
+      }
+
+      // Harmonic bell — richer, more resonant
+      playHarmonicBell(baseFreq = 528, duration = 1.2, volume = 0.25) {
+        if (!this.initialized) return;
+        const harmonics = [1, 2, 3, 5.04];
+        const volumes = [volume, volume * 0.3, volume * 0.15, volume * 0.08];
+        harmonics.forEach((h, i) => {
+          this.playBell(baseFreq * h, duration * (1 - i * 0.15), volumes[i]);
+        });
+      }
+
+      // Soft whoosh — used for inhale/exhale
+      playWhoosh(rising = true, duration = 2, volume = 0.12) {
+        if (!this.initialized) return;
+        const now = this.ctx.currentTime;
+
+        // Filtered noise for whoosh
+        const bufferSize = this.ctx.sampleRate * duration;
+        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * 0.5;
+        }
+
+        const noise = this.ctx.createBufferSource();
+        noise.buffer = buffer;
+
+        const filter = this.ctx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.Q.value = 2;
+
+        if (rising) {
+          filter.frequency.setValueAtTime(200, now);
+          filter.frequency.exponentialRampToValueAtTime(800, now + duration);
+        } else {
+          filter.frequency.setValueAtTime(800, now);
+          filter.frequency.exponentialRampToValueAtTime(200, now + duration);
+        }
+
+        const gain = this.ctx.createGain();
+        gain.gain.setValueAtTime(0, now);
+        gain.gain.linearRampToValueAtTime(volume, now + duration * 0.3);
+        gain.gain.linearRampToValueAtTime(0, now + duration);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.masterGain);
+        noise.start(now);
+        noise.stop(now + duration);
+      }
+
+      // UI click — short, subtle
+      playClick(pitch = 1) {
+        if (!this.initialized) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1200 * pitch, now);
+        osc.frequency.exponentialRampToValueAtTime(800 * pitch, now + 0.06);
+
+        gain.gain.setValueAtTime(0.15, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 0.1);
+      }
+
+      // Card swipe tick
+      playTick() {
+        if (!this.initialized) return;
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(2400, now);
+        osc.frequency.exponentialRampToValueAtTime(1800, now + 0.03);
+
+        gain.gain.setValueAtTime(0.08, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.04);
+
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 0.05);
+      }
+
+      // Start ambient drone pad
+      startAmbient() {
+        if (!this.initialized || this.ambientOsc) return;
+        const now = this.ctx.currentTime;
+
+        this.ambientGain = this.ctx.createGain();
+        this.ambientGain.gain.setValueAtTime(0, now);
+        this.ambientGain.gain.linearRampToValueAtTime(0.04, now + 3);
+        this.ambientGain.connect(this.masterGain);
+
+        // Root note
+        this.ambientOsc = this.ctx.createOscillator();
+        this.ambientOsc.type = 'sine';
+        this.ambientOsc.frequency.setValueAtTime(110, now); // A2
+
+        // Subtle LFO for movement
+        const lfo = this.ctx.createOscillator();
+        const lfoGain = this.ctx.createGain();
+        lfo.frequency.setValueAtTime(0.1, now);
+        lfoGain.gain.setValueAtTime(2, now);
+        lfo.connect(lfoGain);
+        lfoGain.connect(this.ambientOsc.frequency);
+        lfo.start(now);
+
+        // Second voice — fifth above
+        const osc2 = this.ctx.createOscillator();
+        osc2.type = 'sine';
+        osc2.frequency.setValueAtTime(165, now); // E3
+        const gain2 = this.ctx.createGain();
+        gain2.gain.setValueAtTime(0.02, now);
+        osc2.connect(gain2);
+        gain2.connect(this.ambientGain);
+        osc2.start(now);
+
+        this.ambientOsc.connect(this.ambientGain);
+        this.ambientOsc.start(now);
+
+        // Store refs for cleanup
+        this._ambientParts = [lfo, lfoGain, osc2, gain2];
+      }
+
+      stopAmbient() {
+        if (!this.ambientOsc) return;
+        const now = this.ctx.currentTime;
+        this.ambientGain.gain.linearRampToValueAtTime(0, now + 1.5);
+
+        const osc = this.ambientOsc;
+        const parts = this._ambientParts || [];
+        setTimeout(() => {
+          try { osc.stop(); } catch (e) { }
+          parts.forEach(p => { try { p.stop ? p.stop() : null; } catch (e) { } });
+        }, 2000);
+
+        this.ambientOsc = null;
+        this._ambientParts = null;
+      }
+
+      // Phase-specific sounds
+      playInhale(duration) {
+        this.playWhoosh(true, Math.min(duration, 3), 0.1);
+        this.playBell(396, 0.6, 0.15);
+      }
+
+      playExhale(duration) {
+        this.playWhoosh(false, Math.min(duration, 3), 0.08);
+        this.playBell(264, 0.6, 0.12);
+      }
+
+      playHold() {
+        this.playBell(528, 0.4, 0.08);
+      }
+
+      playCycleComplete() {
+        this.playHarmonicBell(528, 1.5, 0.2);
+      }
+
+      playCountdown(n) {
+        // Higher pitch for final count
+        const freqs = { 3: 440, 2: 523, 1: 659 };
+        this.playHarmonicBell(freqs[n] || 440, 0.8, 0.2);
+      }
+
+      playSessionStart() {
+        // Ascending arpeggio
+        const notes = [264, 330, 396, 528];
+        notes.forEach((freq, i) => {
+          setTimeout(() => this.playBell(freq, 1.0 - i * 0.15, 0.18), i * 120);
+        });
+      }
+
+      playSessionEnd() {
+        this.playHarmonicBell(396, 2.0, 0.25);
+        setTimeout(() => this.playBell(528, 1.5, 0.15), 400);
+      }
+
+      playXPGain() {
+        this.playBell(880, 0.3, 0.15);
+        setTimeout(() => this.playBell(1100, 0.3, 0.12), 100);
+      }
+
+      // Escalating chime during XP count-up — call repeatedly
+      playXPTick(progress) {
+        if (!this.initialized) return;
+        // Pitch rises as progress goes from 0 to 1
+        const baseFreq = 600 + progress * 800;
+        this.playBell(baseFreq, 0.15, 0.06 + progress * 0.06);
+      }
+
+      // Big celebration burst when count-up finishes
+      playXPCelebration() {
+        if (!this.initialized) return;
+        // Chord burst — major triad + octave
+        const notes = [528, 660, 792, 1056];
+        notes.forEach((freq, i) => {
+          setTimeout(() => this.playBell(freq, 1.2, 0.18), i * 50);
+        });
+        // Shimmer tail
+        setTimeout(() => {
+          this.playBell(1320, 0.8, 0.08);
+          this.playBell(1584, 0.6, 0.06);
+        }, 250);
+      }
+    }
+
+    const sound = new SoundEngine();
+
+    // ============================================================
+    // DOM REFERENCES
+    // ============================================================
+    const selectionScreen = document.getElementById('selection-screen');
+    const animationScreen = document.getElementById('animation-screen');
+    const carouselContainer = document.getElementById('carousel-container');
+    const carouselTrack = document.getElementById('carousel-track');
+    const dotsContainer = document.getElementById('dots-container');
+    const startBtn = document.getElementById('start-btn');
+    const backBtnAnim = document.getElementById('back-btn-anim');
+    const endBtn = document.getElementById('end-btn');
+    const playBtn = document.getElementById('play-btn');
+    const playIcon = document.getElementById('play-icon');
+    const pauseIcon = document.getElementById('pause-icon');
+    const musicBtn = document.getElementById('music-btn');
+    const breathingCircle = document.getElementById('breathing-circle');
+    const glowLayer = document.getElementById('glow-layer');
+    const circleTimer = document.getElementById('circle-timer');
+    const particleCanvas = document.getElementById('particle-canvas');
+    const statusText = document.getElementById('status-text');
+    const cycleCounter = document.getElementById('cycle-counter');
+    const xpBarFill = document.getElementById('xp-bar-fill');
+    const xpText = document.getElementById('xp-text');
+    const xpSetLabel = document.getElementById('xp-set-label');
+    const animModeTitle = document.getElementById('anim-mode-title');
+    const summaryScreen = document.getElementById('summary-screen');
+    const backBtnSummary = document.getElementById('back-btn-summary');
+    const summaryRestartBtn = document.getElementById('summary-restart-btn');
+    const summaryDoneBtn = document.getElementById('summary-done-btn');
+    const countdownOverlay = document.getElementById('countdown-overlay');
+    const countdownNumber = document.getElementById('countdown-number');
+    const countdownLabel = document.getElementById('countdown-label');
+    const volumeControl = document.getElementById('volume-control');
+    const volumeSlider = document.getElementById('volume-slider');
+    const cards = document.querySelectorAll('.mode-card');
+    const dots = document.querySelectorAll('.dot');
+    const rings = [
+      document.querySelector('#ring-0 .ring-progress'),
+      document.querySelector('#ring-1 .ring-progress'),
+      document.querySelector('#ring-2 .ring-progress'),
+      document.querySelector('#ring-3 .ring-progress'),
+    ];
+    const ringSvgs = [
+      document.getElementById('ring-0'),
+      document.getElementById('ring-1'),
+      document.getElementById('ring-2'),
+      document.getElementById('ring-3'),
+    ];
+
+    // ============================================================
+    // STATE
+    // ============================================================
+    let currentModeIndex = 0;
+    let isPlaying = false;
+    let counterIndex = 0;
+    let breathingAbortController = null;
+    let sessionStartTime = null;
+    let sessionTotalXP = 0;
+    let sessionCompletedSets = 0;
+    let patternVizAnimFrames = {};
+
+    // ============================================================
+    // PATTERN VISUALIZER — Animated waveform on each card
+    // Shows the breathing rhythm as a moving wave
+    // ============================================================
+    function initPatternVisualizers() {
+      const vizElements = document.querySelectorAll('.pattern-viz');
+
+      vizElements.forEach(viz => {
+        const modeIdx = parseInt(viz.dataset.mode);
+        const canvas = viz.querySelector('canvas');
+        const mode = BREATHING_MODES[modeIdx];
+
+        // Set canvas size (2x for retina)
+        const rect = viz.getBoundingClientRect();
+        const w = rect.width || 260;
+        const h = rect.height || 100;
+        canvas.width = w * 2;
+        canvas.height = h * 2;
+        canvas.style.width = w + 'px';
+        canvas.style.height = h + 'px';
+
+        const ctx = canvas.getContext('2d');
+        ctx.scale(2, 2);
+
+        // Build the pattern waveform path
+        const totalDuration = mode.timings.reduce((a, b) => a + b, 0);
+        let phase = 0;
+
+        function drawFrame(time) {
+          ctx.clearRect(0, 0, w, h);
+
+          const progress = (time * 0.0003) % 1; // slow loop
+          const accentColor = mode.color || '#52ACFF';
+
+          // Draw pattern shape
+          ctx.beginPath();
+
+          let x = 0;
+          const padding = 4;
+          const usableWidth = w - padding * 2;
+          const bottomY = h * 0.85;
+          const topY = h * 0.15;
+          const amplitude = bottomY - topY;
+
+          // Build pattern as connected segments
+          const segments = [];
+          let cumTime = 0;
+
+          for (let i = 0; i < 4; i++) {
+            const dur = mode.timings[i];
+            if (dur <= 0) continue;
+            const phase = mode.phases[i];
+            segments.push({ phase, start: cumTime / totalDuration, end: (cumTime + dur) / totalDuration, dur });
+            cumTime += dur;
+          }
+
+          // Draw two full cycles side by side
+          for (let cycle = 0; cycle < 2; cycle++) {
+            const cycleOffset = cycle * usableWidth / 2;
+
+            segments.forEach(seg => {
+              const startX = padding + cycleOffset + seg.start * (usableWidth / 2);
+              const endX = padding + cycleOffset + seg.end * (usableWidth / 2);
+              const segWidth = endX - startX;
+
+              // Draw segment as smooth curve
+              const steps = Math.max(Math.floor(segWidth / 2), 10);
+              for (let s = 0; s <= steps; s++) {
+                const t = s / steps;
+                const px = startX + t * segWidth;
+                let py = midY;
+
+                if (seg.phase === 'INHALE') {
+                  // Rise up (ease in-out)
+                  const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                  py = bottomY - ease * amplitude;
+                } else if (seg.phase === 'EXHALE') {
+                  // Fall down (ease in-out)
+                  const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                  py = topY + ease * amplitude;
+                } else if (seg.phase === 'HOLD') {
+                  // Flat at current level — check what came before
+                  const segIdx = segments.indexOf(seg);
+                  const prevPhase = segIdx > 0 ? segments[segIdx - 1].phase : 'EXHALE';
+                  py = prevPhase === 'INHALE' ? topY : bottomY;
+                }
+
+                if (s === 0 && cycle === 0 && segments.indexOf(seg) === 0) {
+                  ctx.moveTo(px, py);
+                } else {
+                  ctx.lineTo(px, py);
+                }
+              }
+            });
+          }
+
+          // Stroke the path
+          ctx.strokeStyle = accentColor;
+          ctx.lineWidth = 2;
+          ctx.globalAlpha = 0.4;
+          ctx.stroke();
+
+          // Draw animated progress dot along the path
+          const dotProgress = progress;
+          let dotX = padding + dotProgress * usableWidth;
+          let dotY = bottomY;
+
+          // Calculate Y position based on which segment the dot is in
+          const dotInCycle = (dotProgress * 2) % 1;
+          let cumFrac = 0;
+          for (const seg of segments) {
+            const segFrac = seg.dur / totalDuration;
+            if (dotInCycle >= cumFrac && dotInCycle < cumFrac + segFrac) {
+              const t = (dotInCycle - cumFrac) / segFrac;
+              if (seg.phase === 'INHALE') {
+                const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                dotY = bottomY - ease * amplitude;
+              } else if (seg.phase === 'EXHALE') {
+                const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+                dotY = topY + ease * amplitude;
+              } else {
+                const segIdx = segments.indexOf(seg);
+                const prevPhase = segIdx > 0 ? segments[segIdx - 1].phase : 'EXHALE';
+                dotY = prevPhase === 'INHALE' ? topY : bottomY;
+              }
+              break;
+            }
+            cumFrac += segFrac;
+          }
+
+          // Glowing dot
+          ctx.globalAlpha = 1;
+          ctx.beginPath();
+          ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
+          ctx.fillStyle = accentColor;
+          ctx.fill();
+
+          // Glow around dot
+          ctx.beginPath();
+          ctx.arc(dotX, dotY, 10, 0, Math.PI * 2);
+          const gradient = ctx.createRadialGradient(dotX, dotY, 2, dotX, dotY, 10);
+          gradient.addColorStop(0, accentColor + '60');
+          gradient.addColorStop(1, accentColor + '00');
+          ctx.fillStyle = gradient;
+          ctx.fill();
+
+          // Trail behind dot
+          ctx.beginPath();
+          ctx.globalAlpha = 0.15;
+          ctx.moveTo(padding, bottomY);
+
+          const trailEndX = dotX;
+          const trailCycleFrac = (dotProgress * 2) % 1;
+          let trailCum = 0;
+
+          for (const seg of segments) {
+            const segFrac = seg.dur / totalDuration;
+            const segStartX = padding + trailCum * (usableWidth / 2);
+            const segEndX = padding + (trailCum + segFrac) * (usableWidth / 2);
+            const clippedEndX = Math.min(segEndX, trailEndX);
+
+            if (segStartX > trailEndX) break;
+
+            const steps = Math.max(Math.floor((clippedEndX - segStartX) / 2), 5);
+            for (let s = 0; s <= steps; s++) {
+              const t = s / steps;
+              const px = segStartX + t * (clippedEndX - segStartX);
+              const segT = (px - segStartX) / (segEndX - segStartX);
+              let py = bottomY;
+
+              if (seg.phase === 'INHALE') {
+                const ease = segT < 0.5 ? 2 * segT * segT : 1 - Math.pow(-2 * segT + 2, 2) / 2;
+                py = bottomY - ease * amplitude;
+              } else if (seg.phase === 'EXHALE') {
+                const ease = segT < 0.5 ? 2 * segT * segT : 1 - Math.pow(-2 * segT + 2, 2) / 2;
+                py = topY + ease * amplitude;
+              } else {
+                const segIdx = segments.indexOf(seg);
+                const prevPhase = segIdx > 0 ? segments[segIdx - 1].phase : 'EXHALE';
+                py = prevPhase === 'INHALE' ? topY : bottomY;
+              }
+
+              ctx.lineTo(px, py);
+            }
+
+            trailCum += segFrac;
+          }
+
+          ctx.lineTo(trailEndX, h);
+          ctx.lineTo(padding, h);
+          ctx.closePath();
+          ctx.fillStyle = accentColor;
+          ctx.fill();
+          ctx.globalAlpha = 1;
+
+          // Phase labels along bottom
+          ctx.font = '500 9px Inter, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.globalAlpha = 0.35;
+
+          cumFrac = 0;
+          segments.forEach(seg => {
+            const segFrac = seg.dur / totalDuration;
+            const labelX = padding + (cumFrac + segFrac / 2) * (usableWidth / 2);
+            const labelText = seg.phase === 'INHALE' ? 'IN' : seg.phase === 'EXHALE' ? 'OUT' : 'HOLD';
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillText(labelText, labelX, h - 8);
+            cumFrac += segFrac;
+          });
+          ctx.globalAlpha = 1;
+
+          patternVizAnimFrames[modeIdx] = requestAnimationFrame(drawFrame);
+        }
+
+        patternVizAnimFrames[modeIdx] = requestAnimationFrame(drawFrame);
+      });
+    }
+
+    // ============================================================
+    // SELECTION SCREEN — Entrance Animation
+    // ============================================================
+    function playSelectionEntrance() {
+      // Cards stagger in
+      cards.forEach((card, i) => {
+        gsap.to(card, {
+          opacity: i === currentModeIndex ? 1 : 0.5,
+          y: 0,
+          scale: i === currentModeIndex ? 1 : 0.92,
+          duration: 0.5,
+          delay: 0.2 + i * 0.08,
+          ease: 'back.out(1.2)',
+          onComplete: () => card.classList.add('entered')
+        });
+      });
+    }
+
+    // ============================================================
+    // CAROUSEL — Swipe to select breathing mode
+    // ============================================================
+    let carouselStart = 0;
+    let carouselOffset = 0;
+    let isDragging = false;
+    const CARD_WIDTH = 300;
+    const CARD_GAP = 16;
+    const CARD_TOTAL = CARD_WIDTH + CARD_GAP;
+
+    function updateCarousel(animate = true, playSound = true) {
+      const offset = -currentModeIndex * CARD_TOTAL;
+      if (animate) {
+        gsap.to(carouselTrack, { x: offset, duration: 0.4, ease: 'power2.out' });
+      } else {
+        gsap.set(carouselTrack, { x: offset });
+      }
+
+      cards.forEach((card, i) => {
+        const isActive = i === currentModeIndex;
+        card.classList.toggle('active', isActive);
+
+        if (animate && card.classList.contains('entered')) {
+          gsap.to(card, {
+            scale: isActive ? 1 : 0.92,
+            opacity: isActive ? 1 : 0.5,
+            duration: 0.3,
+            ease: 'power2.out'
+          });
+        }
+      });
+
+      dots.forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentModeIndex);
+      });
+
+      // Sound on card change
+      if (playSound && animate) {
+        sound.init();
+        sound.playTick();
+      }
+    }
+
+    // Touch/drag handling
+    let lastSwipeIndex = currentModeIndex;
+
+    carouselContainer.addEventListener('touchstart', (e) => {
+      sound.init(); // Init on first touch
+      isDragging = true;
+      carouselStart = e.touches[0].clientX;
+      carouselOffset = -currentModeIndex * CARD_TOTAL;
+      lastSwipeIndex = currentModeIndex;
+    }, { passive: true });
+
+    carouselContainer.addEventListener('touchmove', (e) => {
+      if (!isDragging) return;
+      const diff = e.touches[0].clientX - carouselStart;
+      gsap.set(carouselTrack, { x: carouselOffset + diff });
+    }, { passive: true });
+
+    carouselContainer.addEventListener('touchend', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      const diff = e.changedTouches[0].clientX - carouselStart;
+      if (Math.abs(diff) > 60) {
+        if (diff < 0 && currentModeIndex < 3) currentModeIndex++;
+        if (diff > 0 && currentModeIndex > 0) currentModeIndex--;
+      }
+      updateCarousel();
+    });
+
+    // Mouse drag (desktop testing)
+    carouselContainer.addEventListener('mousedown', (e) => {
+      sound.init();
+      isDragging = true;
+      carouselStart = e.clientX;
+      carouselOffset = -currentModeIndex * CARD_TOTAL;
+      lastSwipeIndex = currentModeIndex;
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const diff = e.clientX - carouselStart;
+      gsap.set(carouselTrack, { x: carouselOffset + diff });
+    });
+
+    window.addEventListener('mouseup', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      const diff = e.clientX - carouselStart;
+      if (Math.abs(diff) > 60) {
+        if (diff < 0 && currentModeIndex < 3) currentModeIndex++;
+        if (diff > 0 && currentModeIndex > 0) currentModeIndex--;
+      }
+      updateCarousel();
+    });
+
+    // Dot click to jump
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        sound.init();
+        const idx = parseInt(dot.dataset.index);
+        if (idx !== currentModeIndex) {
+          currentModeIndex = idx;
+          updateCarousel();
+        }
+      });
+    });
+
+    // Card tap to select (if not the active card)
+    cards.forEach(card => {
+      card.addEventListener('click', (e) => {
+        if (isDragging) return;
+        const idx = parseInt(card.dataset.index);
+        if (idx !== currentModeIndex) {
+          currentModeIndex = idx;
+          updateCarousel();
+        }
+      });
+    });
+
+    // Initialize carousel position (no animation, no sound)
+    updateCarousel(false, false);
+
+    // ============================================================
+    // COUNTDOWN — 3, 2, 1 before breathing starts
+    // ============================================================
+    async function runCountdown() {
+      countdownOverlay.classList.remove('hidden');
+      gsap.set(countdownOverlay, { opacity: 1 });
+
+      // "Get ready" label
+      gsap.to(countdownLabel, { opacity: 1, duration: 0.3 });
+
+      for (let n = 3; n >= 1; n--) {
+        countdownNumber.textContent = n;
+
+        // Sound
+        sound.playCountdown(n);
+
+        // Haptic
+        triggerHaptic('COUNTDOWN');
+
+        // Animate: scale up and fade in, then fade out
+        gsap.fromTo(countdownNumber,
+          { opacity: 0, scale: 0.5 },
+          { opacity: 1, scale: 1, duration: 0.35, ease: 'back.out(1.5)' }
+        );
+
+        await sleep(700);
+
+        gsap.to(countdownNumber, {
+          opacity: 0, scale: 1.5, duration: 0.25, ease: 'power2.in'
+        });
+
+        await sleep(300);
+      }
+
+      // Hide label
+      gsap.to(countdownLabel, { opacity: 0, duration: 0.2 });
+
+      // Fade out overlay
+      gsap.to(countdownOverlay, {
+        opacity: 0, duration: 0.4,
+        onComplete: () => countdownOverlay.classList.add('hidden')
+      });
+    }
+
+    // ============================================================
+    // SCREEN TRANSITIONS
+    // ============================================================
+    function showAnimationScreen() {
+      sound.init();
+      sound.playClick(1.2);
+
+      const mode = BREATHING_MODES[currentModeIndex];
+      animModeTitle.textContent = mode.name;
+      statusText.textContent = 'READY';
+      cycleCounter.textContent = '';
+      counterIndex = 0;
+      xpBarFill.style.width = '0%';
+      xpSetLabel.textContent = '0 / 5 cycles';
+
+      sessionStartTime = null;
+      sessionTotalXP = 0;
+      sessionCompletedSets = 0;
+
+      ringSvgs.forEach((svg, i) => {
+        svg.style.display = mode.ringsUsed[i] ? '' : 'none';
+      });
+
+      // Crossfade
+      gsap.to(selectionScreen, {
+        opacity: 0, duration: 0.5, ease: 'power2.inOut', onComplete: () => {
+          selectionScreen.classList.add('hidden');
+        }
+      });
+
+      animationScreen.classList.remove('hidden');
+      gsap.fromTo(animationScreen, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.inOut' });
+
+      // Show volume control
+      gsap.to(volumeControl, {
+        opacity: 1, x: 0, duration: 0.4, delay: 0.3, ease: 'power2.out',
+        onStart: () => volumeControl.classList.add('visible')
+      });
+    }
+
+    function showSelectionScreen(skipSummary = false) {
+      const cyclesCompleted = counterIndex;
+
+      stopBreathing();
+
+      // Hide volume control — kill pending tweens first
+      gsap.killTweensOf(volumeControl);
+      volumeControl.classList.remove('visible');
+      gsap.set(volumeControl, { opacity: 0, x: 20 });
+
+      if (cyclesCompleted > 0 && !skipSummary) {
+        showSummaryScreen(cyclesCompleted);
+        return;
+      }
+
+      sessionStartTime = null;
+      sessionTotalXP = 0;
+      sessionCompletedSets = 0;
+
+      selectionScreen.classList.remove('hidden');
+      gsap.to(selectionScreen, { opacity: 1, duration: 0.5, ease: 'power2.inOut' });
+
+      gsap.to(animationScreen, {
+        opacity: 0, duration: 0.5, ease: 'power2.inOut', onComplete: () => {
+          animationScreen.classList.add('hidden');
+        }
+      });
+
+      summaryScreen.classList.add('hidden');
+      gsap.set(summaryScreen, { opacity: 0 });
+
+      sound.playClick(0.8);
+    }
+
+    // ============================================================
+    // BREATHING ENGINE — Core Loop
+    // ============================================================
+    function animatePhase(phase, duration, ringIndex, color, scaleUp, signal) {
+      return new Promise((resolve, reject) => {
+        if (signal.aborted) { reject(new Error('aborted')); return; }
+        if (duration <= 0) { resolve(); return; }
+
+        // Status text with fade
+        gsap.to(statusText, {
+          opacity: 0, duration: 0.15, ease: 'power1.in',
+          onComplete: () => {
+            statusText.textContent = phase;
+            gsap.to(statusText, { opacity: 1, duration: 0.25, ease: 'power1.out' });
+          }
+        });
+
+        breathingCircle.className = 'breathing-circle';
+        if (phase === 'INHALE') breathingCircle.classList.add('inhale');
+        else if (phase === 'EXHALE') breathingCircle.classList.add('exhale');
+        else if (phase === 'HOLD') breathingCircle.classList.add('hold');
+
+        currentPhaseForParticles = phase;
+
+        // Haptics
+        triggerHaptic(phase);
+
+        // Sound hooks
+        if (phase === 'INHALE') sound.playInhale(duration);
+        else if (phase === 'EXHALE') sound.playExhale(duration);
+        else if (phase === 'HOLD') sound.playHold();
+
+        const tl = gsap.timeline({
+          onComplete: () => { if (!signal.aborted) resolve(); },
+        });
+
+        if (scaleUp && (phase === 'INHALE' || phase === 'EXHALE')) {
+          const scaleTarget = phase === 'INHALE' ? 2.2 : 1;
+          tl.to(breathingCircle, {
+            scale: scaleTarget,
+            duration: duration,
+            ease: 'sine.inOut'
+          }, 0);
+
+          tl.to(glowLayer, {
+            scale: scaleTarget * 1.6,
+            opacity: phase === 'INHALE' ? 0.6 : 0.15,
+            duration: duration,
+            ease: 'sine.inOut'
+          }, 0);
+        }
+
+        tl.to(breathingCircle, {
+          backgroundColor: color,
+          duration: 1,
+          ease: 'power1.inOut'
+        }, 0);
+
+        tl.to(glowLayer, {
+          background: `radial-gradient(circle, ${color}40 0%, ${color}10 50%, transparent 70%)`,
+          duration: 1,
+          ease: 'power1.inOut'
+        }, 0);
+
+        startPhaseTimer(duration);
+
+        const ring = rings[ringIndex];
+        if (ring) {
+          const circumference = RING_CIRCUMFERENCES[ringIndex];
+          tl.fromTo(ring,
+            { strokeDashoffset: circumference },
+            { strokeDashoffset: 0, duration: duration, ease: 'none' },
+            0
+          );
+        }
+
+        const onAbort = () => {
+          tl.kill();
+          reject(new Error('aborted'));
+        };
+        signal.addEventListener('abort', onAbort, { once: true });
+
+        tl.eventCallback('onComplete', () => {
+          signal.removeEventListener('abort', onAbort);
+          if (!signal.aborted) resolve();
+        });
+      });
+    }
+
+    async function runBreathingCycle(mode, signal) {
+      const [inhale, hold1, exhale, hold2] = mode.timings;
+      const colors = [PHASE_COLORS.INHALE, PHASE_COLORS.HOLD, PHASE_COLORS.EXHALE, PHASE_COLORS.HOLD];
+
+      resetProgress();
+
+      await animatePhase('INHALE', inhale, 0, colors[0], true, signal);
+      if (hold1 > 0) await animatePhase('HOLD', hold1, 1, colors[1], false, signal);
+      await animatePhase('EXHALE', exhale, 2, colors[2], true, signal);
+      if (hold2 > 0) await animatePhase('HOLD', hold2, 3, colors[3], false, signal);
+    }
+
+    async function runHubermanCycle(mode, signal) {
+      const [inhale1, hold, inhale2, exhale] = mode.timings;
+
+      resetProgress();
+
+      await animatePhase('INHALE', inhale1, 0, PHASE_COLORS.INHALE, true, signal);
+      await animatePhase('HOLD', hold, 1, PHASE_COLORS.HOLD, false, signal);
+      await animatePhase('INHALE', inhale2, 2, PHASE_COLORS.INHALE, true, signal);
+      await animatePhase('EXHALE', exhale, 3, PHASE_COLORS.EXHALE, true, signal);
+    }
+
+    async function startBreathingLoop() {
+      const mode = BREATHING_MODES[currentModeIndex];
+      const controller = new AbortController();
+      breathingAbortController = controller;
+
+      // Start ambient drone
+      sound.startAmbient();
+
+      try {
+        while (!controller.signal.aborted) {
+          if (mode.isHuberman) {
+            await runHubermanCycle(mode, controller.signal);
+          } else {
+            await runBreathingCycle(mode, controller.signal);
+          }
+
+          counterIndex++;
+          cycleCounter.textContent = 'x' + counterIndex;
+
+          // Cycle complete sound
+          sound.playCycleComplete();
+
+          const progressStep = ((counterIndex - 1) % 5) + 1;
+          xpBarFill.style.width = (progressStep * 20) + '%';
+          xpSetLabel.textContent = progressStep + ' / 5 cycles';
+
+          triggerHaptic('CYCLE_COMPLETE');
+
+          if (progressStep >= 5) {
+            sessionCompletedSets++;
+            sessionTotalXP += 5;
+            xpBarFill.style.width = '100%';
+
+            sound.playXPGain();
+
+            gsap.fromTo(xpText, { scale: 1 }, { scale: 1.3, duration: 0.2, yoyo: true, repeat: 1 });
+            await sleep(600);
+            if (controller.signal.aborted) break;
+            xpBarFill.style.width = '0%';
+            xpSetLabel.textContent = '0 / 5 cycles';
+          }
+        }
+      } catch (e) {
+        if (e.message !== 'aborted') console.error(e);
+      }
+    }
+
+    function sleep(ms) {
+      return new Promise(r => setTimeout(r, ms));
+    }
+
+    // ============================================================
+    // CONTROLS
+    // ============================================================
+    async function togglePlay() {
+      sound.init();
+
+      if (!isPlaying) {
+        isPlaying = true;
+        playIcon.style.display = 'none';
+        pauseIcon.style.display = '';
+        playBtn.classList.add('playing');
+
+        if (!sessionStartTime) sessionStartTime = Date.now();
+
+        // Run countdown first
+        await runCountdown();
+
+        // Check if user didn't pause during countdown
+        if (!isPlaying) return;
+
+        sound.playSessionStart();
+        if (ambientAudio.src && ambientAudio.src.includes('.mp3')) {
+          ambientAudio.play().catch(e => console.log('Audio play failed:', e));
+        }
+        startParticles();
+        startBreathingLoop();
+      } else {
+        stopBreathing();
+        sound.playClick(0.7);
+      }
+    }
+
+    function stopBreathing() {
+      isPlaying = false;
+      playIcon.style.display = '';
+      pauseIcon.style.display = 'none';
+      playBtn.classList.remove('playing');
+
+      if (breathingAbortController) {
+        breathingAbortController.abort();
+        breathingAbortController = null;
+      }
+
+      // Stop ambient sounds
+      sound.stopAmbient();
+      if (typeof ambientAudio !== 'undefined' && ambientAudio) {
+        ambientAudio.pause();
+      }
+
+      gsap.killTweensOf(breathingCircle);
+      gsap.killTweensOf(glowLayer);
+      gsap.to(breathingCircle, { scale: 1, duration: 0.5, ease: 'power2.out' });
+      gsap.to(breathingCircle, { backgroundColor: '#FFFFFF', duration: 0.5 });
+      gsap.to(glowLayer, { scale: 1, opacity: 0.3, duration: 0.5 });
+      breathingCircle.className = 'breathing-circle';
+
+      stopParticles();
+      stopPhaseTimer();
+
+      resetProgress();
+      statusText.textContent = 'READY';
+      counterIndex = 0;
+      cycleCounter.textContent = '';
+      xpBarFill.style.width = '0%';
+      xpSetLabel.textContent = '0 / 5 cycles';
+    }
+
+    function resetProgress() {
+      rings.forEach((ring, i) => {
+        gsap.killTweensOf(ring);
+        gsap.set(ring, { strokeDashoffset: RING_CIRCUMFERENCES[i] });
+      });
+    }
+
+    // ============================================================
+    // HAPTIC PLACEHOLDER
+    // ============================================================
+    function triggerHaptic(phase) {
+      if (!navigator.vibrate) return;
+      switch (phase) {
+        case 'INHALE': navigator.vibrate(50); break;
+        case 'EXHALE': navigator.vibrate(50); break;
+        case 'COUNTDOWN': navigator.vibrate(30); break;
+        case 'CYCLE_COMPLETE': navigator.vibrate([50, 50, 50]); break;
+      }
+    }
+
+    // ============================================================
+    // PHASE TIMER
+    // ============================================================
+    let timerInterval = null;
+
+    function startPhaseTimer(duration) {
+      clearInterval(timerInterval);
+      if (duration <= 0) { circleTimer.textContent = ''; return; }
+
+      let remaining = duration;
+      circleTimer.textContent = remaining;
+
+      timerInterval = setInterval(() => {
+        remaining--;
+        if (remaining <= 0) {
+          clearInterval(timerInterval);
+          circleTimer.textContent = '';
+        } else {
+          circleTimer.textContent = remaining;
+        }
+      }, 1000);
+    }
+
+    function stopPhaseTimer() {
+      clearInterval(timerInterval);
+      circleTimer.textContent = '';
+    }
+
+    // ============================================================
+    // AMBIENT PARTICLE SYSTEM
+    // ============================================================
+    const particles = [];
+    let particleCtx = null;
+    let particleAnimFrame = null;
+    let currentPhaseForParticles = 'IDLE';
+
+    function initParticles() {
+      const container = document.querySelector('.circle-container');
+      particleCanvas.width = container.offsetWidth;
+      particleCanvas.height = container.offsetHeight;
+      particleCtx = particleCanvas.getContext('2d');
+
+      for (let i = 0; i < 40; i++) {
+        particles.push({
+          x: particleCanvas.width / 2 + (Math.random() - 0.5) * 80,
+          y: particleCanvas.height / 2 + (Math.random() - 0.5) * 80,
+          vx: (Math.random() - 0.5) * 0.3,
+          vy: (Math.random() - 0.5) * 0.3,
+          radius: Math.random() * 2 + 0.5,
+          alpha: Math.random() * 0.4 + 0.1,
+          baseAlpha: Math.random() * 0.4 + 0.1,
+        });
+      }
+    }
+
+    function updateParticles() {
+      if (!particleCtx) return;
+
+      particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+      const cx = particleCanvas.width / 2;
+      const cy = particleCanvas.height / 2;
+
+      particles.forEach(p => {
+        const dx = p.x - cx;
+        const dy = p.y - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        const angle = Math.atan2(dy, dx);
+
+        if (currentPhaseForParticles === 'INHALE') {
+          p.vx += -Math.cos(angle) * 0.02;
+          p.vy += -Math.sin(angle) * 0.02;
+          p.alpha = Math.min(p.baseAlpha + 0.2, 0.7);
+        } else if (currentPhaseForParticles === 'EXHALE') {
+          p.vx += Math.cos(angle) * 0.03;
+          p.vy += Math.sin(angle) * 0.03;
+          p.alpha = p.baseAlpha;
+        } else {
+          p.vx *= 0.98;
+          p.vy *= 0.98;
+          p.alpha += (p.baseAlpha - p.alpha) * 0.05;
+        }
+
+        p.vx *= 0.97;
+        p.vy *= 0.97;
+        p.x += p.vx;
+        p.y += p.vy;
+
+        if (dist > 140) {
+          p.vx -= Math.cos(angle) * 0.05;
+          p.vy -= Math.sin(angle) * 0.05;
+        }
+        if (dist < 30) {
+          p.vx += Math.cos(angle) * 0.03;
+          p.vy += Math.sin(angle) * 0.03;
+        }
+
+        let color = '255, 255, 255';
+        if (currentPhaseForParticles === 'INHALE') color = '82, 172, 255';
+        else if (currentPhaseForParticles === 'EXHALE') color = '0, 250, 58';
+        else if (currentPhaseForParticles === 'HOLD') color = '200, 220, 255';
+
+        particleCtx.beginPath();
+        particleCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        particleCtx.fillStyle = `rgba(${color}, ${p.alpha})`;
+        particleCtx.fill();
+      });
+
+      particleAnimFrame = requestAnimationFrame(updateParticles);
+    }
+
+    function startParticles() {
+      if (!particleCtx) initParticles();
+      updateParticles();
+    }
+
+    function stopParticles() {
+      if (particleAnimFrame) cancelAnimationFrame(particleAnimFrame);
+      currentPhaseForParticles = 'IDLE';
+      if (particleCtx) particleCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+    }
+
+    // ============================================================
+    // SESSION SUMMARY
+    // ============================================================
+    function showSummaryScreen(cyclesCompleted) {
+      const mode = BREATHING_MODES[currentModeIndex];
+      const sessionDuration = sessionStartTime ? Math.round((Date.now() - sessionStartTime) / 1000) : 0;
+      const minutes = Math.floor(sessionDuration / 60);
+      const seconds = sessionDuration % 60;
+      const timeStr = `${minutes}:${String(seconds).padStart(2, '0')}`;
+      const avgPerCycle = cyclesCompleted > 0 ? Math.round(sessionDuration / cyclesCompleted) : 0;
+
+      let emoji, title, subtitle;
+      if (cyclesCompleted >= 10) {
+        emoji = '\u2728'; title = 'Amazing Session'; subtitle = 'You\'re mastering your breath';
+      } else if (cyclesCompleted >= 5) {
+        emoji = '\uD83C\uDF1F'; title = 'Great Work'; subtitle = 'A solid breathing session';
+      } else if (cyclesCompleted >= 3) {
+        emoji = '\uD83C\uDF3F'; title = 'Well Done'; subtitle = 'Every breath counts';
+      } else {
+        emoji = '\uD83D\uDE4F'; title = 'Good Start'; subtitle = 'Keep building the habit';
+      }
+
+      document.getElementById('summary-emoji').textContent = emoji;
+      document.getElementById('summary-title').textContent = title;
+      document.getElementById('summary-subtitle').textContent = subtitle;
+      document.getElementById('summary-cycles').textContent = cyclesCompleted;
+      document.getElementById('summary-time').textContent = timeStr;
+      document.getElementById('summary-pattern').textContent = mode.name;
+      document.getElementById('summary-avg').textContent = avgPerCycle + 's';
+
+      // Set XP count to 0 initially (will count up)
+      document.getElementById('xp-count-value').textContent = '0';
+
+      // Hide volume control — kill pending tweens first
+      gsap.killTweensOf(volumeControl);
+      volumeControl.classList.remove('visible');
+      gsap.set(volumeControl, { opacity: 0, x: 20 });
+
+      // Session end sound
+      sound.playSessionEnd();
+
+      gsap.to(animationScreen, {
+        opacity: 0, duration: 0.5, ease: 'power2.inOut',
+        onComplete: () => { animationScreen.classList.add('hidden'); }
+      });
+
+      summaryScreen.classList.remove('hidden');
+      gsap.fromTo(summaryScreen, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.inOut' });
+
+      const tl = gsap.timeline({ delay: 0.3 });
+
+      // Emoji bounce in
+      tl.to('#summary-emoji', {
+        opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(1.7)'
+      }, 0);
+
+      // Title + subtitle
+      tl.to('#summary-title', {
+        opacity: 1, y: 0, duration: 0.4, ease: 'power2.out'
+      }, 0.15);
+      tl.to('#summary-subtitle', {
+        opacity: 1, y: 0, duration: 0.4, ease: 'power2.out'
+      }, 0.25);
+
+      // Stat cards stagger
+      tl.to('#stat-cycles', { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, 0.35);
+      tl.to('#stat-time', { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, 0.45);
+      tl.to('#stat-pattern', { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, 0.55);
+      tl.to('#stat-avg', { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, 0.65);
+
+      // XP CELEBRATION — the big moment
+      tl.to('#xp-celebration', {
+        opacity: 1, scale: 1, duration: 0.5, ease: 'back.out(2)'
+      }, 0.8);
+
+      // Glow pulse behind the number
+      tl.to('#xp-celebration-glow', {
+        scale: 1, duration: 0.8, ease: 'power2.out'
+      }, 0.9);
+
+      // Count-up animation — starts after the XP section appears
+      const targetXP = sessionTotalXP;
+
+      // Award to global XP
+      if (targetXP > 0) {
+        if (typeof userTotalXP !== 'undefined') {
+          userTotalXP += targetXP;
+          localStorage.setItem('spir_xp', userTotalXP.toString());
+          if (typeof updateUserXPUi === 'function') updateUserXPUi();
+        }
+      }
+
+      // Even if XP is 0, show at least the reveal animation with the number
+      // For sessions that didn't complete a 5-cycle set, show cycles * 1 as "progress XP"
+      const displayXP = targetXP > 0 ? targetXP : cyclesCompleted;
+      const countDuration = Math.max(0.6, Math.min(displayXP * 0.08, 1.5));
+
+      tl.add(() => {
+        runXPCountUp(displayXP, countDuration, targetXP > 0);
+      }, 1.0);
+
+      // Buttons appear after count-up
+      const btnDelay = 1.0 + countDuration + 0.4;
+      tl.to('.summary-btn-primary', { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, btnDelay);
+      tl.to('.summary-btn-secondary', { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }, btnDelay + 0.1);
+    }
+
+    /**
+     * XP Count-Up Animation — video game style
+     * Counts from 0 to target with escalating sound + particle burst at the end
+     */
+    function runXPCountUp(target, duration, isRealXP) {
+      const countEl = document.getElementById('xp-count-value');
+      const glowEl = document.getElementById('xp-celebration-glow');
+      const canvas = document.getElementById('xp-celebration-canvas');
+      const celebrationEl = document.getElementById('xp-celebration');
+
+      if (target <= 0) {
+        countEl.textContent = '0';
+        return;
+      }
+
+      // Set up particle canvas
+      const rect = celebrationEl.getBoundingClientRect();
+      canvas.width = (rect.width + 40) * 2;
+      canvas.height = (rect.height + 80) * 2;
+      canvas.style.width = (rect.width + 40) + 'px';
+      canvas.style.height = (rect.height + 80) + 'px';
+      const ctx = canvas.getContext('2d');
+      ctx.scale(2, 2);
+
+      let currentVal = 0;
+      const startTime = performance.now();
+      const durationMs = duration * 1000;
+      let lastTickVal = -1;
+
+      function updateCount(now) {
+        const elapsed = now - startTime;
+        const progress = Math.min(elapsed / durationMs, 1);
+        // Ease out cubic for satisfying deceleration
+        const eased = 1 - Math.pow(1 - progress, 3);
+        currentVal = Math.round(eased * target);
+
+        countEl.textContent = currentVal;
+
+        // Escalating tick sound (not every frame, every integer change)
+        if (currentVal !== lastTickVal) {
+          sound.playXPTick(progress);
+          lastTickVal = currentVal;
+
+          // Pulse the glow slightly on each tick
+          gsap.to(glowEl, {
+            scale: 1 + progress * 0.3,
+            opacity: 0.5 + progress * 0.5,
+            duration: 0.1,
+            overwrite: true
+          });
+        }
+
+        // Scale pulse on the number as it counts
+        if (progress < 1) {
+          requestAnimationFrame(updateCount);
+        } else {
+          // COUNT COMPLETE — celebration burst!
+          countEl.textContent = target;
+
+          // Big celebration sound
+          sound.playXPCelebration();
+
+          // Haptic
+          triggerHaptic('CYCLE_COMPLETE');
+
+          // Number pop
+          gsap.fromTo(countEl.parentElement, {
+            scale: 1
+          }, {
+            scale: 1.15, duration: 0.15, yoyo: true, repeat: 1, ease: 'power2.out'
+          });
+
+          // Glow flash
+          gsap.to(glowEl, {
+            scale: 1.8, opacity: 1, duration: 0.2,
+            onComplete: () => {
+              gsap.to(glowEl, { scale: 1, opacity: 0.3, duration: 1, ease: 'power2.out' });
+            }
+          });
+
+          // Launch particle burst
+          launchXPParticles(ctx, canvas.width / 4, canvas.height / 4, canvas);
+
+          // Update label if real XP
+          if (isRealXP) {
+            document.getElementById('xp-session-label').textContent = 'earned this session';
+          } else {
+            document.getElementById('xp-session-label').textContent = 'progress toward next reward';
+          }
+        }
+      }
+
+      requestAnimationFrame(updateCount);
+    }
+
+    /**
+     * XP Particle Burst — confetti-like particles that explode outward
+     */
+    function launchXPParticles(ctx, cx, cy, canvas) {
+      const particles = [];
+      const colors = ['#52ACFF', '#7dd3fc', '#00FA3A', '#FFFFFF', '#FFD700', '#FF6B6B'];
+      const w = canvas.width / 2;
+      const h = canvas.height / 2;
+
+      // Create burst particles
+      for (let i = 0; i < 35; i++) {
+        const angle = (Math.PI * 2 * i) / 35 + (Math.random() - 0.5) * 0.5;
+        const speed = 2 + Math.random() * 4;
+        const size = 2 + Math.random() * 3;
+        particles.push({
+          x: cx, y: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 1, // slight upward bias
+          size: size,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          alpha: 1,
+          life: 0.7 + Math.random() * 0.5,
+          gravity: 0.06,
+          // Some particles are sparkles (smaller, faster fade)
+          sparkle: Math.random() > 0.6,
+        });
+      }
+
+      // Add floating "+XP" text particles
+      for (let i = 0; i < 5; i++) {
+        const angle = -Math.PI / 2 + (Math.random() - 0.5) * 1.5;
+        particles.push({
+          x: cx + (Math.random() - 0.5) * 60,
+          y: cy,
+          vx: Math.cos(angle) * 1.5,
+          vy: -1.5 - Math.random() * 2,
+          size: 0,
+          color: '#52ACFF',
+          alpha: 1,
+          life: 1.2,
+          gravity: 0.01,
+          text: '+' + (1 + Math.floor(Math.random() * 5)),
+          sparkle: false,
+        });
+      }
+
+      let frame = 0;
+      const maxFrames = 90; // ~1.5s at 60fps
+
+      function animateParticles() {
+        ctx.clearRect(0, 0, w, h);
+        frame++;
+
+        let alive = false;
+
+        particles.forEach(p => {
+          p.life -= 0.016;
+          if (p.life <= 0) return;
+          alive = true;
+
+          p.vy += p.gravity;
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vx *= 0.98;
+          p.alpha = Math.max(0, p.life / 1.2);
+
+          if (p.text) {
+            // Floating text particle
+            ctx.font = '600 11px Inter, sans-serif';
+            ctx.fillStyle = p.color;
+            ctx.globalAlpha = p.alpha;
+            ctx.fillText(p.text, p.x, p.y);
+          } else if (p.sparkle) {
+            // Star sparkle
+            ctx.globalAlpha = p.alpha * (0.5 + Math.sin(frame * 0.3) * 0.5);
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size * 0.6, 0, Math.PI * 2);
+            ctx.fill();
+          } else {
+            // Round particle
+            ctx.globalAlpha = p.alpha;
+            ctx.fillStyle = p.color;
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        });
+
+        ctx.globalAlpha = 1;
+
+        if (alive && frame < maxFrames) {
+          requestAnimationFrame(animateParticles);
+        } else {
+          ctx.clearRect(0, 0, w, h);
+        }
+      }
+
+      requestAnimationFrame(animateParticles);
+    }
+
+    function resetSummaryAnimations() {
+      gsap.set('#summary-emoji', { opacity: 0, scale: 0.5 });
+      gsap.set('#summary-title', { opacity: 0, y: 10 });
+      gsap.set('#summary-subtitle', { opacity: 0, y: 10 });
+      gsap.set('#stat-cycles, #stat-time, #stat-pattern, #stat-avg', { opacity: 0, y: 16 });
+      gsap.set('#xp-celebration', { opacity: 0, scale: 0.6 });
+      gsap.set('#xp-celebration-glow', { scale: 0 });
+      gsap.set('.summary-btn-primary, .summary-btn-secondary', { opacity: 0, y: 10 });
+      // Clear particle canvas
+      const c = document.getElementById('xp-celebration-canvas');
+      if (c) { const ctx = c.getContext('2d'); if (ctx) ctx.clearRect(0, 0, c.width, c.height); }
+    }
+
+    function returnToSelectionFromSummary() {
+      sessionStartTime = null;
+      sessionTotalXP = 0;
+      sessionCompletedSets = 0;
+
+      resetSummaryAnimations();
+
+      // Hide volume control
+      gsap.killTweensOf(volumeControl);
+      volumeControl.classList.remove('visible');
+      gsap.set(volumeControl, { opacity: 0, x: 20 });
+
+      gsap.to(summaryScreen, {
+        opacity: 0, duration: 0.5, ease: 'power2.inOut',
+        onComplete: () => { summaryScreen.classList.add('hidden'); }
+      });
+
+      selectionScreen.classList.remove('hidden');
+      gsap.to(selectionScreen, { opacity: 1, duration: 0.5, ease: 'power2.inOut' });
+
+      sound.playClick(0.8);
+    }
+
+    function restartFromSummary() {
+      sessionStartTime = null;
+      sessionTotalXP = 0;
+      sessionCompletedSets = 0;
+
+      resetSummaryAnimations();
+
+      gsap.to(summaryScreen, {
+        opacity: 0, duration: 0.5, ease: 'power2.inOut',
+        onComplete: () => { summaryScreen.classList.add('hidden'); }
+      });
+
+      const mode = BREATHING_MODES[currentModeIndex];
+      animModeTitle.textContent = mode.name;
+      statusText.textContent = 'READY';
+      cycleCounter.textContent = '';
+      counterIndex = 0;
+      xpBarFill.style.width = '0%';
+      xpSetLabel.textContent = '0 / 5 cycles';
+      gsap.set(breathingCircle, { scale: 1, backgroundColor: '#FFFFFF' });
+      gsap.set(glowLayer, { scale: 1, opacity: 0.3 });
+      breathingCircle.className = 'breathing-circle';
+      resetProgress();
+
+      ringSvgs.forEach((svg, i) => {
+        svg.style.display = mode.ringsUsed[i] ? '' : 'none';
+      });
+
+      animationScreen.classList.remove('hidden');
+      gsap.fromTo(animationScreen, { opacity: 0 }, { opacity: 1, duration: 0.5, ease: 'power2.inOut' });
+
+      // Show volume control again
+      gsap.to(volumeControl, {
+        opacity: 1, x: 0, duration: 0.4, delay: 0.3, ease: 'power2.out',
+        onStart: () => volumeControl.classList.add('visible')
+      });
+
+      sound.playClick(1.2);
+    }
+
+    // Initialize summary elements in hidden state
+    resetSummaryAnimations();
+
+    // ============================================================
+    // VOLUME CONTROL
+    // ============================================================
+    volumeSlider.addEventListener('input', (e) => {
+      const vol = parseInt(e.target.value) / 100;
+      sound.setVolume(vol);
+    });
+
+    // ============================================================
+    // EVENT LISTENERS
+    // ============================================================
+    startBtn.addEventListener('click', () => {
+      sound.init();
+      showAnimationScreen();
+    });
+
+    backBtnAnim.addEventListener('click', () => {
+      sound.playClick(0.8);
+      showSelectionScreen();
+    });
+
+    endBtn.addEventListener('click', () => {
+      sound.playClick(0.8);
+      showSelectionScreen();
+    });
+
+    playBtn.addEventListener('click', () => togglePlay());
+
+    musicBtn.addEventListener('click', () => {
+      sound.init();
+      sound.playClick();
+      openMusicModal();
+    });
+
+    backBtnSummary.addEventListener('click', returnToSelectionFromSummary);
+    summaryDoneBtn.addEventListener('click', returnToSelectionFromSummary);
+    summaryRestartBtn.addEventListener('click', restartFromSummary);
+
+    // Keyboard shortcuts (desktop testing)
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && !animationScreen.classList.contains('hidden')) {
+        e.preventDefault();
+        togglePlay();
+      }
+      if (e.code === 'Escape') {
+        if (!summaryScreen.classList.contains('hidden')) {
+          returnToSelectionFromSummary();
+        } else if (!animationScreen.classList.contains('hidden')) {
+          showSelectionScreen();
+        }
+      }
+      if (e.code === 'ArrowLeft' && !selectionScreen.classList.contains('hidden')) {
+        if (currentModeIndex > 0) { currentModeIndex--; updateCarousel(); }
+      }
+      if (e.code === 'ArrowRight' && !selectionScreen.classList.contains('hidden')) {
+        if (currentModeIndex < 3) { currentModeIndex++; updateCarousel(); }
+      }
+    });
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    xpText.textContent = '+5xp';
+
+    // Start pattern visualizers
+    initPatternVisualizers();
+
+    // Play selection screen entrance animation
+    playSelectionEntrance();
+
+    console.log('[SPiR Breathing] Enhanced prototype loaded');
+    console.log('[SPiR Breathing] Features: Web Audio sounds, pattern visualizers, countdown, entrance animations');
+    console.log('[SPiR Breathing] Keyboard: arrows to switch, Space to play/pause, Esc to go back');
+
+    // ============================================================
+    // MUSIC PLAYER LOGIC
+    // ============================================================
+    const ambientAudio = document.getElementById('ambient-audio');
+    const musicModal = document.getElementById('music-modal');
+    const closeMusicBtn = document.getElementById('close-music-btn');
+    const musicOptions = document.querySelectorAll('.music-option input');
+
+    let storedXP = localStorage.getItem('spir_xp');
+    let userTotalXP = storedXP ? parseInt(storedXP) : 50;
+    if (isNaN(userTotalXP)) userTotalXP = 50;
+
+    let storedSounds = localStorage.getItem('spir_unlocked_sounds');
+    let unlockedSounds = [];
+    try {
+      unlockedSounds = storedSounds ? JSON.parse(storedSounds) : [];
+      if (!Array.isArray(unlockedSounds)) unlockedSounds = [];
+    } catch (e) { }
+
+    const xpDisplay = document.getElementById('user-total-xp-display');
+
+    function updateUserXPUi() {
+      if (xpDisplay) xpDisplay.textContent = userTotalXP + ' XP';
+    }
+    updateUserXPUi();
+
+    // Init unlocked options
+    unlockedSounds.forEach(val => {
+      const input = document.querySelector(`input[value="${val}"]`);
+      if (input) input.closest('.music-option').classList.remove('locked');
+    });
+
+    function openMusicModal() {
+      musicModal.classList.remove('hidden');
+    }
+
+    function closeMusicModal() {
+      musicModal.classList.add('hidden');
+      if (typeof isPlaying !== 'undefined' && !isPlaying) {
+        if (ambientAudio) ambientAudio.pause();
+      }
+    }
+
+    closeMusicBtn.addEventListener('click', closeMusicModal);
+    musicModal.addEventListener('click', (e) => {
+      if (e.target === musicModal) closeMusicModal();
+    });
+
+    musicOptions.forEach(opt => {
+      opt.addEventListener('click', (e) => {
+        const optionEl = e.target.closest('.music-option');
+        const val = opt.value;
+
+        if (optionEl.classList.contains('locked')) {
+          e.preventDefault(); // Stop check
+          const cost = parseInt(optionEl.getAttribute('data-cost') || '20');
+
+          if (userTotalXP >= cost) {
+            userTotalXP -= cost;
+            try {
+              localStorage.setItem('spir_xp', userTotalXP.toString());
+            } catch (e) { }
+            updateUserXPUi();
+
+            optionEl.classList.remove('locked');
+            // Remove lock badge manually just in case
+            const badge = optionEl.querySelector('.lock-badge');
+            if (badge) badge.style.display = 'none';
+
+            unlockedSounds.push(val);
+            try {
+              localStorage.setItem('spir_unlocked_sounds', JSON.stringify(unlockedSounds));
+            } catch (e) { }
+
+            opt.checked = true;
+          } else {
+            alert(`You need ${cost - userTotalXP} more XP to unlock this! Complete more breathing sessions.`);
+            return;
+          }
+        }
+
+        // Apply active class
+        document.querySelectorAll('.music-option').forEach(el => el.classList.remove('active'));
+        optionEl.classList.add('active');
+
+        if (val === 'none') {
+          ambientAudio.pause();
+          ambientAudio.src = '';
+        } else {
+          ambientAudio.src = `assets/audio/${val}.mp3`;
+          // Play immediately as a preview!
+          ambientAudio.play().catch(err => console.log('Audio play blocked:', err));
+        }
+      });
+    });
+  </script>
+
+</body>
+
+</html>
