@@ -1885,7 +1885,7 @@
               for (let s = 0; s <= steps; s++) {
                 const t = s / steps;
                 const px = startX + t * segWidth;
-                let py = midY;
+                let py = bottomY;
 
                 if (seg.phase === 'INHALE') {
                   // Rise up (ease in-out)
@@ -1970,41 +1970,65 @@
           const trailCycleFrac = (dotProgress * 2) % 1;
           let trailCum = 0;
 
-          for (const seg of segments) {
-            const segFrac = seg.dur / totalDuration;
-            const segStartX = padding + trailCum * (usableWidth / 2);
-            const segEndX = padding + (trailCum + segFrac) * (usableWidth / 2);
-            const clippedEndX = Math.min(segEndX, trailEndX);
+          for (let cycle = 0; cycle < 2; cycle++) {
+            const cycleOffset = cycle * usableWidth / 2;
 
-            if (segStartX > trailEndX) break;
+            for (const seg of segments) {
+              const segFrac = seg.dur / totalDuration;
+              const segStartX = padding + cycleOffset + trailCum * (usableWidth / 2);
+              const segEndX = padding + cycleOffset + (trailCum + segFrac) * (usableWidth / 2);
+              const clippedEndX = Math.min(segEndX, trailEndX);
 
-            const steps = Math.max(Math.floor((clippedEndX - segStartX) / 2), 5);
-            for (let s = 0; s <= steps; s++) {
-              const t = s / steps;
-              const px = segStartX + t * (clippedEndX - segStartX);
-              const segT = (px - segStartX) / (segEndX - segStartX);
-              let py = bottomY;
+              if (segStartX >= trailEndX) break;
 
+              const steps = Math.max(Math.floor((clippedEndX - segStartX) / 2), 5);
+              for (let s = 0; s <= steps; s++) {
+                const t = s / steps;
+                const currentX = segStartX + t * (clippedEndX - segStartX);
+                const segT = (currentX - segStartX) / (segEndX - segStartX);
+                let py = bottomY;
+
+                if (seg.phase === 'INHALE') {
+                  const ease = segT < 0.5 ? 2 * segT * segT : 1 - Math.pow(-2 * segT + 2, 2) / 2;
+                  py = bottomY - ease * amplitude;
+                } else if (seg.phase === 'EXHALE') {
+                  const ease = segT < 0.5 ? 2 * segT * segT : 1 - Math.pow(-2 * segT + 2, 2) / 2;
+                  py = topY + ease * amplitude;
+                } else {
+                  const segIdx = segments.indexOf(seg);
+                  const prevPhase = segIdx > 0 ? segments[segIdx - 1].phase : 'EXHALE';
+                  py = prevPhase === 'INHALE' ? topY : bottomY;
+                }
+
+                ctx.lineTo(currentX, py);
+              }
+
+              // Force one final line to the exact subpixel boundary to seal the gap
+              const segTFinal = (clippedEndX - segStartX) / (segEndX - segStartX);
+              let pyFinal = bottomY;
               if (seg.phase === 'INHALE') {
-                const ease = segT < 0.5 ? 2 * segT * segT : 1 - Math.pow(-2 * segT + 2, 2) / 2;
-                py = bottomY - ease * amplitude;
+                const ease = segTFinal < 0.5 ? 2 * segTFinal * segTFinal : 1 - Math.pow(-2 * segTFinal + 2, 2) / 2;
+                pyFinal = bottomY - ease * amplitude;
               } else if (seg.phase === 'EXHALE') {
-                const ease = segT < 0.5 ? 2 * segT * segT : 1 - Math.pow(-2 * segT + 2, 2) / 2;
-                py = topY + ease * amplitude;
+                const ease = segTFinal < 0.5 ? 2 * segTFinal * segTFinal : 1 - Math.pow(-2 * segTFinal + 2, 2) / 2;
+                pyFinal = topY + ease * amplitude;
               } else {
                 const segIdx = segments.indexOf(seg);
                 const prevPhase = segIdx > 0 ? segments[segIdx - 1].phase : 'EXHALE';
-                py = prevPhase === 'INHALE' ? topY : bottomY;
+                pyFinal = prevPhase === 'INHALE' ? topY : bottomY;
               }
+              ctx.lineTo(clippedEndX, pyFinal);
 
-              ctx.lineTo(px, py);
+              trailCum += segFrac;
             }
-
-            trailCum += segFrac;
+            if (trailCum * (usableWidth / 2) + cycleOffset >= trailEndX - padding) break;
+            trailCum = 0; // Reset for next cycle
           }
 
-          ctx.lineTo(trailEndX, h);
-          ctx.lineTo(padding, h);
+          // Drop straight down to the bottom
+          ctx.lineTo(trailEndX, bottomY);
+          // Go back to the left padding
+          ctx.lineTo(padding, bottomY);
           ctx.closePath();
           ctx.fillStyle = accentColor;
           ctx.fill();
