@@ -1,5 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "npm run build",
-  "outputDirectory": "public"
+  "buildCommand": "cd spir-app && npm install && npm run build",
+  "outputDirectory": "spir-app/dist"
 }
