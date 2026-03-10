@@ -1,0 +1,7 @@
+{
+  "name": "spir-prototypes",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "cd spir-app && npm install && npm run build"
+  }
+}

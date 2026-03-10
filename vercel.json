@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": "npm run build",
+  "outputDirectory": ".",
+  "rewrites": [
+    {
+      "source": "/spir-app",
+      "destination": "/spir-app/dist/index.html"
+    },
+    {
+      "source": "/spir-app/",
+      "destination": "/spir-app/dist/index.html"
+    },
+    {
+      "source": "/spir-app/(.*)",
+      "destination": "/spir-app/dist/$1"
+    }
+  ]
+}
