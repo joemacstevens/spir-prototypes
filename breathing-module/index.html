@@ -11,6 +11,7 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/MotionPathPlugin.min.js"></script>
   <style>
     /* ============================================================
        DESIGN TOKENS — Extract to Unity serialized fields
@@ -274,24 +275,43 @@
       position: relative;
     }
 
-    .pattern-viz canvas {
+    .pattern-viz .wave-svg {
       width: 100%;
       height: 100%;
       display: block;
+      position: absolute;
+      top: 0;
+      left: 0;
     }
 
-    /* Mini breathing circle preview */
-    .mini-breath-circle {
+    .pattern-viz .wave-path {
+      fill: none;
+      stroke-width: 2;
+      stroke-opacity: 0.4;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .pattern-viz .wave-path-fill {
+      fill: none;
+      stroke-width: 2;
+      stroke-opacity: 0.4;
+      /* Or slightly glowing */
+    }
+
+    /* Animated progression dot that traces the path */
+    .pattern-viz .glow-dot {
       position: absolute;
+      top: 85%;
+      /* Default, will be animated by GSAP */
+      left: 0;
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background: var(--color-inhale);
-      left: 10px;
-      top: 50%;
-      transform: translateY(-50%);
-      opacity: 0.8;
-      box-shadow: 0 0 8px rgba(82, 172, 255, 0.4);
+      background: #FFFFFF;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      /* Box-shadow glow applied via JS per mode */
     }
 
     .mode-card h2 {
@@ -1150,8 +1170,11 @@
 
           <div class="mode-card" data-index="0">
             <div class="pattern-viz" data-mode="0">
-              <canvas></canvas>
-              <div class="mini-breath-circle"></div>
+              <svg class="wave-svg" preserveAspectRatio="none">
+                <path class="wave-path" />
+                <path class="wave-path-fill" />
+              </svg>
+              <div class="glow-dot"></div>
             </div>
             <h2>4-7-8 Breathing</h2>
             <div class="timing-label">4s · 7s · 8s</div>
@@ -1161,8 +1184,11 @@
 
           <div class="mode-card" data-index="1">
             <div class="pattern-viz" data-mode="1">
-              <canvas></canvas>
-              <div class="mini-breath-circle"></div>
+              <svg class="wave-svg" preserveAspectRatio="none">
+                <path class="wave-path" />
+                <path class="wave-path-fill" />
+              </svg>
+              <div class="glow-dot"></div>
             </div>
             <h2>Box Breathing</h2>
             <div class="timing-label">4s · 4s · 4s · 4s</div>
@@ -1172,8 +1198,11 @@
 
           <div class="mode-card" data-index="2">
             <div class="pattern-viz" data-mode="2">
-              <canvas></canvas>
-              <div class="mini-breath-circle"></div>
+              <svg class="wave-svg" preserveAspectRatio="none">
+                <path class="wave-path" />
+                <path class="wave-path-fill" />
+              </svg>
+              <div class="glow-dot"></div>
             </div>
             <h2>Huberman Sigh</h2>
             <div class="timing-label">1s · 1s · 3s · 7s</div>
@@ -1184,8 +1213,11 @@
 
           <div class="mode-card" data-index="3">
             <div class="pattern-viz" data-mode="3">
-              <canvas></canvas>
-              <div class="mini-breath-circle"></div>
+              <svg class="wave-svg" preserveAspectRatio="none">
+                <path class="wave-path" />
+                <path class="wave-path-fill" />
+              </svg>
+              <div class="glow-dot"></div>
             </div>
             <h2>Resonant Breathing</h2>
             <div class="timing-label">5s · 5s</div>
@@ -1816,244 +1848,161 @@
     let patternVizAnimFrames = {};
 
     // ============================================================
-    // PATTERN VISUALIZER — Animated waveform on each card
-    // Shows the breathing rhythm as a moving wave
+    // PATTERN VISUALIZER — Animated SVG path on each card
+    // Shows the breathing rhythm as a static wave with a moving dot
     // ============================================================
+    let patternVizTweens = {};
+
+    gsap.registerPlugin(MotionPathPlugin);
+
     function initPatternVisualizers() {
       const vizElements = document.querySelectorAll('.pattern-viz');
 
-      vizElements.forEach(viz => {
+      vizElements.forEach((viz, i) => {
         const modeIdx = parseInt(viz.dataset.mode);
-        const canvas = viz.querySelector('canvas');
         const mode = BREATHING_MODES[modeIdx];
 
-        // Set canvas size (2x for retina)
+        const svg = viz.querySelector('.wave-svg');
+        const pathLine = viz.querySelector('.wave-path');
+        const pathFill = viz.querySelector('.wave-path-fill');
+        const dot = viz.querySelector('.glow-dot');
+
+        // Dimensions (internal drawing space)
         const rect = viz.getBoundingClientRect();
         const w = rect.width || 260;
-        const h = rect.height || 100;
-        canvas.width = w * 2;
-        canvas.height = h * 2;
-        canvas.style.width = w + 'px';
-        canvas.style.height = h + 'px';
+        const h = rect.height || 80;
+        svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
 
-        const ctx = canvas.getContext('2d');
-        ctx.scale(2, 2);
+        const padding = 4;
+        const usableWidth = w - padding * 2;
+        const bottomY = h * 0.85;
+        const topY = h * 0.15;
+        const amplitude = bottomY - topY;
+        const accentColor = mode.color || '#52ACFF';
 
-        // Build the pattern waveform path
+        // Apply visual styling
+        pathLine.style.stroke = accentColor;
+        pathFill.style.stroke = accentColor;
+        pathFill.style.fill = accentColor;
+        pathFill.style.fillOpacity = 0.15;
+        dot.style.boxShadow = `0 0 10px 2px ${accentColor}80`;
+
+        // Build timeline logic for the dot
         const totalDuration = mode.timings.reduce((a, b) => a + b, 0);
-        let phase = 0;
+        const tl = gsap.timeline({ repeat: -1 });
+        const maskTl = gsap.timeline({ repeat: -1 });
 
-        function drawFrame(time) {
-          ctx.clearRect(0, 0, w, h);
+        // We want the total animation preview (2 full cycles) to take around 4 seconds 
+        // to maintain a snappy but accurate feel, regardless of actual real-world pattern duration.
+        const PREVIEW_DURATION = 4.0;
 
-          const progress = (time * 0.0003) % 1; // slow loop
-          const accentColor = mode.color || '#52ACFF';
+        // --- 1) CLIP-PATH SETUP FOR THE FILL ---
+        const defs = document.createElementNS("http://www.w3.org/2000/svg", "defs");
+        const clipPath = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
+        clipPath.setAttribute("id", `reveal-mask-${i}`);
 
-          // Draw pattern shape
-          ctx.beginPath();
+        // Define actual DOM clip rect before we play the maskTl
+        const clipRect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+        clipRect.setAttribute("x", "0");
+        clipRect.setAttribute("y", "0");
+        clipRect.setAttribute("width", "0"); // Starts visually hidden
+        clipRect.setAttribute("height", h);
+        clipPath.appendChild(clipRect);
+        defs.appendChild(clipPath);
+        svg.prepend(defs);
 
-          let x = 0;
-          const padding = 4;
-          const usableWidth = w - padding * 2;
-          const bottomY = h * 0.85;
-          const topY = h * 0.15;
-          const amplitude = bottomY - topY;
+        pathFill.setAttribute("clip-path", `url(#${`reveal-mask-${i}`})`);
 
-          // Build pattern as connected segments
-          const segments = [];
-          let cumTime = 0;
+        // --- 2) GENERATE STATIC SVG PATH ---
+        let d = `M ${padding} ${bottomY} `;
+        let fillD = `M ${padding} ${bottomY} `;
 
-          for (let i = 0; i < 4; i++) {
-            const dur = mode.timings[i];
-            if (dur <= 0) continue;
-            const phase = mode.phases[i];
-            segments.push({ phase, start: cumTime / totalDuration, end: (cumTime + dur) / totalDuration, dur });
-            cumTime += dur;
-          }
+        // Generate two full cycles of the wave visually
+        let cumX = padding;
+        const cycleWidth = usableWidth / 2;
+        let cumMaskW = padding;
 
-          // Draw two full cycles side by side
-          for (let cycle = 0; cycle < 2; cycle++) {
-            const cycleOffset = cycle * usableWidth / 2;
+        for (let cycle = 0; cycle < 2; cycle++) {
+          for (let s = 0; s < 4; s++) {
+            const phaseDur = mode.timings[s];
+            if (phaseDur <= 0) continue;
 
-            segments.forEach(seg => {
-              const startX = padding + cycleOffset + seg.start * (usableWidth / 2);
-              const endX = padding + cycleOffset + seg.end * (usableWidth / 2);
-              const segWidth = endX - startX;
+            const phaseType = mode.phases[s];
+            const phaseFrac = phaseDur / totalDuration;
+            const segmentWidth = phaseFrac * cycleWidth;
+            const endX = cumX + segmentWidth;
 
-              // Draw segment as smooth curve
-              const steps = Math.max(Math.floor(segWidth / 2), 10);
-              for (let s = 0; s <= steps; s++) {
-                const t = s / steps;
-                const px = startX + t * segWidth;
-                let py = bottomY;
+            // Determine start and end Y based on phases
+            let startY, endY;
+            if (phaseType === 'INHALE') {
+              startY = bottomY; endY = topY;
+            } else if (phaseType === 'EXHALE') {
+              startY = topY; endY = bottomY;
+            } else { // HOLD
+              // If previous was INHALE, hold at top. Else hold at bottom.
+              const prevType = s > 0 ? mode.phases[s - 1] : mode.phases[3];
+              startY = prevType === 'INHALE' ? topY : bottomY;
+              endY = startY;
+            }
 
-                if (seg.phase === 'INHALE') {
-                  // Rise up (ease in-out)
-                  const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-                  py = bottomY - ease * amplitude;
-                } else if (seg.phase === 'EXHALE') {
-                  // Fall down (ease in-out)
-                  const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-                  py = topY + ease * amplitude;
-                } else if (seg.phase === 'HOLD') {
-                  // Flat at current level — check what came before
-                  const segIdx = segments.indexOf(seg);
-                  const prevPhase = segIdx > 0 ? segments[segIdx - 1].phase : 'EXHALE';
-                  py = prevPhase === 'INHALE' ? topY : bottomY;
-                }
+            // Draw a bezier curve or line depending on phase
+            if (phaseType === 'HOLD') {
+              d += `L ${endX} ${endY} `;
+              fillD += `L ${endX} ${endY} `;
+            } else {
+              // Cubic bezier for smooth ease in-out
+              const controlPtOffset = segmentWidth * 0.4;
+              d += `C ${cumX + controlPtOffset} ${startY}, ${endX - controlPtOffset} ${endY}, ${endX} ${endY} `;
+              fillD += `C ${cumX + controlPtOffset} ${startY}, ${endX - controlPtOffset} ${endY}, ${endX} ${endY} `;
+            }
 
-                if (s === 0 && cycle === 0 && segments.indexOf(seg) === 0) {
-                  ctx.moveTo(px, py);
-                } else {
-                  ctx.lineTo(px, py);
-                }
-              }
+            // Mask Width Timeline
+            const previewPhaseDur = phaseFrac * (PREVIEW_DURATION / 2);
+            cumMaskW += segmentWidth;
+            maskTl.to(clipRect, /* Defined below */ {
+              attr: { width: cumMaskW },
+              duration: previewPhaseDur,
+              ease: phaseType === 'HOLD' ? "none" : "power2.inOut"
             });
+
+            cumX = endX;
           }
-
-          // Stroke the path
-          ctx.strokeStyle = accentColor;
-          ctx.lineWidth = 2;
-          ctx.globalAlpha = 0.4;
-          ctx.stroke();
-
-          // Draw animated progress dot along the path
-          const dotProgress = progress;
-          let dotX = padding + dotProgress * usableWidth;
-          let dotY = bottomY;
-
-          // Calculate Y position based on which segment the dot is in
-          const dotInCycle = (dotProgress * 2) % 1;
-          let cumFrac = 0;
-          for (const seg of segments) {
-            const segFrac = seg.dur / totalDuration;
-            if (dotInCycle >= cumFrac && dotInCycle < cumFrac + segFrac) {
-              const t = (dotInCycle - cumFrac) / segFrac;
-              if (seg.phase === 'INHALE') {
-                const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-                dotY = bottomY - ease * amplitude;
-              } else if (seg.phase === 'EXHALE') {
-                const ease = t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
-                dotY = topY + ease * amplitude;
-              } else {
-                const segIdx = segments.indexOf(seg);
-                const prevPhase = segIdx > 0 ? segments[segIdx - 1].phase : 'EXHALE';
-                dotY = prevPhase === 'INHALE' ? topY : bottomY;
-              }
-              break;
-            }
-            cumFrac += segFrac;
-          }
-
-          // Glowing dot
-          ctx.globalAlpha = 1;
-          ctx.beginPath();
-          ctx.arc(dotX, dotY, 4, 0, Math.PI * 2);
-          ctx.fillStyle = accentColor;
-          ctx.fill();
-
-          // Glow around dot
-          ctx.beginPath();
-          ctx.arc(dotX, dotY, 10, 0, Math.PI * 2);
-          const gradient = ctx.createRadialGradient(dotX, dotY, 2, dotX, dotY, 10);
-          gradient.addColorStop(0, accentColor + '60');
-          gradient.addColorStop(1, accentColor + '00');
-          ctx.fillStyle = gradient;
-          ctx.fill();
-
-          // Trail behind dot
-          ctx.beginPath();
-          ctx.globalAlpha = 0.15;
-          ctx.moveTo(padding, bottomY);
-
-          const trailEndX = dotX;
-          const trailCycleFrac = (dotProgress * 2) % 1;
-          let trailCum = 0;
-
-          for (let cycle = 0; cycle < 2; cycle++) {
-            const cycleOffset = cycle * usableWidth / 2;
-
-            for (const seg of segments) {
-              const segFrac = seg.dur / totalDuration;
-              const segStartX = padding + cycleOffset + trailCum * (usableWidth / 2);
-              const segEndX = padding + cycleOffset + (trailCum + segFrac) * (usableWidth / 2);
-              const clippedEndX = Math.min(segEndX, trailEndX);
-
-              if (segStartX >= trailEndX) break;
-
-              const steps = Math.max(Math.floor((clippedEndX - segStartX) / 2), 5);
-              for (let s = 0; s <= steps; s++) {
-                const t = s / steps;
-                const currentX = segStartX + t * (clippedEndX - segStartX);
-                const segT = (currentX - segStartX) / (segEndX - segStartX);
-                let py = bottomY;
-
-                if (seg.phase === 'INHALE') {
-                  const ease = segT < 0.5 ? 2 * segT * segT : 1 - Math.pow(-2 * segT + 2, 2) / 2;
-                  py = bottomY - ease * amplitude;
-                } else if (seg.phase === 'EXHALE') {
-                  const ease = segT < 0.5 ? 2 * segT * segT : 1 - Math.pow(-2 * segT + 2, 2) / 2;
-                  py = topY + ease * amplitude;
-                } else {
-                  const segIdx = segments.indexOf(seg);
-                  const prevPhase = segIdx > 0 ? segments[segIdx - 1].phase : 'EXHALE';
-                  py = prevPhase === 'INHALE' ? topY : bottomY;
-                }
-
-                ctx.lineTo(currentX, py);
-              }
-
-              // Force one final line to the exact subpixel boundary to seal the gap
-              const segTFinal = (clippedEndX - segStartX) / (segEndX - segStartX);
-              let pyFinal = bottomY;
-              if (seg.phase === 'INHALE') {
-                const ease = segTFinal < 0.5 ? 2 * segTFinal * segTFinal : 1 - Math.pow(-2 * segTFinal + 2, 2) / 2;
-                pyFinal = bottomY - ease * amplitude;
-              } else if (seg.phase === 'EXHALE') {
-                const ease = segTFinal < 0.5 ? 2 * segTFinal * segTFinal : 1 - Math.pow(-2 * segTFinal + 2, 2) / 2;
-                pyFinal = topY + ease * amplitude;
-              } else {
-                const segIdx = segments.indexOf(seg);
-                const prevPhase = segIdx > 0 ? segments[segIdx - 1].phase : 'EXHALE';
-                pyFinal = prevPhase === 'INHALE' ? topY : bottomY;
-              }
-              ctx.lineTo(clippedEndX, pyFinal);
-
-              trailCum += segFrac;
-            }
-            if (trailCum * (usableWidth / 2) + cycleOffset >= trailEndX - padding) break;
-            trailCum = 0; // Reset for next cycle
-          }
-
-          // Drop straight down to the bottom
-          ctx.lineTo(trailEndX, bottomY);
-          // Go back to the left padding
-          ctx.lineTo(padding, bottomY);
-          ctx.closePath();
-          ctx.fillStyle = accentColor;
-          ctx.fill();
-          ctx.globalAlpha = 1;
-
-          // Phase labels along bottom
-          ctx.font = '500 9px Inter, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.globalAlpha = 0.35;
-
-          cumFrac = 0;
-          segments.forEach(seg => {
-            const segFrac = seg.dur / totalDuration;
-            const labelX = padding + (cumFrac + segFrac / 2) * (usableWidth / 2);
-            const labelText = seg.phase === 'INHALE' ? 'IN' : seg.phase === 'EXHALE' ? 'OUT' : 'HOLD';
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fillText(labelText, labelX, h - 8);
-            cumFrac += segFrac;
-          });
-          ctx.globalAlpha = 1;
-
-          patternVizAnimFrames[modeIdx] = requestAnimationFrame(drawFrame);
         }
 
-        patternVizAnimFrames[modeIdx] = requestAnimationFrame(drawFrame);
+        pathLine.setAttribute('d', d);
+
+        // Close the fill path downwards
+        fillD += `L ${cumX} ${bottomY} Z`;
+        pathFill.setAttribute('d', fillD);
+
+        // Give the path an ID so MotionPathPlugin can target it robustly
+        const pathId = `wave-line-${i}`;
+        pathLine.setAttribute('id', pathId);
+
+        // By default put dot at start
+        gsap.set(dot, { x: 0, y: 0 }); // Reset transforms before assigning motion path
+
+        // --- 2) GENERATE GSAP ANIMATION FOR THE DOT ---
+        // Use MotionPathPlugin to glide perfectly along the physical SVG curve over the 4 second timeline.
+        tl.to(dot, {
+          duration: PREVIEW_DURATION,
+          ease: "none", // Linear traversal speed through the physical curve
+          motionPath: {
+            path: `#${pathId}`,
+            align: `#${pathId}`,
+            alignOrigin: [0.5, 0.5] // center the dot directly on the SVG line
+          }
+        }, 0); // start at beginning of timeline
+
+        // Sync the mask timeline to the dot timeline
+        maskTl.delay(0);
+
+        // Swap the timeline targets now that rect exists
+        maskTl.getChildren().forEach(tween => {
+          tween.targets()[0] = clipRect;
+        });
+
+        patternVizTweens[modeIdx] = { dotTl: tl, maskTl: maskTl };
       });
     }
 
@@ -2094,19 +2043,34 @@
       }
 
       cards.forEach((card, i) => {
-        const isActive = i === currentModeIndex;
-        card.classList.toggle('active', isActive);
-
-        if (animate && card.classList.contains('entered')) {
+        if (i === currentModeIndex) {
+          card.classList.add('active');
           gsap.to(card, {
-            scale: isActive ? 1 : 0.92,
-            opacity: isActive ? 1 : 0.5,
-            duration: 0.3,
-            ease: 'power2.out'
+            scale: 1,
+            opacity: 1,
+            duration: 0.4,
+            ease: 'power2.out',
+            boxShadow: '0 12px 30px rgba(0,0,0,0.5)'
           });
+          if (patternVizTweens[i]) {
+            patternVizTweens[i].dotTl.play();
+            patternVizTweens[i].maskTl.play();
+          }
+        } else {
+          card.classList.remove('active');
+          gsap.to(card, {
+            scale: 0.88,
+            opacity: 0.4,
+            duration: 0.4,
+            ease: 'power2.out',
+            boxShadow: '0 4px 10px rgba(0,0,0,0.2)'
+          });
+          if (patternVizTweens[i]) {
+            patternVizTweens[i].dotTl.pause();
+            patternVizTweens[i].maskTl.pause();
+          }
         }
       });
-
       dots.forEach((dot, i) => {
         dot.classList.toggle('active', i === currentModeIndex);
       });
