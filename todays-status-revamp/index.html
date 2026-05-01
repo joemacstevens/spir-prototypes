@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SPiR Health — Today's Status Revamp · Prototype</title>
-  <meta name="description" content="First Wind Energy recap screen — design spec and implementation notes for the Unity team." />
+  <title>SPiR Health — Today's Status Revamp · Final Direction</title>
+  <meta name="description" content="Final Checkin Screen direction — V1 layout with V2's recovery snapshot. Hand-off spec for the Unity team." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -99,44 +99,7 @@
     }
     .chip.priority { color: var(--accent-amber); border-color: rgba(245,166,35,0.35); background: rgba(245,166,35,0.08); }
     .chip.status { color: var(--accent-teal); border-color: rgba(61,212,192,0.35); background: rgba(61,212,192,0.08); }
-
-    /* ----- TABS ----- */
-    .tabs {
-      display: flex;
-      gap: 4px;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 100px;
-      padding: 4px;
-    }
-    .tab {
-      background: transparent;
-      border: none;
-      color: var(--text-muted);
-      font-family: var(--font-primary);
-      font-size: 13px;
-      font-weight: 500;
-      padding: 8px 16px;
-      border-radius: 100px;
-      cursor: pointer;
-      transition: all 0.15s;
-      white-space: nowrap;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .tab-num {
-      font-family: var(--font-mono);
-      font-size: 10px;
-      opacity: 0.6;
-    }
-    .tab:hover { color: var(--text-soft); }
-    .tab.active {
-      background: linear-gradient(135deg, rgba(123,104,238,0.2), rgba(61,212,192,0.15));
-      color: var(--text);
-      box-shadow: 0 0 0 1px rgba(123,104,238,0.25);
-    }
-    .tab.active .tab-num { opacity: 0.9; color: var(--accent-teal); }
+    .chip.ticket { color: var(--accent-purple); border-color: rgba(123,104,238,0.35); background: rgba(123,104,238,0.08); }
 
     /* ----- LAYOUT ----- */
     .workspace {
@@ -151,8 +114,6 @@
     @media (max-width: 980px) {
       .workspace { grid-template-columns: 1fr; gap: 40px; padding: 32px 20px 64px; }
     }
-    .variant { display: none; }
-    .variant.active { display: block; }
 
     /* ----- PHONE FRAME ----- */
     .phone-wrap {
@@ -218,7 +179,7 @@
       margin: 18px 0 16px;
     }
 
-    /* ----- BATTERY ICONS + SLIDER (V1) ----- */
+    /* ----- BATTERY ICONS + SLIDER ----- */
     .battery-row { display: flex; align-items: center; gap: 14px; }
     .batteries { display: flex; align-items: flex-end; gap: 4px; }
     .battery { position: relative; width: 22px; height: 32px; flex-shrink: 0; }
@@ -259,12 +220,13 @@
     }
     .slider-value {
       font-family: var(--font-primary);
-      font-size: 16px; font-weight: 600;
+      font-size: 18px; font-weight: 700;
       color: var(--text);
-      min-width: 42px; text-align: right;
+      min-width: 48px; text-align: right;
+      letter-spacing: -0.01em;
     }
 
-    /* ----- PROGRESS BAR ----- */
+    /* ----- PROGRESS BAR (Energy Consumed) ----- */
     .progress-bar {
       height: 14px; background: rgba(255,255,255,0.06);
       border-radius: 100px; overflow: hidden; position: relative;
@@ -302,17 +264,34 @@
       margin: 22px 0 14px; padding: 0 4px;
     }
 
-    /* ----- RECOVERY ----- */
-    .recovery-row { display: flex; align-items: center; gap: 14px; }
+    /* ----- RECOVERY (V2 SATELLITE RINGS + COMPACT EDIT CARD) ----- */
     .recovery-icon {
       width: 28px; height: 28px;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .hydration-bars { display: flex; gap: 6px; margin: 12px 0 8px; }
-    .hyd-bar { flex: 1; height: 12px; border-radius: 100px; background: rgba(255,255,255,0.08); }
-    .hyd-bar.filled { background: linear-gradient(90deg, #2a76bf 0%, var(--accent-blue) 100%); box-shadow: 0 0 8px rgba(74,143,231,0.3); }
-    .hydration-caption { font-size: 13.5px; color: var(--text-soft); display: flex; align-items: center; gap: 6px; }
-    .hydration-caption strong { color: var(--text); font-weight: 600; }
+    .satellite-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; margin-bottom: 14px;
+    }
+    .satellite {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px; padding: 14px 10px;
+      text-align: center;
+    }
+    .mini-ring { position: relative; width: 60px; height: 60px; margin: 0 auto 8px; }
+    .mini-ring svg { width: 60px; height: 60px; }
+    .mini-ring-val {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600; color: var(--text);
+    }
+    .satellite-label {
+      font-family: var(--font-tertiary);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
 
     .row { display: flex; align-items: center; gap: 14px; padding: 14px 0; }
     .row + .row { border-top: 1px solid rgba(255,255,255,0.05); }
@@ -353,126 +332,6 @@
     }
     .finish-btn:hover { transform: translateY(-1px); }
 
-    /* ----- V2: RADIAL RINGS ----- */
-    .ring-hero {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 12px 0 18px;
-    }
-    .ring-svg { width: 240px; height: 240px; display: block; }
-    .ring-track { stroke: rgba(255,255,255,0.06); }
-    .ring-available { stroke: url(#grad-available); }
-    .ring-consumed { stroke: url(#grad-consumed); }
-    .ring-center-label {
-      text-align: center;
-      margin-top: -140px;
-      position: relative;
-      pointer-events: none;
-    }
-    .ring-big {
-      font-size: 48px; font-weight: 700; letter-spacing: -0.03em;
-      line-height: 1;
-    }
-    .ring-big-sub {
-      font-family: var(--font-tertiary);
-      font-size: 10px; font-weight: 600;
-      letter-spacing: 0.2em; text-transform: uppercase;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
-    .ring-legend {
-      display: flex; gap: 24px; margin-top: 80px;
-      font-size: 12px; color: var(--text-soft);
-    }
-    .ring-legend-item { display: flex; align-items: center; gap: 8px; }
-    .ring-legend-dot { width: 10px; height: 10px; border-radius: 50%; }
-    .dot-available { background: var(--accent-green); box-shadow: 0 0 8px rgba(95,208,99,0.5); }
-    .dot-consumed { background: var(--accent-teal); box-shadow: 0 0 8px rgba(61,212,192,0.5); }
-    .ring-legend-val { color: var(--text); font-weight: 600; font-family: var(--font-mono); }
-
-    /* Mini rings for recovery satellites */
-    .satellite-row {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 10px; margin-bottom: 14px;
-    }
-    .satellite {
-      background: rgba(255,255,255,0.03);
-      border: 1px solid rgba(255,255,255,0.06);
-      border-radius: 18px; padding: 14px 10px;
-      text-align: center;
-    }
-    .mini-ring { position: relative; width: 60px; height: 60px; margin: 0 auto 8px; }
-    .mini-ring svg { width: 60px; height: 60px; }
-    .mini-ring-val {
-      position: absolute; inset: 0;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 600; color: var(--text);
-    }
-    .satellite-label {
-      font-family: var(--font-tertiary);
-      font-size: 10px; font-weight: 600;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    /* ----- V3: SEGMENTED PICKER ----- */
-    .picker-row {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-    .picker-cell {
-      background: rgba(255,255,255,0.03);
-      border: 1.5px solid rgba(255,255,255,0.08);
-      border-radius: 14px;
-      padding: 14px 6px 10px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .picker-cell:hover { border-color: rgba(255,255,255,0.18); }
-    .picker-cell.selected {
-      background: rgba(95,208,99,0.12);
-      border-color: var(--accent-green);
-      box-shadow: 0 0 20px rgba(95,208,99,0.3), inset 0 0 0 1px rgba(114,232,118,0.2);
-    }
-    .picker-battery {
-      position: relative; width: 24px; height: 34px;
-    }
-    .picker-label {
-      font-family: var(--font-mono);
-      font-size: 11px; font-weight: 600;
-      color: var(--text-muted);
-    }
-    .picker-cell.selected .picker-label { color: var(--accent-green); }
-
-    .picker-readout {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
-      padding: 12px 16px;
-      background: rgba(95,208,99,0.08);
-      border: 1px solid rgba(95,208,99,0.25);
-      border-radius: 14px;
-      margin-bottom: 6px;
-    }
-    .picker-readout-big {
-      font-size: 32px; font-weight: 700; letter-spacing: -0.02em;
-      color: var(--accent-green);
-      line-height: 1;
-    }
-    .picker-readout-label {
-      font-family: var(--font-tertiary);
-      font-size: 11px; font-weight: 600;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--text-soft);
-    }
-
     /* ----- DOCS PANEL ----- */
     .docs { max-width: 680px; min-width: 0; }
     .docs-eyebrow {
@@ -510,6 +369,8 @@
     }
     .ticket-ref dd { color: var(--text-soft); }
     .ticket-ref dd strong { color: var(--text); font-weight: 500; }
+    .ticket-ref a { color: var(--accent-teal); text-decoration: none; }
+    .ticket-ref a:hover { text-decoration: underline; }
 
     .doc-section { margin-bottom: 40px; }
     .doc-section h2 {
@@ -569,26 +430,17 @@
     }
     .info strong { color: var(--accent-purple); }
 
-    /* Comparison table */
-    .compare {
-      border: 1px solid var(--border); border-radius: 12px;
-      overflow: hidden; margin-bottom: 20px;
-    }
-    .compare table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-    .compare th, .compare td { padding: 12px 16px; text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
-    .compare tr:last-child td { border-bottom: none; }
-    .compare th {
-      background: var(--bg-2);
-      font-family: var(--font-tertiary);
+    .source-tag {
+      display: inline-block;
+      font-family: var(--font-mono);
       font-size: 10px; font-weight: 600;
-      letter-spacing: 0.14em; text-transform: uppercase;
-      color: var(--text-muted);
+      letter-spacing: 0.06em;
+      padding: 2px 6px; border-radius: 3px;
+      margin-left: 6px;
+      vertical-align: middle;
     }
-    .compare td { color: var(--text-soft); }
-    .compare td strong { color: var(--text); }
-    .rank-best { color: var(--accent-green); font-weight: 600; }
-    .rank-ok { color: var(--accent-amber); font-weight: 600; }
-    .rank-hard { color: var(--accent-coral); font-weight: 600; }
+    .source-tag.v1 { background: rgba(95,208,99,0.12); color: var(--accent-green); border: 1px solid rgba(95,208,99,0.3); }
+    .source-tag.v2 { background: rgba(61,212,192,0.12); color: var(--accent-teal); border: 1px solid rgba(61,212,192,0.3); }
 
     footer {
       text-align: center; padding: 40px 20px;
@@ -602,14 +454,6 @@
   <!-- HIDDEN SVG DEFS FOR RINGS -->
   <svg width="0" height="0" style="position:absolute">
     <defs>
-      <linearGradient id="grad-available" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#3aa03e"/>
-        <stop offset="100%" stop-color="#72e876"/>
-      </linearGradient>
-      <linearGradient id="grad-consumed" x1="0" y1="0" x2="1" y2="1">
-        <stop offset="0%" stop-color="#3dd4c0"/>
-        <stop offset="100%" stop-color="#4a8fe7"/>
-      </linearGradient>
       <linearGradient id="grad-blue" x1="0" y1="0" x2="1" y2="1">
         <stop offset="0%" stop-color="#2a76bf"/>
         <stop offset="100%" stop-color="#4a8fe7"/>
@@ -624,668 +468,297 @@
   <div class="topbar">
     <div class="topbar-inner">
       <div class="title-block">
-        <span class="title-main">Today's Status · Revamp</span>
-        <span class="title-sub">Exploration Set</span>
-      </div>
-      <div class="tabs" role="tablist">
-        <button class="tab active" data-target="v1"><span class="tab-num">V1</span> Card Stack</button>
-        <button class="tab" data-target="v2"><span class="tab-num">V2</span> Radial Rings</button>
-        <button class="tab" data-target="v3"><span class="tab-num">V3</span> Segmented Picker</button>
+        <span class="title-main">Today's Status · Checkin Screen</span>
+        <span class="title-sub">Final Direction</span>
       </div>
       <div class="topbar-meta">
+        <span class="chip ticket"><a href="https://linear.app/ajeo/issue/AJE-10/todays-status-checkin-screen-merge-v1-layout-v2-recovery-snapshot-ship" style="color:inherit; text-decoration:none;">AJE-10</a></span>
         <span class="chip priority">Medium Priority</span>
+        <span class="chip status">In Review</span>
       </div>
     </div>
   </div>
 
-  <!-- ======================= V1: CARD STACK ======================= -->
-  <div class="variant active" id="v1">
-    <div class="workspace">
+  <!-- ======================= MERGED DESIGN: V1 LAYOUT + V2 RECOVERY SNAPSHOT ======================= -->
+  <div class="workspace">
 
-      <div class="phone-wrap">
-        <div class="phone-label">V1 · Card Stack (Pixel Match of Your Attachment)</div>
-        <div class="phone">
-          <div class="phone-screen">
+    <div class="phone-wrap">
+      <div class="phone-label">Today's Status · Final · 390 × content</div>
+      <div class="phone">
+        <div class="phone-screen">
 
-            <div class="card">
-              <h2>First Wind Energy</h2>
-              <p class="card-sub">How did you use your peak energy today?</p>
+          <!-- First Wind Energy card (V1 base + V2 polish: centered head, gradient %) -->
+          <div class="card">
+            <h2 style="text-align:center;">First Wind Energy</h2>
+            <p class="card-sub" style="text-align:center;">How did you use your peak energy today?</p>
 
-              <div class="card-label">Energy Available</div>
-              <div class="battery-row">
-                <div class="batteries">
-                  <div class="battery">
-                    <div class="battery-body"><div class="battery-fill" style="height:12%;background:var(--accent-red);"></div></div>
-                    <div class="battery-bolt bolt-red">⚡</div>
+            <div class="card-label">Energy Available</div>
+            <div class="battery-row">
+              <div class="batteries">
+                <div class="battery">
+                  <div class="battery-body"><div class="battery-fill" style="height:12%;background:var(--accent-red);"></div></div>
+                  <div class="battery-bolt bolt-red">⚡</div>
+                </div>
+                <div class="battery">
+                  <div class="battery-body"><div class="battery-fill" style="height:32%;background:var(--accent-amber);"></div></div>
+                  <div class="battery-bolt bolt-amber">⚡</div>
+                </div>
+                <div class="battery">
+                  <div class="battery-body"><div class="battery-fill" style="height:55%;background:#c29a2f;"></div></div>
+                  <div class="battery-bolt bolt-yellow">⚡</div>
+                </div>
+                <div class="battery" style="width:24px;height:34px;">
+                  <div class="battery-body" style="border-color:var(--accent-green);box-shadow:0 0 12px rgba(95,208,99,0.35);">
+                    <div class="battery-fill" style="height:78%;background:linear-gradient(180deg,var(--accent-green-hi),var(--accent-green));"></div>
                   </div>
-                  <div class="battery">
-                    <div class="battery-body"><div class="battery-fill" style="height:32%;background:var(--accent-amber);"></div></div>
-                    <div class="battery-bolt bolt-amber">⚡</div>
-                  </div>
-                  <div class="battery">
-                    <div class="battery-body"><div class="battery-fill" style="height:55%;background:#c29a2f;"></div></div>
-                    <div class="battery-bolt bolt-yellow">⚡</div>
-                  </div>
-                  <div class="battery" style="width:24px;height:34px;">
-                    <div class="battery-body" style="border-color:var(--accent-green);box-shadow:0 0 12px rgba(95,208,99,0.35);">
-                      <div class="battery-fill" style="height:78%;background:linear-gradient(180deg,var(--accent-green-hi),var(--accent-green));"></div>
-                    </div>
-                    <div class="battery-bolt bolt-green">⚡</div>
-                  </div>
-                </div>
-                <div class="slider-track-wrap">
-                  <div class="slider-track">
-                    <div class="slider-fill"></div>
-                    <div class="slider-thumb"></div>
-                  </div>
-                  <div class="slider-value">80%</div>
+                  <div class="battery-bolt bolt-green">⚡</div>
                 </div>
               </div>
-
-              <div class="card-divider"></div>
-
-              <div class="card-label">Energy Consumed</div>
-              <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
-              <div class="progress-caption">
-                <div class="mini-battery">
-                  <div class="battery-body" style="border-color:var(--accent-green);">
-                    <div class="battery-fill" style="height:80%;background:var(--accent-green);"></div>
-                  </div>
+              <div class="slider-track-wrap">
+                <div class="slider-track">
+                  <div class="slider-fill"></div>
+                  <div class="slider-thumb"></div>
                 </div>
-                <span>You used <strong style="color:var(--text);font-weight:600;">80%</strong> of your First Wind.</span>
+                <div class="slider-value gradient-text">80%</div>
               </div>
             </div>
 
-            <div class="expand-row">
-              <div class="plus-btn">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-              </div>
-              <div class="expand-body">
-                <div class="expand-title">Second Wind Energy</div>
-                <div class="expand-sub">Did you have a second wind today?</div>
-              </div>
-              <div class="chevron">⌄</div>
-            </div>
+            <div class="card-divider"></div>
 
-            <h3 class="section-header">Recovery Snapshot</h3>
-
-            <div class="card">
-              <div class="recovery-row">
-                <div class="recovery-icon">
-                  <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M12 3 C8 9 5 13 5 16 a7 7 0 0 0 14 0 C19 13 16 9 12 3 z" fill="var(--accent-blue)"/></svg>
+            <div class="card-label">Energy Consumed</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+            <div class="progress-caption">
+              <div class="mini-battery">
+                <div class="battery-body" style="border-color:var(--accent-green);">
+                  <div class="battery-fill" style="height:80%;background:var(--accent-green);"></div>
                 </div>
-                <div class="row-title">Hydration</div>
               </div>
-              <div class="hydration-bars">
-                <div class="hyd-bar filled"></div>
-                <div class="hyd-bar filled"></div>
-                <div class="hyd-bar filled"></div>
-                <div class="hyd-bar"></div>
-              </div>
-              <div class="hydration-caption">
-                <strong>3 / 4</strong> <span style="color:var(--text-muted);">(‹ 1.5 liters logged)</span>
-              </div>
-
-              <div class="row">
-                <div class="recovery-icon">
-                  <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><ellipse cx="12" cy="12" rx="8" ry="5" fill="var(--accent-blue)"/><circle cx="9.5" cy="12" r="1.2" fill="#0a0a0f"/><circle cx="14.5" cy="12" r="1.2" fill="#0a0a0f"/></svg>
-                </div>
-                <div class="row-body">
-                  <div class="row-title">Nap</div>
-                  <div class="row-sub">No nap logged</div>
-                </div>
-                <button class="edit-btn">Edit</button>
-              </div>
-
-              <div class="row">
-                <div class="recovery-icon">
-                  <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M20 14 A 8 8 0 1 1 10 4 A 6 6 0 0 0 20 14 z" fill="var(--accent-blue)"/></svg>
-                </div>
-                <div class="row-body">
-                  <div class="row-title">Fasting Window</div>
-                  <div class="row-sub">14h from 8:00 PM to 10:00 AM</div>
-                </div>
-                <button class="edit-btn">Edit</button>
-              </div>
-            </div>
-
-            <div class="success-banner">
-              <div class="success-check">
-                <svg viewBox="0 0 24 24" fill="none"><polyline points="5 12 10 17 19 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </div>
-              <div class="success-text">Great day! Your energy, hydration, and recovery are all on track.</div>
-            </div>
-
-            <button class="finish-btn">FINISH</button>
-
-          </div>
-        </div>
-      </div>
-
-      <div class="docs">
-        <div class="docs-eyebrow">V1 · Card Stack · The Baseline</div>
-        <h1>Faithful to your attachment. <span class="gradient-text">Lowest design risk.</span></h1>
-        <p class="docs-intro">Pixel match of the mockup you attached to the ticket — card-stack scroll, slider as the primary input, batteries as visual reference, Recovery Snapshot as a section below. Safe baseline. If what you drew is what you want, this is where we'd start.</p>
-
-        <dl class="ticket-ref">
-          <dt>Ticket</dt><dd><strong>[TODAY'S STATUS] Revamp</strong></dd>
-          <dt>Priority</dt><dd>Medium · First Queue</dd>
-          <dt>Scope</dt><dd>Energy Available slider (implement) + Energy Consumed visual (don't implement logic yet)</dd>
-        </dl>
-
-        <div class="doc-section">
-          <h2>1 · What's changing from your app today</h2>
-          <p>Right now the "First Wind" input is a 3-state battery picker (<code>low</code> / <code>medium</code> / <code>high</code>), driven by <code>LoadoutEnergyBar.cs</code> reading <code>DataConfig.userTodaySurvey.firstWindValue</code>. V1 replaces that with a continuous slider (0–100%); the 4 battery icons become a visual reference showing what each level looks like.</p>
-          <div class="warn"><strong>Heads up — data model change required.</strong> <code>firstWindValue</code> is currently a string enum. To ship the slider, it needs to accept a numeric percentage. We'd have Abdul coordinate with the backend team on that field change — it's the one dependency outside the Unity work.</div>
-          <div class="ok"><strong>Energy Consumed stays visual-only for now.</strong> Per your ticket: "Don't implement for now." We'd build the UI exactly as shown with <code>80%</code> hardcoded and wire the logic in a follow-up.</div>
-        </div>
-
-        <div class="doc-section">
-          <h2>2 · Annotated breakdown</h2>
-          <div class="annotation-grid">
-            <div class="annotation">
-              <div class="annotation-num">1</div>
-              <div class="annotation-body">
-                <div class="annotation-title">Header — "First Wind Energy" + subtitle</div>
-                Text-only. Lives on the existing First Wind card inside <code>CheckInsPanel.cs</code>.
-              </div>
-            </div>
-            <div class="annotation">
-              <div class="annotation-num">2</div>
-              <div class="annotation-body">
-                <div class="annotation-title">Battery row (4 visual states)</div>
-                Currently <code>HabbitPanel.Instance.firstWind[]</code> is a 3-image array colored via <code>LoadoutEnergyBar.SetFirstWindData()</code>. Extend to 4 slots matching the slider ranges (red 0–25, amber 26–50, yellow 51–75, green 76–100). Batteries now <em>reflect</em> the slider, they don't drive it.
-              </div>
-            </div>
-            <div class="annotation">
-              <div class="annotation-num">3</div>
-              <div class="annotation-body">
-                <div class="annotation-title">Slider + % readout (primary input)</div>
-                New Unity <code>Slider</code>. Bound to a new numeric field. Green gradient fill, white thumb, % label right-aligned.
-              </div>
-            </div>
-            <div class="annotation">
-              <div class="annotation-num">4</div>
-              <div class="annotation-body">
-                <div class="annotation-title">Energy Consumed — visual only</div>
-                Build exactly as shown, hardcode <code>80%</code>. Per ticket: don't wire the logic.
-              </div>
-            </div>
-            <div class="annotation">
-              <div class="annotation-num">5</div>
-              <div class="annotation-body">
-                <div class="annotation-title">Second Wind — collapsed row</div>
-                Expands into the same First Wind layout. Backing field: <code>DataConfig.userTodaySurvey.secondWindValue</code>.
-              </div>
-            </div>
-            <div class="annotation">
-              <div class="annotation-num">6</div>
-              <div class="annotation-body">
-                <div class="annotation-title">Hydration card (existing data)</div>
-                Segmented bars in blue + count. Existing field.
-              </div>
-            </div>
-            <div class="annotation">
-              <div class="annotation-num">7</div>
-              <div class="annotation-body">
-                <div class="annotation-title">Nap row</div>
-                Edit button → <code>AddNapTodayPopup.cs</code>.
-              </div>
-            </div>
-            <div class="annotation">
-              <div class="annotation-num">8</div>
-              <div class="annotation-body">
-                <div class="annotation-title">Fasting Window row</div>
-                Edit button → <code>FastingPopup.cs</code>.
-              </div>
-            </div>
-            <div class="annotation">
-              <div class="annotation-num">9</div>
-              <div class="annotation-body">
-                <div class="annotation-title">Success banner</div>
-                Shown when thresholds hit. Suggested defaults: First Wind ≥ 60%, Hydration ≥ 3/4, Fasting completed — happy to pressure-test these with you.
-              </div>
-            </div>
-            <div class="annotation">
-              <div class="annotation-num">10</div>
-              <div class="annotation-body">
-                <div class="annotation-title">FINISH button</div>
-                Existing submit handler (likely <code>NetworkAPImanager.cs</code>).
-              </div>
+              <span>You used <strong style="color:var(--text);font-weight:600;">80%</strong> of your First Wind.</span>
             </div>
           </div>
-        </div>
 
-        <div class="doc-section">
-          <h2>3 · Files to touch</h2>
-          <ul>
-            <li><code>Assets/My Scripts/CheckInsPanel.cs</code> — the owning panel.</li>
-            <li><code>Assets/My Scripts/LoadoutEnergyBar.cs</code> — refactor 3-state switch → numeric-to-color mapping.</li>
-            <li><code>Assets/My Scripts/HabbitPanel.cs</code> — <code>firstWind[]</code> / <code>secondWind[]</code> arrays; extend to 4 slots.</li>
-            <li><code>Assets/My Scripts/DataConfig.cs</code> — <code>firstWindValue</code> / <code>secondWindValue</code> → numeric.</li>
-            <li><code>Assets/Resources/Prefabs/UI/Panels/</code> — add slider GameObject to the panel prefab.</li>
-          </ul>
-        </div>
-      </div>
+          <!-- Second Wind expand row (V1) -->
+          <div class="expand-row">
+            <div class="plus-btn">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="expand-body">
+              <div class="expand-title">Second Wind Energy</div>
+              <div class="expand-sub">Did you have a second wind today?</div>
+            </div>
+            <div class="chevron">⌄</div>
+          </div>
 
-    </div>
-  </div>
+          <h3 class="section-header">Recovery Snapshot</h3>
 
-  <!-- ======================= V2: RADIAL RINGS ======================= -->
-  <div class="variant" id="v2">
-    <div class="workspace">
-
-      <div class="phone-wrap">
-        <div class="phone-label">V2 · Radial Rings (Apple Fitness vibe)</div>
-        <div class="phone">
-          <div class="phone-screen">
-
-            <div class="card">
-              <h2 style="text-align:center;">First Wind Energy</h2>
-              <p class="card-sub" style="text-align:center;">How did you use your peak energy today?</p>
-
-              <div class="ring-hero">
-                <svg class="ring-svg" viewBox="0 0 240 240">
-                  <!-- Outer ring (Available) -->
-                  <circle cx="120" cy="120" r="100" class="ring-track" stroke-width="14" fill="none"/>
-                  <circle cx="120" cy="120" r="100" class="ring-available" stroke-width="14" fill="none"
-                          stroke-linecap="round"
-                          stroke-dasharray="628.3" stroke-dashoffset="125.66"
-                          transform="rotate(-90 120 120)"
-                          style="filter: drop-shadow(0 0 8px rgba(95,208,99,0.4));"/>
-                  <!-- Inner ring (Consumed) -->
-                  <circle cx="120" cy="120" r="78" class="ring-track" stroke-width="12" fill="none"/>
-                  <circle cx="120" cy="120" r="78" class="ring-consumed" stroke-width="12" fill="none"
-                          stroke-linecap="round"
-                          stroke-dasharray="490.09" stroke-dashoffset="98.02"
-                          transform="rotate(-90 120 120)"
-                          style="filter: drop-shadow(0 0 8px rgba(61,212,192,0.4));"/>
+          <!-- V2 RECOVERY SNAPSHOT (verbatim): satellite rings + compact edit card -->
+          <div class="satellite-row">
+            <div class="satellite">
+              <div class="mini-ring">
+                <svg viewBox="0 0 60 60">
+                  <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>
+                  <circle cx="30" cy="30" r="24" stroke="url(#grad-blue)" stroke-width="5" fill="none"
+                          stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="37.7"
+                          transform="rotate(-90 30 30)" style="filter: drop-shadow(0 0 6px rgba(74,143,231,0.45));"/>
                 </svg>
-                <div class="ring-center-label">
-                  <div class="ring-big gradient-text">80%</div>
-                  <div class="ring-big-sub">Energy Available</div>
-                </div>
-                <div class="ring-legend">
-                  <div class="ring-legend-item">
-                    <div class="ring-legend-dot dot-available"></div>
-                    <span>Available</span>
-                    <span class="ring-legend-val">80%</span>
-                  </div>
-                  <div class="ring-legend-item">
-                    <div class="ring-legend-dot dot-consumed"></div>
-                    <span>Consumed</span>
-                    <span class="ring-legend-val">80%</span>
-                  </div>
-                </div>
+                <div class="mini-ring-val">3/4</div>
               </div>
-
-              <p class="card-sub" style="text-align:center; margin-top:6px; margin-bottom:0;">Tap the ring to adjust.</p>
+              <div class="satellite-label">Hydration</div>
             </div>
-
-            <div class="expand-row">
-              <div class="plus-btn">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            <div class="satellite">
+              <div class="mini-ring">
+                <svg viewBox="0 0 60 60">
+                  <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>
+                </svg>
+                <div class="mini-ring-val" style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em;">—</div>
               </div>
-              <div class="expand-body">
-                <div class="expand-title">Second Wind Energy</div>
-                <div class="expand-sub">Did you have a second wind today?</div>
-              </div>
-              <div class="chevron">⌄</div>
+              <div class="satellite-label">Nap</div>
             </div>
-
-            <h3 class="section-header">Recovery Snapshot</h3>
-
-            <div class="satellite-row">
-              <div class="satellite">
-                <div class="mini-ring">
-                  <svg viewBox="0 0 60 60">
-                    <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>
-                    <circle cx="30" cy="30" r="24" stroke="url(#grad-blue)" stroke-width="5" fill="none"
-                            stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="37.7"
-                            transform="rotate(-90 30 30)" style="filter: drop-shadow(0 0 6px rgba(74,143,231,0.45));"/>
-                  </svg>
-                  <div class="mini-ring-val">3/4</div>
-                </div>
-                <div class="satellite-label">Hydration</div>
+            <div class="satellite">
+              <div class="mini-ring">
+                <svg viewBox="0 0 60 60">
+                  <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>
+                  <circle cx="30" cy="30" r="24" stroke="url(#grad-purple)" stroke-width="5" fill="none"
+                          stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="0"
+                          transform="rotate(-90 30 30)" style="filter: drop-shadow(0 0 6px rgba(123,104,238,0.45));"/>
+                </svg>
+                <div class="mini-ring-val">14h</div>
               </div>
-              <div class="satellite">
-                <div class="mini-ring">
-                  <svg viewBox="0 0 60 60">
-                    <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>
-                  </svg>
-                  <div class="mini-ring-val" style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em;">—</div>
-                </div>
-                <div class="satellite-label">Nap</div>
-              </div>
-              <div class="satellite">
-                <div class="mini-ring">
-                  <svg viewBox="0 0 60 60">
-                    <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>
-                    <circle cx="30" cy="30" r="24" stroke="url(#grad-purple)" stroke-width="5" fill="none"
-                            stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="0"
-                            transform="rotate(-90 30 30)" style="filter: drop-shadow(0 0 6px rgba(123,104,238,0.45));"/>
-                  </svg>
-                  <div class="mini-ring-val">14h</div>
-                </div>
-                <div class="satellite-label">Fasting</div>
-              </div>
+              <div class="satellite-label">Fasting</div>
             </div>
+          </div>
 
-            <!-- Compact edit row for napp/fasting detail -->
-            <div class="card" style="padding: 14px 18px;">
-              <div class="row" style="padding: 6px 0;">
-                <div class="recovery-icon">
-                  <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><ellipse cx="12" cy="12" rx="8" ry="5" fill="var(--accent-blue)"/><circle cx="9.5" cy="12" r="1.2" fill="#0a0a0f"/><circle cx="14.5" cy="12" r="1.2" fill="#0a0a0f"/></svg>
-                </div>
-                <div class="row-body">
-                  <div class="row-title">Nap</div>
-                  <div class="row-sub">No nap logged</div>
-                </div>
-                <button class="edit-btn">Edit</button>
+          <div class="card" style="padding: 14px 18px;">
+            <div class="row" style="padding: 6px 0;">
+              <div class="recovery-icon">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><ellipse cx="12" cy="12" rx="8" ry="5" fill="var(--accent-blue)"/><circle cx="9.5" cy="12" r="1.2" fill="#0a0a0f"/><circle cx="14.5" cy="12" r="1.2" fill="#0a0a0f"/></svg>
               </div>
-              <div class="row" style="padding: 6px 0;">
-                <div class="recovery-icon">
-                  <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M20 14 A 8 8 0 1 1 10 4 A 6 6 0 0 0 20 14 z" fill="var(--accent-purple)"/></svg>
-                </div>
-                <div class="row-body">
-                  <div class="row-title">Fasting Window</div>
-                  <div class="row-sub">14h · 8:00 PM → 10:00 AM</div>
-                </div>
-                <button class="edit-btn">Edit</button>
+              <div class="row-body">
+                <div class="row-title">Nap</div>
+                <div class="row-sub">No nap logged</div>
               </div>
+              <button class="edit-btn">Edit</button>
             </div>
-
-            <div class="success-banner">
-              <div class="success-check">
-                <svg viewBox="0 0 24 24" fill="none"><polyline points="5 12 10 17 19 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <div class="row" style="padding: 6px 0;">
+              <div class="recovery-icon">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M20 14 A 8 8 0 1 1 10 4 A 6 6 0 0 0 20 14 z" fill="var(--accent-purple)"/></svg>
               </div>
-              <div class="success-text">Great day! Your energy, hydration, and recovery are all on track.</div>
+              <div class="row-body">
+                <div class="row-title">Fasting Window</div>
+                <div class="row-sub">14h · 8:00 PM → 10:00 AM</div>
+              </div>
+              <button class="edit-btn">Edit</button>
             </div>
+          </div>
 
-            <button class="finish-btn">FINISH</button>
+          <div class="success-banner">
+            <div class="success-check">
+              <svg viewBox="0 0 24 24" fill="none"><polyline points="5 12 10 17 19 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="success-text">Great day! Your energy, hydration, and recovery are all on track.</div>
+          </div>
 
+          <button class="finish-btn">FINISH</button>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= DOCS PANEL: HAND-OFF SUMMARY ======================= -->
+    <div class="docs">
+      <div class="docs-eyebrow">AJE-10 · Final Direction · Ready for Unity</div>
+      <h1>V1 layout. <span class="gradient-text">V2's recovery snapshot.</span> Shipped together.</h1>
+      <p class="docs-intro">
+        Jay reviewed the three exploration variants on 2026-04-24 and chose:
+        <em>"v1 with the recovery snapshot of v2"</em>. This is that. The merged spec
+        is captured below; the line-by-line build instruction for the Unity team
+        lives in <code>SPEC_AJE-10.md</code> alongside this prototype.
+      </p>
+
+      <dl class="ticket-ref">
+        <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-10/todays-status-checkin-screen-merge-v1-layout-v2-recovery-snapshot-ship">AJE-10 — Today's Status (Checkin Screen): merge v1 layout + v2 recovery snapshot</a></dd>
+        <dt>Spec</dt><dd><a href="./SPEC_AJE-10.md">SPEC_AJE-10.md</a> · element-by-element Unity build table for Abdul</dd>
+        <dt>Status</dt><dd>In Review · pending Abdul's feasibility check on the existing Checkin Screen panel</dd>
+      </dl>
+
+      <div class="doc-section">
+        <h2>What changes vs the current in-app Checkin Screen</h2>
+        <p>
+          Today, First Wind input is a 3-state battery picker
+          (<code>"low"</code> / <code>"medium"</code> / <code>"high"</code>) on the
+          <code>HabbitPanel.firstWind[]</code> Image array, set via
+          <code>LoadoutEnergyBar.SetFirstWindData()</code>. Recovery information
+          shows hydration as a row + segmented bars and Nap/Fasting as edit rows
+          inside one card.
+        </p>
+        <p>
+          The new direction:
+        </p>
+        <ul>
+          <li><strong>First Wind input becomes a continuous slider (0–100%)</strong> with the 4 battery icons as a visual reference for what each level looks like. <span class="source-tag v1">V1</span></li>
+          <li><strong>Energy Consumed visual bar</strong> (display-only, not yet wired) sits below a divider in the same card. <span class="source-tag v1">V1</span></li>
+          <li><strong>Recovery Snapshot becomes 3 satellite mini-rings</strong> (Hydration, Nap, Fasting) above a compact card with just Nap + Fasting edit rows. Hydration loses its segmented bars and "1.5 liters" caption — it now shows only as a ring fill (e.g. 3/4). <span class="source-tag v2">V2</span></li>
+          <li><strong>Centered card heading + gradient % readout</strong> on the First Wind card — visual polish carried in from V2. <span class="source-tag v2">V2</span></li>
+        </ul>
+        <div class="warn"><strong>Backend dependency.</strong> <code>Survey.firstWindValue</code> and <code>Survey.secondWindValue</code> in <code>GameManager.cs</code> are currently <code>string</code> ("low"/"medium"/"high"). To ship the slider, they need to accept a numeric percentage (0–100). Abdul to coordinate with the API owner before implementation.</div>
+      </div>
+
+      <div class="doc-section">
+        <h2>Annotated walkthrough</h2>
+        <div class="annotation-grid">
+          <div class="annotation">
+            <div class="annotation-num">1</div>
+            <div class="annotation-body">
+              <div class="annotation-title">First Wind card — centered header + subtitle <span class="source-tag v2">V2 polish</span></div>
+              UGUI <code>TMP_Text</code> with <code>alignment = Center</code>. Header "First Wind Energy", subtitle "How did you use your peak energy today?". Lives on the existing First Wind card inside the Checkin Screen prefab (owning panel: <code>CheckInsPanel.cs</code>).
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">2</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Battery row (4 visual states) <span class="source-tag v1">V1</span></div>
+              <code>HabbitPanel.firstWind[]</code> is currently a 3-Image array. Extend to 4 elements matching the slider ranges (red 0–25, amber 26–50, yellow 51–75, green 76–100). Drive colors via the slider's <code>OnValueChanged</code> rather than user click — batteries become a reflection of the slider.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">3</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Slider + % readout (primary input) <span class="source-tag v1">V1</span></div>
+              Built-in Unity <code>UnityEngine.UI.Slider</code>, range 0–100, no whole-number snap. Bind <code>onValueChanged</code> to (a) update the battery row tint and (b) write to <code>DataConfig.userTodaySurvey.firstWindValue</code> (after the model change). The "80%" readout is a <code>TMP_Text</code> with the gradient color treatment.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">4</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Energy Consumed bar (visual only) <span class="source-tag v1">V1</span></div>
+              Build the visual exactly as shown, hardcode 80%. Per the original ticket scope: don't wire the logic in this pass. <code>Image</code> with <code>Type = Filled</code>, <code>Fill Method = Horizontal</code>, <code>Fill Origin = Left</code>.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">5</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Second Wind expand row (collapsed) <span class="source-tag v1">V1</span></div>
+              Tapping expands into the same First Wind layout (slider + battery row). Use the existing <code>PopupAndDownAnimator.cs</code> pattern — DOTween <code>DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack)</code> on enable. Backing field: <code>DataConfig.userTodaySurvey.secondWindValue</code>.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">6</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Recovery Snapshot — 3 satellite mini-rings <span class="source-tag v2">V2</span></div>
+              Three <code>Image</code> elements with <code>Type = Filled</code>, <code>Fill Method = Radial360</code>, <code>Fill Origin = Top</code>. Drive <code>image.fillAmount</code> from data: Hydration <code>= DataConfig.userTodaySurvey.hydrationValue / 4f</code>, Nap = 0 if no nap (greyed-out empty ring), Fasting <code>= DataConfig.userTodaySurvey.fastingValue / hoursTarget</code>. Animate with <code>image.DOFillAmount(target, 0.5f).SetEase(Ease.OutCubic)</code>. The custom <code>OuterRoundedFillFixed.shader</code> in <code>Assets/Custom Shader/</code> is the upgrade path if rounded caps / glow are wanted.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">7</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Nap edit row <span class="source-tag v2">V2</span></div>
+              Edit button → <code>AddNapTodayPopup.Show()</code> (already a <code>SingletonBehaviourUI</code>). After save, <code>SaveDateAndTime()</code> POSTs to <code>NetworkAPImanager.AddNapToCheckIn()</code> and triggers <code>GameManager.SpawnEffect(confettiBlue)</code>.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">8</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Fasting Window edit row <span class="source-tag v2">V2</span></div>
+              Edit button → <code>FastingPopup.Show()</code> + <code>FastingPopup.Instance.EnableBGOpacity()</code>. Subtitle copy: "14h · 8:00 PM → 10:00 AM" (V2 wording — replaces V1's "14h from 8:00 PM to 10:00 AM"). Fasting icon uses <code>--accent-purple</code> instead of blue.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">9</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Success banner <span class="source-tag v1">V1</span></div>
+              Shown when thresholds hit. Suggested defaults to pressure-test: First Wind ≥ 60%, Hydration ≥ 3/4, Fasting completed.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">10</div>
+            <div class="annotation-body">
+              <div class="annotation-title">FINISH button <span class="source-tag v1">V1</span></div>
+              Existing handler: <code>CheckInsPanel.MarkTodaysStatusComplete()</code> → <code>NetworkAPImanager.IsTodaysStatusBtnAvailable()</code>. Unchanged.
+            </div>
           </div>
         </div>
       </div>
 
-      <div class="docs">
-        <div class="docs-eyebrow">V2 · Radial Rings · The Premium Take</div>
-        <h1>Rings instead of bars. <span class="gradient-text">Premium at-a-glance feel.</span></h1>
-        <p class="docs-intro">Apple Fitness / Activity-inspired. First Wind becomes a pair of concentric rings — outer = Energy Available, inner = Energy Consumed — with a bold center readout. Recovery metrics become three satellite rings (Hydration, Nap, Fasting). Scans faster than V1 and feels like a health-product upgrade. If you want the "wow" version, this is where we'd take it.</p>
-
-        <div class="doc-section">
-          <h2>What's different from V1</h2>
-          <ul>
-            <li><strong>No slider, no batteries.</strong> Input is a radial ring the user taps/drags around to set their %.</li>
-            <li><strong>Energy Available + Consumed unified</strong> into one visual — the two concentric rings.</li>
-            <li><strong>Recovery Snapshot becomes ring satellites</strong> (3 small rings in a row) + a compact edit strip below for Nap and Fasting detail access.</li>
-            <li><strong>Center readout is the star</strong> — big gradient "80%" + label.</li>
-          </ul>
-        </div>
-
-        <div class="doc-section">
-          <h2>Unity implementation notes</h2>
-          <p>Rings are the main lift. Unity's stock UGUI doesn't draw arcs natively, but there are three solid paths — all proven in mobile Unity apps:</p>
-          <ol>
-            <li><strong>Image with <code>Image.Type = Filled</code>, Radial360.</strong> Simplest. A circle Image with <code>fillAmount = 0.0–1.0</code> and <code>fillMethod = Radial360</code> gives you a partial ring. Stack two concentric ones for outer/inner. Works out of the box with UGUI.</li>
-            <li><strong>Custom shader</strong> (the <code>OuterRoundedFillFixed.shader</code> already exists in <code>Assets/Custom Shader/</code>). If the designers want rounded caps and glow, this is the route.</li>
-            <li><strong>Procedural mesh</strong> — overkill for this. Skip.</li>
-          </ol>
-          <div class="info"><strong>Recommendation:</strong> go with option 1 (Radial360 Image) for the MVP. If you want the polished rounded-cap/glow look, we'd escalate to the custom shader in a follow-up ticket.</div>
-          <p>Tap-to-adjust on the ring requires a <code>PointerEventHandler</code> on the ring's RectTransform that maps tap angle → %. Slightly more code than a Unity <code>Slider</code>, but not complex.</p>
-        </div>
-
-        <div class="doc-section">
-          <h2>Files to touch (same as V1, plus shader work)</h2>
-          <ul>
-            <li><code>Assets/My Scripts/CheckInsPanel.cs</code> — replace slider/batteries block with ring.</li>
-            <li><code>Assets/My Scripts/LoadoutEnergyBar.cs</code> — repurpose to drive <code>fillAmount</code> on the ring Image instead of colorizing batteries.</li>
-            <li><code>Assets/My Scripts/DataConfig.cs</code> — same model change as V1 (enum → numeric).</li>
-            <li>New: <code>EnergyRingHandler.cs</code> — handles tap-angle → % mapping for ring input.</li>
-            <li><code>Assets/Custom Shader/</code> — consult existing <code>OuterRoundedFillFixed.shader</code> if polish is needed.</li>
-          </ul>
-        </div>
-
-        <div class="doc-section">
-          <h2>Tradeoffs</h2>
-          <div class="compare">
-            <table>
-              <thead><tr><th></th><th>Pro</th><th>Con</th></tr></thead>
-              <tbody>
-                <tr><td><strong>Visual impact</strong></td><td class="rank-best">Highest — "wow" factor</td><td>—</td></tr>
-                <tr><td><strong>Implementation cost</strong></td><td>—</td><td class="rank-ok">Medium — ring math + tap handling</td></tr>
-                <tr><td><strong>Data model change</strong></td><td>—</td><td class="rank-ok">Same as V1 (enum → numeric)</td></tr>
-                <tr><td><strong>Familiarity to users</strong></td><td class="rank-best">High — Apple Fitness mental model</td><td>—</td></tr>
-                <tr><td><strong>Risk to the sprint</strong></td><td>—</td><td class="rank-ok">Medium — custom input control</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="doc-section">
-          <h2>Why we'd pick V2</h2>
-          <p>Your app already has the XP / loadout / streak gamification vibe, so a ring-based daily summary <em>fits the product</em> in a way a slider doesn't — it reads as "your rings are closing" rather than "fill in the form." Bonus: it reinforces the visual identity if you ever want the marketing side (the Science page on the landing, for instance) to pick up the ring motif too.</p>
-        </div>
+      <div class="doc-section">
+        <h2>Files Abdul will touch (Unity)</h2>
+        <ul>
+          <li><code>Assets/My Scripts/CheckInsPanel.cs</code> — owning panel for the Checkin Screen.</li>
+          <li><code>Assets/My Scripts/HabbitPanel.cs</code> — <code>firstWind[]</code> / <code>secondWind[]</code> Image arrays (line ~3781), <code>SetFirstWindData(int)</code> / <code>SetSecondWindData(int)</code> setters (currently 3-case switch); extend to 4 elements + numeric mapping.</li>
+          <li><code>Assets/My Scripts/LoadoutEnergyBar.cs</code> — refactor the 3-case switch in <code>SetFirstWindData()</code> / <code>SetSecondWindData()</code> to a numeric → color mapping.</li>
+          <li><code>Assets/My Scripts/GameManager.cs</code> — <code>Survey</code> class (line 1782): <code>firstWindValue</code> / <code>secondWindValue</code> change from <code>string</code> to numeric. Also drop or repurpose <code>energy_List</code> (line 302) once the enum goes away.</li>
+          <li><code>Assets/Resources/Prefabs/UI/Panels/</code> — Checkin Screen prefab: add slider GameObject, add 4th battery, add 3 mini-ring GameObjects, restructure recovery card.</li>
+          <li><code>Assets/Custom Shader/OuterRoundedFillFixed.shader</code> — optional upgrade for the mini-rings if rounded caps + glow are wanted.</li>
+        </ul>
+        <div class="info"><strong>This prototype repo does not modify any Unity scripts.</strong> The list above is for Abdul's planning; the Unity work is the downstream ticket.</div>
       </div>
 
     </div>
-  </div>
 
-  <!-- ======================= V3: SEGMENTED PICKER ======================= -->
-  <div class="variant" id="v3">
-    <div class="workspace">
-
-      <div class="phone-wrap">
-        <div class="phone-label">V3 · Segmented Picker (Simplest to Ship)</div>
-        <div class="phone">
-          <div class="phone-screen">
-
-            <div class="card">
-              <h2>First Wind Energy</h2>
-              <p class="card-sub">How did you use your peak energy today?</p>
-
-              <div class="card-label">Energy Available</div>
-              <div class="picker-row">
-                <div class="picker-cell">
-                  <div class="picker-battery">
-                    <div class="battery-body"><div class="battery-fill" style="height:8%;background:var(--accent-red);"></div></div>
-                    <div class="battery-bolt bolt-red">⚡</div>
-                  </div>
-                  <div class="picker-label">0%</div>
-                </div>
-                <div class="picker-cell">
-                  <div class="picker-battery">
-                    <div class="battery-body"><div class="battery-fill" style="height:28%;background:var(--accent-amber);"></div></div>
-                    <div class="battery-bolt bolt-amber">⚡</div>
-                  </div>
-                  <div class="picker-label">25%</div>
-                </div>
-                <div class="picker-cell">
-                  <div class="picker-battery">
-                    <div class="battery-body"><div class="battery-fill" style="height:50%;background:#c29a2f;"></div></div>
-                    <div class="battery-bolt bolt-yellow">⚡</div>
-                  </div>
-                  <div class="picker-label">50%</div>
-                </div>
-                <div class="picker-cell selected">
-                  <div class="picker-battery">
-                    <div class="battery-body" style="border-color:var(--accent-green);box-shadow:0 0 12px rgba(95,208,99,0.3);">
-                      <div class="battery-fill" style="height:75%;background:linear-gradient(180deg,var(--accent-green-hi),var(--accent-green));"></div>
-                    </div>
-                    <div class="battery-bolt bolt-green">⚡</div>
-                  </div>
-                  <div class="picker-label">75%</div>
-                </div>
-                <div class="picker-cell">
-                  <div class="picker-battery">
-                    <div class="battery-body"><div class="battery-fill" style="height:92%;background:var(--accent-green);"></div></div>
-                    <div class="battery-bolt bolt-green" style="filter:none;">⚡</div>
-                  </div>
-                  <div class="picker-label">100%</div>
-                </div>
-              </div>
-
-              <div class="picker-readout">
-                <div class="picker-readout-big">75%</div>
-                <div class="picker-readout-label">Strong day</div>
-              </div>
-
-              <div class="card-divider"></div>
-
-              <div class="card-label">Energy Consumed</div>
-              <div class="progress-bar"><div class="progress-fill" style="width:75%"></div></div>
-              <div class="progress-caption">
-                <div class="mini-battery">
-                  <div class="battery-body" style="border-color:var(--accent-green);">
-                    <div class="battery-fill" style="height:75%;background:var(--accent-green);"></div>
-                  </div>
-                </div>
-                <span>You used <strong style="color:var(--text);font-weight:600;">75%</strong> of your First Wind.</span>
-              </div>
-            </div>
-
-            <div class="expand-row">
-              <div class="plus-btn">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
-              </div>
-              <div class="expand-body">
-                <div class="expand-title">Second Wind Energy</div>
-                <div class="expand-sub">Did you have a second wind today?</div>
-              </div>
-              <div class="chevron">⌄</div>
-            </div>
-
-            <h3 class="section-header">Recovery Snapshot</h3>
-
-            <div class="card">
-              <div class="recovery-row">
-                <div class="recovery-icon">
-                  <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M12 3 C8 9 5 13 5 16 a7 7 0 0 0 14 0 C19 13 16 9 12 3 z" fill="var(--accent-blue)"/></svg>
-                </div>
-                <div class="row-title">Hydration</div>
-              </div>
-              <div class="hydration-bars">
-                <div class="hyd-bar filled"></div>
-                <div class="hyd-bar filled"></div>
-                <div class="hyd-bar filled"></div>
-                <div class="hyd-bar"></div>
-              </div>
-              <div class="hydration-caption">
-                <strong>3 / 4</strong> <span style="color:var(--text-muted);">(‹ 1.5 liters logged)</span>
-              </div>
-
-              <div class="row">
-                <div class="recovery-icon">
-                  <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><ellipse cx="12" cy="12" rx="8" ry="5" fill="var(--accent-blue)"/><circle cx="9.5" cy="12" r="1.2" fill="#0a0a0f"/><circle cx="14.5" cy="12" r="1.2" fill="#0a0a0f"/></svg>
-                </div>
-                <div class="row-body">
-                  <div class="row-title">Nap</div>
-                  <div class="row-sub">No nap logged</div>
-                </div>
-                <button class="edit-btn">Edit</button>
-              </div>
-
-              <div class="row">
-                <div class="recovery-icon">
-                  <svg viewBox="0 0 24 24" fill="none" width="22" height="22"><path d="M20 14 A 8 8 0 1 1 10 4 A 6 6 0 0 0 20 14 z" fill="var(--accent-blue)"/></svg>
-                </div>
-                <div class="row-body">
-                  <div class="row-title">Fasting Window</div>
-                  <div class="row-sub">14h from 8:00 PM to 10:00 AM</div>
-                </div>
-                <button class="edit-btn">Edit</button>
-              </div>
-            </div>
-
-            <div class="success-banner">
-              <div class="success-check">
-                <svg viewBox="0 0 24 24" fill="none"><polyline points="5 12 10 17 19 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              </div>
-              <div class="success-text">Great day! Your energy, hydration, and recovery are all on track.</div>
-            </div>
-
-            <button class="finish-btn">FINISH</button>
-
-          </div>
-        </div>
-      </div>
-
-      <div class="docs">
-        <div class="docs-eyebrow">V3 · Segmented Picker · The Pragmatist</div>
-        <h1>No slider. Five taps. <span class="gradient-text">Shortest path to ship.</span></h1>
-        <p class="docs-intro">Instead of a slider, the user picks one of 5 discrete levels — 0%, 25%, 50%, 75%, 100% — each shown as a tap-to-select battery cell. The selected cell gets a green glow. V3 is deliberately the least-ambitious visual, because its win is implementation speed — it keeps the existing "enum" data model (low/medium/high), just expanded to 5 values, so the backend coordination dependency disappears.</p>
-
-        <div class="doc-section">
-          <h2>What's different from V1</h2>
-          <ul>
-            <li><strong>No slider.</strong> Input is 5 tap-to-select cells — same mental model as the current 3-state battery picker, just with 5 levels instead of 3.</li>
-            <li><strong>80% becomes 75%.</strong> With discrete levels, the input snaps. Users can't express "80%" — only 75% or 100%. That's the honest tradeoff: less granularity, more clarity.</li>
-            <li><strong>Readout pill</strong> shows the selected % + a qualitative label ("Strong day", "Solid", "Empty tank", etc. — copy TBD).</li>
-          </ul>
-        </div>
-
-        <div class="doc-section">
-          <h2>Why this is the easiest ship</h2>
-          <div class="ok"><strong>No backend coordination needed.</strong> <code>firstWindValue</code> stays an enum. Just change the allowed values from <code>"low"|"medium"|"high"</code> to <code>"0"|"25"|"50"|"75"|"100"</code> (or keep named constants — whatever's clean). This means V3 can ship on Unity side with zero backend ticket.</div>
-          <p>Implementation is a near-direct reuse of the existing battery-array pattern:</p>
-          <ul>
-            <li>Existing pattern: <code>HabbitPanel.Instance.firstWind[]</code> is a 3-Image array; tapping one updates <code>DataConfig.userTodaySurvey.firstWindValue</code>.</li>
-            <li>V3 pattern: same, but a 5-element array + the "selected" visual state (green border + glow).</li>
-            <li>Nothing new to import. No slider logic. No ring math. No tap-angle math.</li>
-          </ul>
-        </div>
-
-        <div class="doc-section">
-          <h2>Tradeoffs</h2>
-          <div class="compare">
-            <table>
-              <thead><tr><th></th><th>Pro</th><th>Con</th></tr></thead>
-              <tbody>
-                <tr><td><strong>Implementation cost</strong></td><td class="rank-best">Lowest — tiny extension of existing pattern</td><td>—</td></tr>
-                <tr><td><strong>Backend coordination</strong></td><td class="rank-best">None needed</td><td>—</td></tr>
-                <tr><td><strong>Data granularity</strong></td><td>—</td><td class="rank-hard">Limited — 5 levels, no in-between</td></tr>
-                <tr><td><strong>Visual "wow"</strong></td><td>—</td><td class="rank-hard">Lowest of the three</td></tr>
-                <tr><td><strong>Risk to sprint</strong></td><td class="rank-best">Very low</td><td>—</td></tr>
-                <tr><td><strong>Faithfulness to your attachment</strong></td><td>—</td><td class="rank-ok">Medium — deviates from your mockup</td></tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="doc-section">
-          <h2>Files to touch</h2>
-          <ul>
-            <li><code>Assets/My Scripts/CheckInsPanel.cs</code> — replace slider block with picker cells.</li>
-            <li><code>Assets/My Scripts/LoadoutEnergyBar.cs</code> — extend the switch from 3 cases to 5.</li>
-            <li><code>Assets/My Scripts/HabbitPanel.cs</code> — <code>firstWind[]</code> / <code>secondWind[]</code> arrays → 5 slots.</li>
-            <li><code>Assets/My Scripts/DataConfig.cs</code> — extend enum string values (no type change).</li>
-            <li><code>Assets/Resources/Prefabs/UI/Panels/</code> — add 2 more battery cells to the existing prefab.</li>
-          </ul>
-        </div>
-
-        <div class="doc-section">
-          <h2>When we'd pick V3</h2>
-          <p>Pick V3 if the pro-bono dev has limited hours, or if you want this ticket to ship in a sprint without any backend coordination. It's a stepping stone, not a final form — we'd plan to move to V1 or V2 in a follow-up once the data model has room to breathe.</p>
-        </div>
-      </div>
-
-    </div>
   </div>
 
   <footer>
-    SPiR Health · Today's Status Revamp · Exploration Set · v1
+    SPiR Health · Today's Status / Checkin Screen · Final Direction · AJE-10
   </footer>
 
-  <script>
-    document.querySelectorAll('.tab').forEach(tab => {
-      tab.addEventListener('click', () => {
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-        document.querySelectorAll('.variant').forEach(v => v.classList.remove('active'));
-        tab.classList.add('active');
-        document.getElementById(tab.dataset.target).classList.add('active');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      });
-    });
-  </script>
 </body>
 </html>
