@@ -10,16 +10,17 @@
   <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0a0a0f;
-      --bg-2: #0f0f16;
-      --surface: #1a1a22;
-      --surface-hi: #22222d;
-      --surface-lo: #141419;
-      --border: #26262f;
-      --border-hi: #33333f;
-      --text: #f0ede8;
-      --text-soft: #b8b5c2;
-      --text-muted: #7a7985;
+      /* Page chrome — day mode (off-white cream) */
+      --bg: #F5F1E8;
+      --bg-2: #FAF6EC;
+      --surface: #EBE3CE;
+      --surface-hi: #E0D7BC;
+      --surface-lo: #F0EBDC;
+      --border: #D8CFB4;
+      --border-hi: #BFB498;
+      --text: #1C1A18;
+      --text-soft: #3A352E;
+      --text-muted: #6E695F;
       --accent-green: #5fd063;
       --accent-teal: #3dd4c0;
       --accent-purple: #7b68ee;
@@ -49,7 +50,7 @@
     /* ----- TOP BAR ----- */
     .topbar {
       position: sticky; top: 0; z-index: 50;
-      background: rgba(10,10,15,0.85);
+      background: rgba(245,241,232,0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
@@ -214,6 +215,17 @@
       margin-bottom: 12px; text-align: center;
     }
     .phone {
+      /* Phone interior keeps the original dark palette — re-declare vars so descendants stay dark */
+      --bg: #0a0a0f;
+      --bg-2: #0f0f16;
+      --surface: #1a1a22;
+      --surface-hi: #22222d;
+      --surface-lo: #141419;
+      --border: #26262f;
+      --border-hi: #33333f;
+      --text: #f0ede8;
+      --text-soft: #b8b5c2;
+      --text-muted: #7a7985;
       background: #0a0a0f;
       border-radius: 44px;
       padding: 14px;
