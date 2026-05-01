@@ -61,7 +61,9 @@
       display: flex; align-items: center; justify-content: space-between;
       gap: 24px; flex-wrap: wrap;
     }
-    .title-block { display: flex; align-items: baseline; gap: 14px; flex-shrink: 0; }
+    .title-block { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+    .title-logo { height: 22px; width: auto; opacity: 0.92; filter: brightness(1.1); }
+    .title-divider { width: 1px; height: 18px; background: var(--border); }
     .title-main { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
     .title-sub {
       font-family: var(--font-tertiary);
@@ -362,6 +364,18 @@
     }
     .gate-overlay.show .gate-card { transform: scale(1); }
 
+    .gate-brand {
+      display: flex; align-items: center; justify-content: center;
+      margin-bottom: 16px;
+    }
+    .gate-brand img { height: 18px; width: auto; opacity: 0.55; filter: brightness(1.05); }
+    .gate-brand .gate-brand-divider { width: 1px; height: 14px; background: rgba(255,255,255,0.12); margin: 0 10px; }
+    .gate-brand-label {
+      font-family: var(--font-tertiary);
+      font-size: 9.5px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
     .gate-icon-wrap {
       width: 64px; height: 64px;
       border-radius: 18px;
@@ -769,6 +783,8 @@
   <div class="topbar">
     <div class="topbar-inner">
       <div class="title-block">
+        <img src="./assets/spir-logo.png" alt="SPiR" class="title-logo" />
+        <span class="title-divider"></span>
         <span class="title-main">XP Payment Gates · Soundscapes</span>
         <span class="title-sub">2 popup directions</span>
       </div>
@@ -837,6 +853,11 @@
           <!-- IN-PHONE MODAL OVERLAY -->
           <div class="gate-overlay" data-overlay="A">
             <div class="gate-card">
+              <div class="gate-brand">
+                <img src="./assets/spir-logo.png" alt="SPiR" />
+                <span class="gate-brand-divider"></span>
+                <span class="gate-brand-label">XP Spend</span>
+              </div>
               <div class="gate-icon-wrap" data-icon="A">⚡</div>
               <div class="gate-heading" data-heading="A">Spend 50 XP to unlock</div>
               <div class="gate-item-name" data-itemname="A">Forest Rain</div>
@@ -936,6 +957,11 @@
           <div class="gate-sheet-overlay" data-overlay="B">
             <div class="gate-sheet">
               <div class="gate-sheet-handle"></div>
+              <div class="gate-brand" style="justify-content: flex-start; margin-bottom: 12px;">
+                <img src="./assets/spir-logo.png" alt="SPiR" />
+                <span class="gate-brand-divider"></span>
+                <span class="gate-brand-label">XP Spend</span>
+              </div>
               <div class="gate-sheet-head">
                 <div class="gate-sheet-icon" data-sheeticon="B">⚡</div>
                 <div class="gate-sheet-head-text">
