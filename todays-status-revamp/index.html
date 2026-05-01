@@ -7,32 +7,36 @@
   <meta name="description" content="Final Checkin Screen direction — V1 layout with V2's recovery snapshot. Hand-off spec for the Unity team." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rubik:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      /* Page chrome — day mode (off-white cream) */
-      --bg: #F5F1E8;
-      --bg-2: #FAF6EC;
-      --surface: #EBE3CE;
-      --surface-hi: #E0D7BC;
-      --surface-lo: #F0EBDC;
-      --border: #D8CFB4;
-      --border-hi: #BFB498;
-      --text: #0F0C08;
-      --text-soft: #2B2520;
-      --text-muted: #4E4840;
+      /* Page chrome — Ajeo brand (cream + charcoal + single gold accent) */
+      --bg: #F5F2EC;
+      --bg-2: #FAF7F1;
+      --surface: #E8E5DF;
+      --surface-hi: #DCD8D0;
+      --surface-lo: #EFECE6;
+      --border: #D4CFC4;
+      --border-hi: #BEB7A8;
+      --text: #2D2D2D;
+      --text-soft: #4A4A4A;
+      --text-muted: #7B7B7B;
+      --gold: #8B7D5B;
+      --olive: #3D3D2B;
+      /* Page-chrome accents collapse to a single gold per Ajeo brand */
+      --accent-purple: #8B7D5B;
+      --accent-teal: #8B7D5B;
+      --accent-blue: #8B7D5B;
+      /* Semantic colors retained for chips / warn / ok / error */
       --accent-green: #5fd063;
       --accent-green-hi: #72e876;
       --accent-green-lo: #3aa03e;
-      --accent-teal: #3dd4c0;
-      --accent-purple: #7b68ee;
-      --accent-blue: #4a8fe7;
       --accent-coral: #e8793a;
       --accent-amber: #f5a623;
       --accent-red: #d64545;
-      --gradient-primary: linear-gradient(135deg, var(--accent-purple), var(--accent-teal));
-      --font-primary: 'Rubik', system-ui, sans-serif;
-      --font-tertiary: 'Poppins', system-ui, sans-serif;
+      --gradient-primary: linear-gradient(135deg, #2D2D2D 0%, #8B7D5B 100%);
+      --font-primary: 'Inter', system-ui, sans-serif;
+      --font-tertiary: 'Inter', system-ui, sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -47,7 +51,7 @@
       -moz-osx-font-smoothing: grayscale;
       min-height: 100vh;
     }
-    ::selection { background: rgba(123,104,238,0.35); color: #fff; }
+    ::selection { background: rgba(139,125,91,0.35); color: var(--text); }
     ::-webkit-scrollbar { width: 8px; }
     ::-webkit-scrollbar-track { background: var(--bg); }
     ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
@@ -57,7 +61,7 @@
       position: sticky;
       top: 0;
       z-index: 50;
-      background: rgba(245,241,232,0.85);
+      background: rgba(245,242,236,0.85);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
@@ -68,10 +72,43 @@
       padding: 14px 32px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 24px;
+      gap: 18px;
       flex-wrap: wrap;
     }
+
+    /* Ajeo wordmark — pulsing gold j-dot, per BRAND-KIT.md */
+    .ajeo-wordmark {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: baseline;
+      flex-shrink: 0;
+    }
+    .ajeo-wordmark .j { position: relative; }
+    .ajeo-wordmark .j-dot {
+      position: absolute;
+      top: -2px;
+      left: 0.32em;
+      width: 6px; height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: ajeo-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes ajeo-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.78; }
+    }
+    .topbar-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
     .title-block { display: flex; align-items: baseline; gap: 14px; flex-shrink: 0; }
     .title-main { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
     .title-sub {
@@ -86,6 +123,7 @@
       display: flex;
       align-items: center;
       gap: 10px;
+      margin-left: auto;
     }
     .chip {
       font-family: var(--font-tertiary);
@@ -133,7 +171,9 @@
       text-align: center;
     }
     .phone {
-      /* Phone interior keeps the original dark palette — re-declare vars so descendants stay dark */
+      /* Phone interior is the SPiR Health product surface — re-declare the SPiR
+         dark palette + product fonts + product accent palette so the in-app
+         visuals stay unchanged regardless of the Ajeo brand on the page chrome. */
       --bg: #0a0a0f;
       --bg-2: #0f0f16;
       --surface: #1a1a22;
@@ -144,6 +184,12 @@
       --text: #f0ede8;
       --text-soft: #b8b5c2;
       --text-muted: #7a7985;
+      --font-primary: 'Rubik', system-ui, sans-serif;
+      --font-tertiary: 'Poppins', system-ui, sans-serif;
+      --accent-purple: #7b68ee;
+      --accent-teal: #3dd4c0;
+      --accent-blue: #4a8fe7;
+      --gradient-primary: linear-gradient(135deg, #7b68ee, #3dd4c0);
       background: #0a0a0f;
       border-radius: 44px;
       padding: 14px;
@@ -670,6 +716,8 @@
 
   <div class="topbar">
     <div class="topbar-inner">
+      <a href="https://spir-presentation.vercel.app" class="ajeo-wordmark" target="_blank" rel="noopener" aria-label="Ajeo">a<span class="j">j<span class="j-dot"></span></span>eo</a>
+      <span class="topbar-divider"></span>
       <div class="title-block">
         <span class="title-main">Today's Status · Checkin Screen</span>
         <span class="title-sub">Final Direction</span>
