@@ -757,6 +757,26 @@
     }
     footer a { color: var(--accent-teal); text-decoration: none; }
     footer a:hover { text-decoration: underline; }
+    .footer-brand {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+      color: var(--text-soft);
+    }
+    .footer-brand .spir-logo { width: 24px; height: 24px; }
+
+    /* ---------- SPIR LOGO ---------- */
+    .spir-logo {
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .spir-logo.topbar { width: 28px; height: 28px; }
+    .spir-logo.v2-hero {
+      width: 56px; height: 56px;
+      margin: 0 auto 14px;
+      display: block;
+      filter: drop-shadow(0 4px 12px rgba(74,158,255,0.30));
+    }
 
     /* ---------- FAKE STRIPE CONFIRMATION TOAST ---------- */
     .fake-confirm {
@@ -798,7 +818,8 @@
   <div class="topbar">
     <div class="topbar-inner">
       <div class="title-block">
-        <span class="title-main">Paywall Revamp · SPiR Pro vs SPiR Max</span>
+        <img src="./spir-logo.png" alt="SPiR" class="spir-logo topbar" />
+        <span class="title-main">Paywall Revamp · Pro vs Max</span>
         <span class="title-sub">3 directions for review</span>
       </div>
       <div class="topbar-meta">
@@ -1064,6 +1085,7 @@
             </div>
 
             <div class="v2-hero">
+              <img src="./spir-logo.png" alt="SPiR" class="spir-logo v2-hero" />
               <h1>You're in good hands 🤩</h1>
               <p class="v2-sub">Join 250K people who upgraded to SPiR Max.</p>
             </div>
@@ -1480,8 +1502,12 @@
 
   <!-- ============================================================== -->
   <footer>
-    Built for AJE-11 · Sibling prototype: <a href="https://todays-status-revamp.vercel.app">todays-status-revamp.vercel.app</a> · Source on
-    <a href="https://github.com/joemacstevens/spir-prototypes/tree/main/prototypes/paywall-revamp">GitHub</a>
+    <div class="footer-brand">
+      <img src="./spir-logo.png" alt="SPiR" class="spir-logo" />
+      <span>SPiR Health</span>
+    </div>
+    <div>Built for AJE-11 · Sibling prototype: <a href="https://todays-status-revamp.vercel.app">todays-status-revamp.vercel.app</a> · Source on
+    <a href="https://github.com/joemacstevens/spir-prototypes/tree/main/prototypes/paywall-revamp">GitHub</a></div>
   </footer>
 
 
