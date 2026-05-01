@@ -3,8 +3,8 @@
 Live: **[paywall-revamp.vercel.app](https://paywall-revamp.vercel.app)**
 
 3 distinct paywall directions for **SPiR Pro vs SPiR Max**, built as a single proposal
-doc (phone mock + Unity implementation spec per variant). Designed to be reviewed by
-Jay so he can pick a direction before dev work starts.
+doc (phone mock + Unity implementation spec per variant). Designed to be reviewed
+so you can pick a direction before dev work starts.
 
 Tracking: [AJE-11](https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen) (Backlog).
 
@@ -13,7 +13,7 @@ Tracking: [AJE-11](https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir
 | | Tagline | Inspiration |
 |---|---|---|
 | **V1 · Comparative Matrix** | "See every difference at a glance." | Canva Pro vs Business pricing page |
-| **V2 · Social-Proof Hero** ⭐ | "You're in good hands." | `IMG_9931.PNG` — Jay's "superstar" |
+| **V2 · Social-Proof Hero** ⭐ | "You're in good hands." | `IMG_9931.PNG` — your "superstar" |
 | **V3 · Tiered Cards w/ Embedded Rating** | "Pick your plan." | Athlytic Pro + Opal |
 
 Each variant section in `index.html` includes:
@@ -28,7 +28,7 @@ Each variant section in `index.html` includes:
 ## Files
 
 - [`index.html`](./index.html) — the full proposal (sticky nav at top, three variant sections, footer)
-- [`ASSUMPTIONS.md`](./ASSUMPTIONS.md) — every placeholder maps to one of the 5 BLOCKING questions on AJE-11
+- [`ASSUMPTIONS.md`](./ASSUMPTIONS.md) — every placeholder maps to one of the 5 BLOCKING questions you need to answer on AJE-11
 
 ## Run locally
 

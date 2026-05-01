@@ -1,10 +1,10 @@
 # ASSUMPTIONS — paywall-revamp
 
 This prototype uses **placeholder data** in every numerical, copy, and tier field.
-Each row below maps a placeholder to one of the 5 BLOCKING questions Jay needs to answer
+Each row below maps a placeholder to one of the 5 BLOCKING questions you need to answer
 on [AJE-11](https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen).
 
-Once Jay answers, swapping placeholders for real values is a find-and-replace pass
+Once you answer, swapping placeholders for real values is a find-and-replace pass
 in `index.html`.
 
 | Placeholder | Used in | BLOCKING question |
@@ -19,11 +19,11 @@ in `index.html`.
 
 ## Confirmed (not placeholder)
 
-- ✅ **SPiR Ai (Actionable insights)** — Max only. Confirmed by Jay 2026-04-24.
+- ✅ **SPiR Ai (Actionable insights)** — Max only. Confirmed by you on 2026-04-24.
 
 ## Invented Features (PLACEHOLDER, drawn from app surface in CLAUDE.md)
 
-These are filler so the comparison table has something to render. **All must be confirmed by Jay** before shipping.
+These are filler so the comparison table has something to render. **All must be confirmed by you** before shipping.
 
 | Feature | Pro | Max |
 |---|---|---|
@@ -41,13 +41,13 @@ These are filler so the comparison table has something to render. **All must be 
 ## CTA Wiring (Mock)
 
 - Every "Subscribe" / "Get Max" / "Continue with Pro" button currently does **nothing functional** — the click handler runs `console.log("would open Stripe checkout: { tier, period }")`.
-- In production, per Jay's 2026-04-24 SMS, these CTAs hand off to the **existing Stripe flow on the website User Dashboard**.
+- In production, per your 2026-04-24 SMS, these CTAs hand off to the **existing Stripe flow on the website User Dashboard**.
 - Stripe wiring is **out of scope** for this ticket — tracked downstream in AJE-13.
 - Unity-side, the CTA would be `Application.OpenURL("https://spir.health/dashboard?subscribe={tier}&period={period}")` or similar.
 
 ## What needs to happen before this ships
 
-1. Jay answers the 5 BLOCKING questions above.
+1. You answer the 5 BLOCKING questions above.
 2. Replace placeholders in `index.html` with confirmed values.
 3. Real review copy / rating numbers swapped in (or backend endpoint wired up if reviews are dynamic).
 4. Pick ONE variant. The Linear ticket can then move to **In Review**, with the chosen variant's **Files to touch** section becoming the dev brief for Abdul.

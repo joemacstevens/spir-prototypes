@@ -813,7 +813,7 @@
   <div class="placeholder-banner">
     <div class="placeholder-banner-inner">
       <strong>PLACEHOLDER content.</strong>
-      <span>Pricing, feature lists, and reviews are mock until Jay confirms the 5 BLOCKING questions on AJE-11. See <a href="./ASSUMPTIONS.md">ASSUMPTIONS.md</a> for the full list.</span>
+      <span>Pricing, feature lists, and reviews are mock until you confirm the 5 BLOCKING questions on AJE-11. See <a href="./ASSUMPTIONS.md">ASSUMPTIONS.md</a> for the full list.</span>
     </div>
   </div>
 
@@ -933,18 +933,18 @@
       <div class="docs">
         <div class="docs-eyebrow">V1 · Comparative Matrix · The Analyst's Pick</div>
         <h1>See every difference <span class="gradient-text">at a glance.</span></h1>
-        <p class="docs-intro">Direct interpretation of Jay's "comparative analysis" comment from 2026-04-24. The whole screen is the feature table — info-dense, scan-friendly, no narrative warmup. Think Canva Pro vs Business. Best for users who want to look up specifics and decide rationally.</p>
+        <p class="docs-intro">Direct interpretation of your "comparative analysis" comment from 2026-04-24. The whole screen is the feature table — info-dense, scan-friendly, no narrative warmup. Think Canva Pro vs Business. Best for users who want to look up specifics and decide rationally.</p>
 
         <dl class="ticket-ref">
-          <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a> · Backlog · 5 BLOCKING questions on Jay</dd>
-          <dt>Inspiration</dt><dd>Canva Pro vs Business pricing matrix (Jay's <code>Screenshot 2026-04-03</code>)</dd>
+          <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a> · Backlog · 5 BLOCKING questions for you</dd>
+          <dt>Inspiration</dt><dd>Canva Pro vs Business pricing matrix (your <code>Screenshot 2026-04-03</code>)</dd>
           <dt>Stripe handoff</dt><dd>Each CTA → <code>Application.OpenURL("…/dashboard?subscribe={tier}")</code> on the website User Dashboard. AJE-13 owns the Stripe wiring itself.</dd>
         </dl>
 
         <div class="doc-section">
           <h2>1 · What's new in the app</h2>
           <p>The paywall doesn't exist in-app yet — this is a net-new <code>PaywallPanel</code> prefab loaded by <code>SingletonBehaviourUI</code>. No existing screens are modified.</p>
-          <div class="info"><strong>Trigger points (decide later):</strong> from the home screen "Upgrade" tab, from any locked Max-only feature (XP gates, AI insights), and from onboarding completion. AJE-12 (XP Payment Gates) blocks on this paywall design — once V_ is picked, the XP gate popup falls back here.</div>
+          <div class="info"><strong>Trigger points (decide later):</strong> from the home screen "Upgrade" tab, from any locked Max-only feature (XP gates, AI insights), and from onboarding completion. AJE-12 (XP Payment Gates) blocks on this paywall design — once you pick a direction, the XP gate popup falls back here.</div>
         </div>
 
         <div class="doc-section">
@@ -1035,11 +1035,11 @@
 
         <div class="doc-section">
           <h2>6 · Why we'd pick V1</h2>
-          <p>If Jay's "comparative analysis" comment is the dominant signal — and the user persona is someone who wants to compare and decide on the merits — V1 is the most honest interpretation. It's also the cheapest to ship and has zero data dependencies, so it can land on the next sprint with no backend coordination.</p>
+          <p>If your "comparative analysis" comment is the dominant signal — and the user persona is someone who wants to compare and decide on the merits — V1 is the most honest interpretation. It's also the cheapest to ship and has zero data dependencies, so it can land on the next sprint with no backend coordination.</p>
           <p>The risk: it doesn't sell. There's no narrative, no social proof, no anchoring. If users are bouncing off the upgrade page, the data will tell us, and we'd graduate to V2 or V3 in a follow-up.</p>
         </div>
 
-        <a class="next-variant" href="#v2">Next: V2 — Jay's superstar</a>
+        <a class="next-variant" href="#v2">Next: V2 — your superstar</a>
       </div>
 
     </div>
@@ -1134,12 +1134,12 @@
 
       <!-- ----- V2 DOCS ----- -->
       <div class="docs">
-        <div class="docs-eyebrow gold">V2 · Social-Proof Hero · ⭐ Jay's Superstar</div>
+        <div class="docs-eyebrow gold">V2 · Social-Proof Hero · ⭐ Your Superstar</div>
         <h1>You're in <span class="gradient-text">good hands.</span></h1>
-        <p class="docs-intro">Faithful interpretation of <code>IMG_9931.PNG</code> — the screenshot Jay flagged as "deff the superstar" on 2026-04-24. Trust-led: rating block + testimonials lead the page, the comparison appears as supporting evidence below. Steers the user toward Max via emphasis. Best for first-time upgrade prompts and onboarding-completion paywalls.</p>
+        <p class="docs-intro">Faithful interpretation of <code>IMG_9931.PNG</code> — the screenshot you flagged as "deff the superstar" on 2026-04-24. Trust-led: rating block + testimonials lead the page, the comparison appears as supporting evidence below. Steers the user toward Max via emphasis. Best for first-time upgrade prompts and onboarding-completion paywalls.</p>
 
         <dl class="ticket-ref">
-          <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a> · Backlog · ⭐ Jay's stated favorite direction</dd>
+          <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a> · Backlog · ⭐ your stated favorite direction</dd>
           <dt>Inspiration</dt><dd><code>IMG_9931.PNG</code> (Shmoody onboarding paywall — "You're in good hands")</dd>
           <dt>Stripe handoff</dt><dd>Sticky bottom CTA → <code>Application.OpenURL("…/dashboard?subscribe=max")</code>. Tertiary text-link → same with <code>?subscribe=pro</code>.</dd>
         </dl>
@@ -1248,7 +1248,7 @@
 
         <div class="doc-section">
           <h2>6 · Why we'd pick V2</h2>
-          <p>Jay called <code>IMG_9931.PNG</code> the superstar. This is the closest faithful interpretation of that image inside the SPiR visual language. If we're trusting Jay's gut here — and his "rating/review concept" comment was real (not just a passing thought) — V2 is the right ship.</p>
+          <p>You called <code>IMG_9931.PNG</code> the superstar. This is the closest faithful interpretation of that image inside the SPiR visual language. If we're trusting your gut here — and your "rating/review concept" comment was real (not just a passing thought) — V2 is the right ship.</p>
           <p>It also uniquely fits the post-onboarding moment: a user who just spent 2 minutes telling us about their sleep and habits is in a high-trust state. Leading with social proof at that moment converts. Leading with a comparison matrix at that moment feels like getting handed a spec sheet.</p>
         </div>
 
@@ -1348,10 +1348,10 @@
       <div class="docs">
         <div class="docs-eyebrow">V3 · Tiered Cards · The Familiar Pattern</div>
         <h1>Pick your plan. <span class="gradient-text">Cancel anytime.</span></h1>
-        <p class="docs-intro">The conventional SaaS pricing pattern: two side-by-side cards, Max elevated, "Best Value" ribbon, rating embedded inside the upsell card. Adds an annual/monthly toggle and a 7-day free trial hook on Max — both are tests of mechanics Jay hasn't decided on yet, so V3 doubles as a way to surface those decisions.</p>
+        <p class="docs-intro">The conventional SaaS pricing pattern: two side-by-side cards, Max elevated, "Best Value" ribbon, rating embedded inside the upsell card. Adds an annual/monthly toggle and a 7-day free trial hook on Max — both are tests of mechanics you haven't decided on yet, so V3 doubles as a way to surface those decisions.</p>
 
         <dl class="ticket-ref">
-          <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a> · Backlog · 5 BLOCKING questions on Jay</dd>
+          <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a> · Backlog · 5 BLOCKING questions for you</dd>
           <dt>Inspiration</dt><dd>Athlytic Pro (<code>IMG_3091</code>) for the card pair, Opal (<code>IMG_2621</code>) for the period toggle</dd>
           <dt>Stripe handoff</dt><dd>Per-card CTA → <code>Application.OpenURL("…/dashboard?subscribe={tier}&period={period}&trial={bool}")</code>.</dd>
         </dl>
@@ -1359,7 +1359,7 @@
         <div class="doc-section">
           <h2>1 · What's new in the app</h2>
           <p>Net-new <code>PaywallPanel</code> + a new <code>TierCard</code> sub-prefab + an annual/monthly toggle. V3 is the most moving parts of the three but every piece is a known UGUI primitive.</p>
-          <div class="warn"><strong>Decision needed before ship:</strong> the trial hook ("7-day free Max trial") is one of Jay's BLOCKING questions. The trial subprefab is wrapped in a <code>trialActive</code> bool so the whole hook can be hidden via flag if Jay says no. Same for the annual toggle.</div>
+          <div class="warn"><strong>Decision needed before ship:</strong> the trial hook ("7-day free Max trial") is one of your BLOCKING questions. The trial subprefab is wrapped in a <code>trialActive</code> bool so the whole hook can be hidden via flag if you say no. Same for the annual toggle.</div>
         </div>
 
         <div class="doc-section">
@@ -1411,7 +1411,7 @@
               <div class="annotation-num">7</div>
               <div class="annotation-body">
                 <div class="annotation-title">Feature list with checkmarks</div>
-                <code>VerticalLayoutGroup</code> of TMP rows. The confirmed-by-Jay "SPiR Ai" row gets a gold ★ marker — useful for marketing emphasis but optional.
+                <code>VerticalLayoutGroup</code> of TMP rows. The confirmed-by-you "SPiR Ai" row gets a gold ★ marker — useful for marketing emphasis but optional.
               </div>
             </div>
             <div class="annotation">
@@ -1434,7 +1434,7 @@
           </ul>
           <p>Recommend A for first ship — most SPiR usage is portrait phone anyway. Graduate to B if tablet usage > 5% of sessions.</p>
           <div class="info"><strong>"Best Value" ribbon:</strong> bake the 25° rotation into the sprite asset (export rotated). Rotating at runtime causes ugly anti-aliasing on Adreno GPUs, which we've seen on the Pixel 6a / Galaxy A series mentioned in the test rig list.</div>
-          <p><strong>Trial hook flag:</strong> the trial badge is a single GameObject controlled by <code>PaywallPanel.trialActive</code>. If Jay says no to the trial in the BLOCKING questions, set the flag false and the whole UI element disappears with no further code. Same for the annual toggle if monthly-only.</p>
+          <p><strong>Trial hook flag:</strong> the trial badge is a single GameObject controlled by <code>PaywallPanel.trialActive</code>. If you say no to the trial in the BLOCKING questions, set the flag false and the whole UI element disappears with no further code. Same for the annual toggle if monthly-only.</p>
         </div>
 
         <div class="doc-section">
@@ -1467,7 +1467,7 @@
 
         <div class="doc-section">
           <h2>6 · Why we'd pick V3</h2>
-          <p>The familiar SaaS pattern. If Jay wants the lowest-risk, most-tested layout — and he wants to test the trial / annual mechanics — V3 is the right ship. The "Best Value" ribbon does the heavy lifting on conversion; the embedded rating inside the Max card hits Jay's "rating/review concept" comment without making the whole page about it.</p>
+          <p>The familiar SaaS pattern. If you want the lowest-risk, most-tested layout — and you want to test the trial / annual mechanics — V3 is the right ship. The "Best Value" ribbon does the heavy lifting on conversion; the embedded rating inside the Max card hits your "rating/review concept" comment without making the whole page about it.</p>
           <p>The risk: it's the most expensive of the three to build, and the least visually distinctive. If the brand position is "we're a different kind of wellness app," V3 doesn't reinforce that.</p>
         </div>
 
