@@ -37,6 +37,20 @@ The First Wind card heading and subtitle become **center-aligned**, and the "80%
 
 ---
 
+## Interactive states demonstrated in the prototype
+
+The prototype isn't just a static mock — three interactions are wired up so reviewers (and Abdul) can see the intended in-app behaviors:
+
+| Interaction | What it does in the prototype | What it maps to in Unity |
+|---|---|---|
+| **Tap "Second Wind Energy" row** | Expands a panel with the same slider + 4-battery row + gradient % readout used by First Wind. Tapping a battery snaps the slider to that bucket; dragging the slider updates the active battery's color and the readout in real time. Tap again to collapse. | New `secondWindValue` slider bound to `DataConfig.userTodaySurvey.secondWindValue` (model change required — see Backend section). Use existing `PopupAndDownAnimator.cs` scale-tween for the expand. |
+| **Tap "Edit" on Nap row** | Opens a bottom-sheet modal with start/end time inputs and live duration calc. Save → row updates to "1h 30m · 1:00 PM → 2:30 PM" in blue, the Nap satellite ring fills proportionally to a 90-min target, and a green toast confirms. Cancel/backdrop/Esc closes. | Existing `AddNapTodayPopup.Show()` flow already does the modal + `NetworkAPImanager.AddNapToCheckIn()` + `GameManager.SpawnEffect(confettiBlue)`. The new bit is updating the satellite ring's `image.fillAmount` after save (see element-table row 14). |
+| **Tap "Open Fasting →" on Fasting row** | Shows a small toast "In-app: opens existing Fasting tool" — intentionally non-interactive in the prototype since fasting already has its own tool. | Existing `FastingPopup.Show()` + `EnableBGOpacity()` from `CheckInsPanel.cs:1079`. No new flow. |
+
+These interactions live in a single `<script>` block at the bottom of `index.html` — they're for prototype demonstration only. The Unity implementation references the existing scripts called out in the element-by-element table below.
+
+---
+
 ## Element-by-element build table
 
 Each row declares exactly how the element gets built in Unity. **If a row has any blank cell, treat it as a flag to discuss before starting.**

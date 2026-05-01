@@ -302,7 +302,196 @@
       background: rgba(255,255,255,0.08); border: none; color: var(--text);
       font-family: var(--font-primary); font-size: 13px; font-weight: 500;
       padding: 8px 18px; border-radius: 100px; cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
     }
+    .edit-btn:hover { background: rgba(255,255,255,0.14); }
+    .edit-btn:active { transform: scale(0.96); }
+    .edit-btn.deferred {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.14);
+      color: var(--text-muted);
+      cursor: help;
+    }
+    .edit-btn.deferred::after { content: ' →'; opacity: 0.7; }
+
+    /* ----- SECOND WIND: EXPAND/COLLAPSE ----- */
+    .expand-row { cursor: pointer; transition: background 0.15s; }
+    .expand-row:hover { background: rgba(255,255,255,0.045); }
+    .expand-row .chevron { transition: transform 0.3s ease; }
+    .expand-row.open .chevron { transform: rotate(180deg); }
+    .expand-row.open .plus-btn svg path:first-child { display: none; }
+
+    .expand-panel {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.4s ease, opacity 0.25s ease, margin-bottom 0.4s ease;
+      margin-bottom: 0;
+    }
+    .expand-panel.open {
+      max-height: 400px;
+      opacity: 1;
+      margin-bottom: 14px;
+    }
+    .expand-panel-inner {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-top: none;
+      border-radius: 0 0 22px 22px;
+      padding: 14px 18px 20px;
+    }
+    .expand-row.open {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      margin-bottom: 0;
+      border-bottom-color: transparent;
+    }
+
+    /* ----- MODAL OVERLAY (Nap edit) ----- */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(5, 5, 10, 0.72);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: none;
+      align-items: flex-end;
+      justify-content: center;
+      z-index: 100;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-backdrop.open { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal-sheet {
+      width: 100%;
+      max-width: 390px;
+      background: linear-gradient(180deg, #15151c 0%, #0f0f15 100%);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      border-radius: 28px 28px 0 0;
+      padding: 28px 22px 32px;
+      box-shadow: 0 -20px 60px rgba(0,0,0,0.6);
+      animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    @keyframes slideUp { from { transform: translateY(40px); opacity: 0.6; } to { transform: translateY(0); opacity: 1; } }
+
+    .modal-handle {
+      width: 36px; height: 4px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 100px;
+      margin: 0 auto 18px;
+    }
+    .modal-title {
+      font-size: 20px; font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+    .modal-sub {
+      font-size: 13.5px; color: var(--text-soft);
+      margin-bottom: 22px;
+      text-align: center;
+    }
+    .time-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+    .time-field {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 14px;
+      padding: 12px 14px;
+      transition: border-color 0.15s;
+    }
+    .time-field:focus-within {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 3px rgba(123,104,238,0.18);
+    }
+    .time-field-label {
+      font-family: var(--font-tertiary);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .time-field input {
+      background: transparent; border: none; outline: none;
+      color: var(--text);
+      font-family: var(--font-primary);
+      font-size: 17px; font-weight: 600;
+      width: 100%;
+      letter-spacing: -0.01em;
+    }
+    .time-field input::-webkit-calendar-picker-indicator {
+      filter: invert(0.6);
+      cursor: pointer;
+    }
+
+    .modal-duration {
+      text-align: center;
+      font-family: var(--font-tertiary);
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 18px;
+    }
+    .modal-duration strong {
+      color: var(--accent-blue);
+      font-family: var(--font-primary);
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.01em;
+      text-transform: none;
+      margin-left: 4px;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .modal-btn {
+      padding: 14px;
+      border-radius: 100px;
+      border: none;
+      font-family: var(--font-primary);
+      font-size: 15px; font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.15s;
+    }
+    .modal-btn:active { transform: scale(0.97); }
+    .modal-btn.cancel {
+      background: rgba(255,255,255,0.08);
+      color: var(--text-soft);
+    }
+    .modal-btn.cancel:hover { background: rgba(255,255,255,0.14); }
+    .modal-btn.save {
+      background: var(--accent-blue);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(74,143,231,0.35);
+    }
+    .modal-btn.save:hover { background: #5e9ee9; }
+
+    /* Toast confirmation */
+    .toast {
+      position: fixed;
+      bottom: 32px;
+      left: 50%;
+      transform: translate(-50%, 80px);
+      background: rgba(95,208,99,0.95);
+      color: #0a0a0f;
+      padding: 12px 22px;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 14px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4), 0 0 0 1px rgba(114,232,118,0.4);
+      z-index: 200;
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s;
+      pointer-events: none;
+    }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
 
     .success-banner {
       display: flex; align-items: flex-start; gap: 14px;
@@ -537,16 +726,55 @@
             </div>
           </div>
 
-          <!-- Second Wind expand row (V1) -->
-          <div class="expand-row">
+          <!-- Second Wind expand row (V1) — interactive: tap to expand -->
+          <div class="expand-row" id="secondWindToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="secondWindPanel">
             <div class="plus-btn">
               <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
             </div>
             <div class="expand-body">
               <div class="expand-title">Second Wind Energy</div>
-              <div class="expand-sub">Did you have a second wind today?</div>
+              <div class="expand-sub" id="secondWindSub">Did you have a second wind today?</div>
             </div>
             <div class="chevron">⌄</div>
+          </div>
+
+          <!-- Second Wind expanded panel (mirrors First Wind input) -->
+          <div class="expand-panel" id="secondWindPanel" aria-hidden="true">
+            <div class="expand-panel-inner">
+              <div class="card-label" style="margin-top:10px;">Energy Available</div>
+              <div class="battery-row">
+                <div class="batteries">
+                  <div class="battery" data-sw-bat="0">
+                    <div class="battery-body"><div class="battery-fill" style="height:12%;background:var(--accent-red);"></div></div>
+                    <div class="battery-bolt bolt-red">⚡</div>
+                  </div>
+                  <div class="battery" data-sw-bat="1">
+                    <div class="battery-body"><div class="battery-fill" style="height:32%;background:var(--accent-amber);"></div></div>
+                    <div class="battery-bolt bolt-amber">⚡</div>
+                  </div>
+                  <div class="battery" data-sw-bat="2">
+                    <div class="battery-body"><div class="battery-fill" style="height:55%;background:#c29a2f;"></div></div>
+                    <div class="battery-bolt bolt-yellow">⚡</div>
+                  </div>
+                  <div class="battery" data-sw-bat="3" style="width:24px;height:34px;">
+                    <div class="battery-body" id="secondWindActiveBattery">
+                      <div class="battery-fill" style="height:50%;background:linear-gradient(180deg,#c29a2f,#c29a2f);"></div>
+                    </div>
+                    <div class="battery-bolt bolt-yellow" id="secondWindActiveBolt">⚡</div>
+                  </div>
+                </div>
+                <div class="slider-track-wrap">
+                  <div class="slider-track" id="secondWindTrack" style="cursor:pointer;">
+                    <div class="slider-fill" id="secondWindFill" style="inset: 0 50% 0 0; background: linear-gradient(90deg, #c29a2f 0%, #c29a2f 100%); box-shadow: 0 0 12px rgba(194,154,47,0.3);"></div>
+                    <div class="slider-thumb" id="secondWindThumb" style="left:50%;"></div>
+                  </div>
+                  <div class="slider-value gradient-text" id="secondWindValue">50%</div>
+                </div>
+              </div>
+              <p style="font-size:12px;color:var(--text-muted);margin-top:14px;text-align:center;">
+                Tap a battery or drag the slider to set your second wind level.
+              </p>
+            </div>
           </div>
 
           <h3 class="section-header">Recovery Snapshot</h3>
@@ -595,9 +823,9 @@
               </div>
               <div class="row-body">
                 <div class="row-title">Nap</div>
-                <div class="row-sub">No nap logged</div>
+                <div class="row-sub" id="napStatus">No nap logged</div>
               </div>
-              <button class="edit-btn">Edit</button>
+              <button class="edit-btn" id="napEditBtn">Edit</button>
             </div>
             <div class="row" style="padding: 6px 0;">
               <div class="recovery-icon">
@@ -607,7 +835,7 @@
                 <div class="row-title">Fasting Window</div>
                 <div class="row-sub">14h · 8:00 PM → 10:00 AM</div>
               </div>
-              <button class="edit-btn">Edit</button>
+              <button class="edit-btn deferred" id="fastingEditBtn" title="Opens the existing in-app Fasting tool — no new flow in this prototype">Open Fasting</button>
             </div>
           </div>
 
@@ -759,6 +987,223 @@
   <footer>
     SPiR Health · Today's Status / Checkin Screen · Final Direction · AJE-10
   </footer>
+
+  <!-- ===== NAP EDIT MODAL ===== -->
+  <div class="modal-backdrop" id="napModal" role="dialog" aria-modal="true" aria-labelledby="napModalTitle">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <h3 class="modal-title" id="napModalTitle">Log a nap</h3>
+      <p class="modal-sub">Tap to set start and end times.</p>
+      <div class="time-row">
+        <div class="time-field">
+          <div class="time-field-label">Start</div>
+          <input type="time" id="napStart" value="13:30" />
+        </div>
+        <div class="time-field">
+          <div class="time-field-label">End</div>
+          <input type="time" id="napEnd" value="14:30" />
+        </div>
+      </div>
+      <div class="modal-duration">Duration<strong id="napDuration">1h 0m</strong></div>
+      <div class="modal-actions">
+        <button class="modal-btn cancel" id="napCancelBtn">Cancel</button>
+        <button class="modal-btn save" id="napSaveBtn">Save nap</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== TOAST ===== -->
+  <div class="toast" id="toast">Nap logged</div>
+
+  <script>
+  (function () {
+    /* ---------- Second Wind expand/collapse ---------- */
+    var swToggle = document.getElementById('secondWindToggle');
+    var swPanel  = document.getElementById('secondWindPanel');
+    var swSub    = document.getElementById('secondWindSub');
+
+    function toggleSecondWind() {
+      var open = swToggle.classList.toggle('open');
+      swPanel.classList.toggle('open', open);
+      swToggle.setAttribute('aria-expanded', open);
+      swPanel.setAttribute('aria-hidden', !open);
+      if (open) {
+        swSub.textContent = 'Set your level below.';
+      } else {
+        swSub.textContent = swValue > 0
+          ? 'Recorded ' + swValue + '% — tap to edit.'
+          : 'Did you have a second wind today?';
+      }
+    }
+    swToggle.addEventListener('click', toggleSecondWind);
+    swToggle.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSecondWind(); }
+    });
+
+    /* ---------- Second Wind slider/battery sync ---------- */
+    var swValue = 50;
+    var swTrack       = document.getElementById('secondWindTrack');
+    var swFill        = document.getElementById('secondWindFill');
+    var swThumb       = document.getElementById('secondWindThumb');
+    var swReadout     = document.getElementById('secondWindValue');
+    var swActiveBat   = document.getElementById('secondWindActiveBattery');
+    var swActiveBolt  = document.getElementById('secondWindActiveBolt');
+    var swActiveFill  = swActiveBat.querySelector('.battery-fill');
+    var swBatteries   = document.querySelectorAll('[data-sw-bat]');
+
+    // Color map for battery + slider fill, matched to slider buckets (0/25/50/75/100)
+    function colorForValue(pct) {
+      if (pct <= 25) return { color: '#d64545', light: '#e16464', name: 'red',    boltClass: 'bolt-red' };
+      if (pct <= 50) return { color: '#c29a2f', light: '#dab64a', name: 'amber',  boltClass: 'bolt-amber' };
+      if (pct <= 75) return { color: '#5fd063', light: '#72e876', name: 'green',  boltClass: 'bolt-green' };
+      return                 { color: '#5fd063', light: '#72e876', name: 'greenHi', boltClass: 'bolt-green' };
+    }
+
+    function setSecondWind(pct) {
+      pct = Math.max(0, Math.min(100, Math.round(pct)));
+      swValue = pct;
+      var c = colorForValue(pct);
+      // slider visuals
+      swFill.style.inset = '0 ' + (100 - pct) + '% 0 0';
+      swFill.style.background = 'linear-gradient(90deg, ' + c.color + ' 0%, ' + c.light + ' 100%)';
+      swFill.style.boxShadow = '0 0 12px ' + (pct >= 75 ? 'rgba(95,208,99,0.4)' : 'rgba(' + (pct <= 25 ? '214,69,69' : '194,154,47') + ',0.3)');
+      swThumb.style.left = pct + '%';
+      swReadout.textContent = pct + '%';
+      // active battery (the rightmost — battery #3 — acts as the "current state" indicator)
+      swActiveFill.style.height = Math.max(15, pct) + '%';
+      swActiveFill.style.background = 'linear-gradient(180deg,' + c.light + ',' + c.color + ')';
+      swActiveBat.style.borderColor = c.color;
+      swActiveBat.style.boxShadow = '0 0 12px ' + (pct >= 75 ? 'rgba(95,208,99,0.35)' : 'transparent');
+      swActiveBolt.className = 'battery-bolt ' + c.boltClass;
+    }
+
+    function trackPct(evt) {
+      var rect = swTrack.getBoundingClientRect();
+      var x = (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left;
+      return (x / rect.width) * 100;
+    }
+    var dragging = false;
+    swTrack.addEventListener('pointerdown', function (e) {
+      dragging = true;
+      swTrack.setPointerCapture(e.pointerId);
+      setSecondWind(trackPct(e));
+    });
+    swTrack.addEventListener('pointermove', function (e) {
+      if (dragging) setSecondWind(trackPct(e));
+    });
+    swTrack.addEventListener('pointerup', function () { dragging = false; });
+    swTrack.addEventListener('pointercancel', function () { dragging = false; });
+
+    // Tap a battery icon → snap to its bucket midpoint (12.5 / 37.5 / 62.5 / 87.5)
+    var bucketMid = [12.5, 37.5, 62.5, 87.5];
+    swBatteries.forEach(function (bat, i) {
+      bat.style.cursor = 'pointer';
+      bat.addEventListener('click', function (e) {
+        e.stopPropagation();
+        setSecondWind(bucketMid[i]);
+      });
+    });
+
+    /* ---------- Nap modal ---------- */
+    var napBtn       = document.getElementById('napEditBtn');
+    var napModal     = document.getElementById('napModal');
+    var napCancel    = document.getElementById('napCancelBtn');
+    var napSave      = document.getElementById('napSaveBtn');
+    var napStart     = document.getElementById('napStart');
+    var napEnd       = document.getElementById('napEnd');
+    var napDuration  = document.getElementById('napDuration');
+    var napStatus    = document.getElementById('napStatus');
+    var napRingTile  = document.querySelectorAll('.satellite')[1]; // Nap is the 2nd satellite
+    var napRingVal   = napRingTile.querySelector('.mini-ring-val');
+    var napRingSvg   = napRingTile.querySelector('.mini-ring svg');
+
+    function openNap()  { napModal.classList.add('open'); recalcDuration(); }
+    function closeNap() { napModal.classList.remove('open'); }
+    napBtn.addEventListener('click', openNap);
+    napCancel.addEventListener('click', closeNap);
+    napModal.addEventListener('click', function (e) {
+      if (e.target === napModal) closeNap();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeNap();
+    });
+
+    function parseTime(t) {
+      var parts = t.split(':');
+      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    }
+    function fmt12(t) {
+      var parts = t.split(':');
+      var h = parseInt(parts[0], 10);
+      var m = parts[1];
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      var h12 = h % 12; if (h12 === 0) h12 = 12;
+      return h12 + ':' + m + ' ' + ampm;
+    }
+    function diffMinutes(start, end) {
+      var s = parseTime(start), e = parseTime(end);
+      var d = e - s;
+      if (d <= 0) d += 24 * 60; // wrap to next day
+      return d;
+    }
+    function fmtDuration(mins) {
+      var h = Math.floor(mins / 60);
+      var m = mins % 60;
+      if (h === 0) return m + 'm';
+      if (m === 0) return h + 'h';
+      return h + 'h ' + m + 'm';
+    }
+    function recalcDuration() {
+      napDuration.textContent = fmtDuration(diffMinutes(napStart.value, napEnd.value));
+    }
+    napStart.addEventListener('input', recalcDuration);
+    napEnd.addEventListener('input', recalcDuration);
+
+    napSave.addEventListener('click', function () {
+      var mins = diffMinutes(napStart.value, napEnd.value);
+      var dur = fmtDuration(mins);
+      napStatus.textContent = dur + ' · ' + fmt12(napStart.value) + ' → ' + fmt12(napEnd.value);
+      napStatus.style.color = 'var(--accent-blue)';
+
+      // Update Nap satellite ring: empty → filled
+      // Nap target = 90 minutes (1.5h) for visual fill
+      var target = 90;
+      var fillPct = Math.min(1, mins / target);
+      var circumference = 150.8; // matches stroke-dasharray
+      var offset = circumference * (1 - fillPct);
+
+      napRingSvg.innerHTML =
+        '<circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>' +
+        '<circle cx="30" cy="30" r="24" stroke="url(#grad-blue)" stroke-width="5" fill="none" ' +
+        'stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="' + offset.toFixed(1) + '" ' +
+        'transform="rotate(-90 30 30)" style="filter: drop-shadow(0 0 6px rgba(74,143,231,0.45));"/>';
+      napRingVal.style.fontSize = '14px';
+      napRingVal.style.color = 'var(--text)';
+      napRingVal.style.textTransform = 'none';
+      napRingVal.style.letterSpacing = 'normal';
+      napRingVal.textContent = dur;
+
+      closeNap();
+      showToast('Nap saved · ' + dur);
+    });
+
+    /* ---------- Fasting deferred (intentionally non-interactive) ---------- */
+    var fastBtn = document.getElementById('fastingEditBtn');
+    fastBtn.addEventListener('click', function () {
+      showToast('In-app: opens existing Fasting tool');
+    });
+
+    /* ---------- Toast ---------- */
+    var toast = document.getElementById('toast');
+    var toastTimer;
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2400);
+    }
+  })();
+  </script>
 
 </body>
 </html>
