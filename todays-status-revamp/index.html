@@ -883,12 +883,12 @@
 
     <!-- ======================= DOCS PANEL: HAND-OFF SUMMARY ======================= -->
     <div class="docs">
-      <div class="docs-eyebrow">AJE-10 · Final Direction · Ready for Unity</div>
+      <div class="docs-eyebrow">AJE-10 · Final Direction · Ready for your team</div>
       <h1>V1 layout. <span class="gradient-text">V2's recovery snapshot.</span> Shipped together.</h1>
       <p class="docs-intro">
-        Jay reviewed the three exploration variants on 2026-04-24 and chose:
+        You reviewed the three exploration variants on 2026-04-24 and chose:
         <em>"v1 with the recovery snapshot of v2"</em>. This is that. The merged spec
-        is captured below; the line-by-line build instruction for the Unity team
+        is captured below; the line-by-line build instruction for Abdul
         lives in <code>SPEC_AJE-10.md</code> alongside this prototype.
       </p>
 
@@ -899,9 +899,9 @@
       </dl>
 
       <div class="doc-section">
-        <h2>What changes vs the current in-app Checkin Screen</h2>
+        <h2>What changes vs your current in-app Checkin Screen</h2>
         <p>
-          Today, First Wind input is a 3-state battery picker
+          Today, your First Wind input is a 3-state battery picker
           (<code>"low"</code> / <code>"medium"</code> / <code>"high"</code>) on the
           <code>HabbitPanel.firstWind[]</code> Image array, set via
           <code>LoadoutEnergyBar.SetFirstWindData()</code>. Recovery information
@@ -909,7 +909,7 @@
           inside one card.
         </p>
         <p>
-          The new direction:
+          What you'll see in the new direction:
         </p>
         <ul>
           <li><strong>First Wind input becomes a continuous slider (0–100%)</strong> with the 4 battery icons as a visual reference for what each level looks like. <span class="source-tag v1">V1</span></li>
@@ -917,7 +917,7 @@
           <li><strong>Recovery Snapshot becomes 3 satellite mini-rings</strong> (Hydration, Nap, Fasting) above a compact card with just Nap + Fasting edit rows. Hydration loses its segmented bars and "1.5 liters" caption — it now shows only as a ring fill (e.g. 3/4). <span class="source-tag v2">V2</span></li>
           <li><strong>Centered card heading + gradient % readout</strong> on the First Wind card — visual polish carried in from V2. <span class="source-tag v2">V2</span></li>
         </ul>
-        <div class="warn"><strong>Backend dependency.</strong> <code>Survey.firstWindValue</code> and <code>Survey.secondWindValue</code> in <code>GameManager.cs</code> are currently <code>string</code> ("low"/"medium"/"high"). To ship the slider, they need to accept a numeric percentage (0–100). Abdul to coordinate with the API owner before implementation.</div>
+        <div class="warn"><strong>Backend dependency you should know about.</strong> <code>Survey.firstWindValue</code> and <code>Survey.secondWindValue</code> in <code>GameManager.cs</code> are currently <code>string</code> ("low"/"medium"/"high"). To ship the slider, they need to accept a numeric percentage (0–100). We'd have Abdul coordinate with your API owner before implementation lands.</div>
       </div>
 
       <div class="doc-section">
@@ -983,7 +983,7 @@
             <div class="annotation-num">9</div>
             <div class="annotation-body">
               <div class="annotation-title">Success banner <span class="source-tag v1">V1</span></div>
-              Shown when thresholds hit. Suggested defaults to pressure-test: First Wind ≥ 60%, Hydration ≥ 3/4, Fasting completed.
+              Shown when thresholds hit. Suggested defaults — happy to pressure-test these with you: First Wind ≥ 60%, Hydration ≥ 3/4, Fasting completed.
             </div>
           </div>
           <div class="annotation">
@@ -997,16 +997,16 @@
       </div>
 
       <div class="doc-section">
-        <h2>Files Abdul will touch (Unity)</h2>
+        <h2>What Abdul will touch on your Unity side</h2>
         <ul>
           <li><code>Assets/My Scripts/CheckInsPanel.cs</code> — owning panel for the Checkin Screen.</li>
           <li><code>Assets/My Scripts/HabbitPanel.cs</code> — <code>firstWind[]</code> / <code>secondWind[]</code> Image arrays (line ~3781), <code>SetFirstWindData(int)</code> / <code>SetSecondWindData(int)</code> setters (currently 3-case switch); extend to 4 elements + numeric mapping.</li>
           <li><code>Assets/My Scripts/LoadoutEnergyBar.cs</code> — refactor the 3-case switch in <code>SetFirstWindData()</code> / <code>SetSecondWindData()</code> to a numeric → color mapping.</li>
           <li><code>Assets/My Scripts/GameManager.cs</code> — <code>Survey</code> class (line 1782): <code>firstWindValue</code> / <code>secondWindValue</code> change from <code>string</code> to numeric. Also drop or repurpose <code>energy_List</code> (line 302) once the enum goes away.</li>
           <li><code>Assets/Resources/Prefabs/UI/Panels/</code> — Checkin Screen prefab: add slider GameObject, add 4th battery, add 3 mini-ring GameObjects, restructure recovery card.</li>
-          <li><code>Assets/Custom Shader/OuterRoundedFillFixed.shader</code> — optional upgrade for the mini-rings if rounded caps + glow are wanted.</li>
+          <li><code>Assets/Custom Shader/OuterRoundedFillFixed.shader</code> — optional upgrade for the mini-rings if you want rounded caps + glow.</li>
         </ul>
-        <div class="info"><strong>This prototype repo does not modify any Unity scripts.</strong> The list above is for Abdul's planning; the Unity work is the downstream ticket.</div>
+        <div class="info"><strong>This prototype repo doesn't modify any of your Unity scripts.</strong> The list above is for Abdul's planning; the Unity work is the downstream ticket once you're happy with this direction.</div>
       </div>
 
     </div>
