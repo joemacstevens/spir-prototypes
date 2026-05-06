@@ -743,7 +743,7 @@
             <h2 style="text-align:center;">First Wind Energy</h2>
             <p class="card-sub" style="text-align:center;">How did you use your peak energy today?</p>
 
-            <div class="card-label">Energy Available</div>
+            <div class="card-label">Energy Consumed</div>
             <div class="battery-row">
               <div class="batteries">
                 <div class="battery">
@@ -803,7 +803,7 @@
           <!-- Second Wind expanded panel (mirrors First Wind input) -->
           <div class="expand-panel" id="secondWindPanel" aria-hidden="true">
             <div class="expand-panel-inner">
-              <div class="card-label" style="margin-top:10px;">Energy Available</div>
+              <div class="card-label" style="margin-top:10px;">Energy Consumed</div>
               <div class="battery-row">
                 <div class="batteries">
                   <div class="battery" data-sw-bat="0">
@@ -862,7 +862,7 @@
                 </svg>
                 <div class="mini-ring-val" style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em;">—</div>
               </div>
-              <div class="satellite-label">Nap</div>
+              <div class="satellite-label">Deep Breathing Mins</div>
             </div>
             <div class="satellite">
               <div class="mini-ring">
@@ -874,7 +874,7 @@
                 </svg>
                 <div class="mini-ring-val">14h</div>
               </div>
-              <div class="satellite-label">Fasting</div>
+              <div class="satellite-label">Soundscape Minutes</div>
             </div>
           </div>
 
@@ -884,8 +884,8 @@
                 <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><ellipse cx="12" cy="12" rx="8" ry="5" fill="var(--accent-blue)"/><circle cx="9.5" cy="12" r="1.2" fill="#0a0a0f"/><circle cx="14.5" cy="12" r="1.2" fill="#0a0a0f"/></svg>
               </div>
               <div class="row-body">
-                <div class="row-title">Nap</div>
-                <div class="row-sub" id="napStatus">No nap logged</div>
+                <div class="row-title">Deep Breathing</div>
+                <div class="row-sub" id="napStatus">No deep breathing logged</div>
               </div>
               <button class="edit-btn" id="napEditBtn">Edit</button>
             </div>
@@ -894,10 +894,10 @@
                 <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M20 14 A 8 8 0 1 1 10 4 A 6 6 0 0 0 20 14 z" fill="var(--accent-purple)"/></svg>
               </div>
               <div class="row-body">
-                <div class="row-title">Fasting Window</div>
+                <div class="row-title">Soundscape</div>
                 <div class="row-sub">14h · 8:00 PM → 10:00 AM</div>
               </div>
-              <button class="edit-btn deferred" id="fastingEditBtn" title="Opens the existing in-app Fasting tool — no new flow in this prototype">Open Fasting</button>
+              <button class="edit-btn deferred" id="fastingEditBtn" title="Opens the existing in-app Soundscape tool — no new flow in this prototype">Open Soundscape</button>
             </div>
           </div>
 
@@ -914,7 +914,7 @@
           <div class="modal-backdrop" id="napModal" role="dialog" aria-modal="true" aria-labelledby="napModalTitle">
             <div class="modal-sheet">
               <div class="modal-handle"></div>
-              <h3 class="modal-title" id="napModalTitle">Log a nap</h3>
+              <h3 class="modal-title" id="napModalTitle">Log deep breathing</h3>
               <p class="modal-sub">Tap to set start and end times.</p>
               <div class="time-row">
                 <div class="time-field">
@@ -929,13 +929,13 @@
               <div class="modal-duration">Duration<strong id="napDuration">1h 0m</strong></div>
               <div class="modal-actions">
                 <button class="modal-btn cancel" id="napCancelBtn">Cancel</button>
-                <button class="modal-btn save" id="napSaveBtn">Save nap</button>
+                <button class="modal-btn save" id="napSaveBtn">Save</button>
               </div>
             </div>
           </div>
 
           <!-- ===== IN-PHONE TOAST ===== -->
-          <div class="toast" id="toast">Nap logged</div>
+          <div class="toast" id="toast">Deep breathing logged</div>
 
         </div>
       </div>
@@ -965,7 +965,7 @@
           (<code>"low"</code> / <code>"medium"</code> / <code>"high"</code>) on the
           <code>HabbitPanel.firstWind[]</code> Image array, set via
           <code>LoadoutEnergyBar.SetFirstWindData()</code>. Recovery information
-          shows hydration as a row + segmented bars and Nap/Fasting as edit rows
+          shows hydration as a row + segmented bars and Deep Breathing/Soundscape as edit rows
           inside one card.
         </p>
         <p>
@@ -974,7 +974,7 @@
         <ul>
           <li><strong>First Wind input becomes a continuous slider (0–100%)</strong> with the 4 battery icons as a visual reference for what each level looks like. <span class="source-tag v1">V1</span></li>
           <li><strong>Energy Consumed visual bar</strong> (display-only, not yet wired) sits below a divider in the same card. <span class="source-tag v1">V1</span></li>
-          <li><strong>Recovery Snapshot becomes 3 satellite mini-rings</strong> (Hydration, Nap, Fasting) above a compact card with just Nap + Fasting edit rows. Hydration loses its segmented bars and "1.5 liters" caption — it now shows only as a ring fill (e.g. 3/4). <span class="source-tag v2">V2</span></li>
+          <li><strong>Recovery Snapshot becomes 3 satellite mini-rings</strong> (Hydration, Deep Breathing Mins, Soundscape Minutes) above a compact card with just Deep Breathing + Soundscape edit rows. Hydration loses its segmented bars and "1.5 liters" caption — it now shows only as a ring fill (e.g. 3/4). <span class="source-tag v2">V2</span></li>
           <li><strong>Centered card heading + gradient % readout</strong> on the First Wind card — visual polish carried in from V2. <span class="source-tag v2">V2</span></li>
         </ul>
         <div class="warn"><strong>Backend dependency you should know about.</strong> <code>Survey.firstWindValue</code> and <code>Survey.secondWindValue</code> in <code>GameManager.cs</code> are currently <code>string</code> ("low"/"medium"/"high"). To ship the slider, they need to accept a numeric percentage (0–100). We'd have Abdul coordinate with your API owner before implementation lands.</div>
@@ -1028,14 +1028,14 @@
           <div class="annotation">
             <div class="annotation-num">7</div>
             <div class="annotation-body">
-              <div class="annotation-title">Nap edit row <span class="source-tag v2">V2</span></div>
+              <div class="annotation-title">Deep Breathing edit row <span class="source-tag v2">V2</span></div>
               Edit button → <code>AddNapTodayPopup.Show()</code> (already a <code>SingletonBehaviourUI</code>). After save, <code>SaveDateAndTime()</code> POSTs to <code>NetworkAPImanager.AddNapToCheckIn()</code> and triggers <code>GameManager.SpawnEffect(confettiBlue)</code>.
             </div>
           </div>
           <div class="annotation">
             <div class="annotation-num">8</div>
             <div class="annotation-body">
-              <div class="annotation-title">Fasting Window edit row <span class="source-tag v2">V2</span></div>
+              <div class="annotation-title">Soundscape edit row <span class="source-tag v2">V2</span></div>
               Edit button → <code>FastingPopup.Show()</code> + <code>FastingPopup.Instance.EnableBGOpacity()</code>. Subtitle copy: "14h · 8:00 PM → 10:00 AM" (V2 wording — replaces V1's "14h from 8:00 PM to 10:00 AM"). Fasting icon uses <code>--accent-purple</code> instead of blue.
             </div>
           </div>
@@ -1043,7 +1043,7 @@
             <div class="annotation-num">9</div>
             <div class="annotation-body">
               <div class="annotation-title">Success banner <span class="source-tag v1">V1</span></div>
-              Shown when thresholds hit. Suggested defaults — happy to pressure-test these with you: First Wind ≥ 60%, Hydration ≥ 3/4, Fasting completed.
+              Shown when thresholds hit. Suggested defaults — happy to pressure-test these with you: First Wind ≥ 60%, Hydration ≥ 3/4, Soundscape minutes hit target.
             </div>
           </div>
           <div class="annotation">
@@ -1252,7 +1252,7 @@
     /* ---------- Fasting deferred (intentionally non-interactive) ---------- */
     var fastBtn = document.getElementById('fastingEditBtn');
     fastBtn.addEventListener('click', function () {
-      showToast('In-app: opens existing Fasting tool');
+      showToast('In-app: opens existing Soundscape tool');
     });
 
     /* ---------- Toast ---------- */
