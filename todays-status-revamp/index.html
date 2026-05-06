@@ -885,9 +885,9 @@
               </div>
               <div class="row-body">
                 <div class="row-title">Deep Breathing</div>
-                <div class="row-sub" id="napStatus">No deep breathing logged</div>
+                <div class="row-sub" id="napStatus">0 min logged today</div>
               </div>
-              <button class="edit-btn" id="napEditBtn">Edit</button>
+              <button class="edit-btn deferred" id="napEditBtn" title="Opens the breathing module — minutes log automatically from completed cycles">Open Deep Breathing</button>
             </div>
             <div class="row" style="padding: 6px 0;">
               <div class="recovery-icon">
@@ -909,30 +909,6 @@
           </div>
 
           <button class="finish-btn">FINISH</button>
-
-          <!-- ===== IN-PHONE NAP EDIT MODAL (overlays only the phone screen) ===== -->
-          <div class="modal-backdrop" id="napModal" role="dialog" aria-modal="true" aria-labelledby="napModalTitle">
-            <div class="modal-sheet">
-              <div class="modal-handle"></div>
-              <h3 class="modal-title" id="napModalTitle">Log deep breathing</h3>
-              <p class="modal-sub">Tap to set start and end times.</p>
-              <div class="time-row">
-                <div class="time-field">
-                  <div class="time-field-label">Start</div>
-                  <input type="time" id="napStart" value="13:30" />
-                </div>
-                <div class="time-field">
-                  <div class="time-field-label">End</div>
-                  <input type="time" id="napEnd" value="14:30" />
-                </div>
-              </div>
-              <div class="modal-duration">Duration<strong id="napDuration">1h 0m</strong></div>
-              <div class="modal-actions">
-                <button class="modal-btn cancel" id="napCancelBtn">Cancel</button>
-                <button class="modal-btn save" id="napSaveBtn">Save</button>
-              </div>
-            </div>
-          </div>
 
           <!-- ===== IN-PHONE TOAST ===== -->
           <div class="toast" id="toast">Deep breathing logged</div>
@@ -1022,14 +998,14 @@
             <div class="annotation-num">6</div>
             <div class="annotation-body">
               <div class="annotation-title">Recovery Snapshot — 3 satellite mini-rings <span class="source-tag v2">V2</span></div>
-              Three <code>Image</code> elements with <code>Type = Filled</code>, <code>Fill Method = Radial360</code>, <code>Fill Origin = Top</code>. Drive <code>image.fillAmount</code> from data: Hydration <code>= DataConfig.userTodaySurvey.hydrationValue / 4f</code>, Nap = 0 if no nap (greyed-out empty ring), Fasting <code>= DataConfig.userTodaySurvey.fastingValue / hoursTarget</code>. Animate with <code>image.DOFillAmount(target, 0.5f).SetEase(Ease.OutCubic)</code>. The custom <code>OuterRoundedFillFixed.shader</code> in <code>Assets/Custom Shader/</code> is the upgrade path if rounded caps / glow are wanted.
+              Three <code>Image</code> elements with <code>Type = Filled</code>, <code>Fill Method = Radial360</code>, <code>Fill Origin = Top</code>. Drive <code>image.fillAmount</code> from data: Hydration <code>= DataConfig.userTodaySurvey.hydrationValue / 4f</code>, Deep Breathing = cycles completed today × pattern duration ÷ daily target (read from <code>BreathworkPanel</code>), Soundscape <code>= DataConfig.userTodaySurvey.fastingValue / hoursTarget</code> as visual placeholder until the soundscape data path is wired. Animate with <code>image.DOFillAmount(target, 0.5f).SetEase(Ease.OutCubic)</code>. The custom <code>OuterRoundedFillFixed.shader</code> in <code>Assets/Custom Shader/</code> is the upgrade path if rounded caps / glow are wanted.
             </div>
           </div>
           <div class="annotation">
             <div class="annotation-num">7</div>
             <div class="annotation-body">
-              <div class="annotation-title">Deep Breathing edit row <span class="source-tag v2">V2</span></div>
-              Edit button → <code>AddNapTodayPopup.Show()</code> (already a <code>SingletonBehaviourUI</code>). After save, <code>SaveDateAndTime()</code> POSTs to <code>NetworkAPImanager.AddNapToCheckIn()</code> and triggers <code>GameManager.SpawnEffect(confettiBlue)</code>.
+              <div class="annotation-title">Deep Breathing row <span class="source-tag v2">V2</span></div>
+              "Open Deep Breathing →" button (deferred style, matches Soundscape) routes into the existing <code>BreathworkPanel</code> flow — same module Joe prototyped at <code>prototypes/breathing-module/</code>. Logging is <strong>not</strong> a manual time entry; minutes are tracked from completed cycles inside the breathing module. The satellite ring above this row reads back the day's cycle total when <code>CheckInsPanel.OnEnable</code> fires, then animates to fill via <code>image.DOFillAmount</code>. The 5-cycle XP refund Jay called out in his 2026-05-01 23:46 SMS lives in the breathing module already and stays untouched.
             </div>
           </div>
           <div class="annotation">
@@ -1166,90 +1142,13 @@
       });
     });
 
-    /* ---------- Nap modal ---------- */
-    var napBtn       = document.getElementById('napEditBtn');
-    var napModal     = document.getElementById('napModal');
-    var napCancel    = document.getElementById('napCancelBtn');
-    var napSave      = document.getElementById('napSaveBtn');
-    var napStart     = document.getElementById('napStart');
-    var napEnd       = document.getElementById('napEnd');
-    var napDuration  = document.getElementById('napDuration');
-    var napStatus    = document.getElementById('napStatus');
-    var napRingTile  = document.querySelectorAll('.satellite')[1]; // Nap is the 2nd satellite
-    var napRingVal   = napRingTile.querySelector('.mini-ring-val');
-    var napRingSvg   = napRingTile.querySelector('.mini-ring svg');
-
-    function openNap()  { napModal.classList.add('open'); recalcDuration(); }
-    function closeNap() { napModal.classList.remove('open'); }
-    napBtn.addEventListener('click', openNap);
-    napCancel.addEventListener('click', closeNap);
-    napModal.addEventListener('click', function (e) {
-      if (e.target === napModal) closeNap();
-    });
-    document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') closeNap();
+    /* ---------- Deep Breathing deferred (routes to breathing module in-app) ---------- */
+    var napBtn = document.getElementById('napEditBtn');
+    napBtn.addEventListener('click', function () {
+      showToast('In-app: opens the breathing module');
     });
 
-    function parseTime(t) {
-      var parts = t.split(':');
-      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
-    }
-    function fmt12(t) {
-      var parts = t.split(':');
-      var h = parseInt(parts[0], 10);
-      var m = parts[1];
-      var ampm = h >= 12 ? 'PM' : 'AM';
-      var h12 = h % 12; if (h12 === 0) h12 = 12;
-      return h12 + ':' + m + ' ' + ampm;
-    }
-    function diffMinutes(start, end) {
-      var s = parseTime(start), e = parseTime(end);
-      var d = e - s;
-      if (d <= 0) d += 24 * 60; // wrap to next day
-      return d;
-    }
-    function fmtDuration(mins) {
-      var h = Math.floor(mins / 60);
-      var m = mins % 60;
-      if (h === 0) return m + 'm';
-      if (m === 0) return h + 'h';
-      return h + 'h ' + m + 'm';
-    }
-    function recalcDuration() {
-      napDuration.textContent = fmtDuration(diffMinutes(napStart.value, napEnd.value));
-    }
-    napStart.addEventListener('input', recalcDuration);
-    napEnd.addEventListener('input', recalcDuration);
-
-    napSave.addEventListener('click', function () {
-      var mins = diffMinutes(napStart.value, napEnd.value);
-      var dur = fmtDuration(mins);
-      napStatus.textContent = dur + ' · ' + fmt12(napStart.value) + ' → ' + fmt12(napEnd.value);
-      napStatus.style.color = 'var(--accent-blue)';
-
-      // Update Nap satellite ring: empty → filled
-      // Nap target = 90 minutes (1.5h) for visual fill
-      var target = 90;
-      var fillPct = Math.min(1, mins / target);
-      var circumference = 150.8; // matches stroke-dasharray
-      var offset = circumference * (1 - fillPct);
-
-      napRingSvg.innerHTML =
-        '<circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>' +
-        '<circle cx="30" cy="30" r="24" stroke="url(#grad-blue)" stroke-width="5" fill="none" ' +
-        'stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="' + offset.toFixed(1) + '" ' +
-        'transform="rotate(-90 30 30)" style="filter: drop-shadow(0 0 6px rgba(74,143,231,0.45));"/>';
-      napRingVal.style.fontSize = '14px';
-      napRingVal.style.color = 'var(--text)';
-      napRingVal.style.textTransform = 'none';
-      napRingVal.style.letterSpacing = 'normal';
-      napRingVal.textContent = dur;
-
-      closeNap();
-      showToast('Nap saved · ' + dur);
-    });
-
-    /* ---------- Fasting deferred (intentionally non-interactive) ---------- */
+    /* ---------- Soundscape deferred (intentionally non-interactive) ---------- */
     var fastBtn = document.getElementById('fastingEditBtn');
     fastBtn.addEventListener('click', function () {
       showToast('In-app: opens existing Soundscape tool');
