@@ -1693,7 +1693,7 @@
     <!-- ====================== DOCS PANEL ====================== -->
     <div class="docs">
       <div class="docs-eyebrow">AJE-65 · Breathing Module · Existing in-app screen, polished</div>
-      <h1>Same patterns Jay built. <span class="gradient-text">Wrapped in glow + a summary.</span></h1>
+      <h1>Same patterns you built. <span class="gradient-text">Wrapped in glow + a summary.</span></h1>
       <p class="docs-intro">
         The breathing module already lives in the Unity app at <code>BreathworkPanel.cs</code> (460 lines). This prototype is the visual + interaction reference for tightening the existing screen up — adding a glow layer around the breathing circle, replacing the bare ring with rounded-cap progress rings, an inline 5-cycle XP bar, and a post-session summary screen. The four breathing patterns and their timings are unchanged.
       </p>
@@ -1726,7 +1726,7 @@
           <li><strong>Post-session summary screen</strong> showing cycles / minutes / pattern / avg-cycle-time / XP earned, with a celebratory pulse on the XP block</li>
           <li><strong>Inline 5-cycle XP bar</strong> with a smoother <code>DOFillAmount</code> tween instead of the instant <code>fillAmount</code> set at <code>:364, 399</code></li>
         </ul>
-        <div class="info"><strong>Backend dependency you should know about.</strong> The <strong>5-cycle XP refund</strong> mechanic Jay specified on 2026-05-01 23:46 is net-new code. Today the panel only <em>awards</em> XP at the 5-cycle mark via <code>GameManager.AddandRemoveXp(temp, "+", "Breathing Five Cycles")</code> (<code>:380, 415</code>). The new mechanic is gate-deduct-then-refund: AJE-12's gate popup deducts entry XP on confirm; this panel posts a refund call at the 5-cycle mark <em>in addition to</em> the existing bonus award. See <a href="./SPEC_breathing.md">SPEC_breathing.md</a> "XP economics" for the full ladder.</div>
+        <div class="info"><strong>Backend dependency you should know about.</strong> The <strong>5-cycle XP refund</strong> mechanic you called out on 2026-05-01 23:46 is net-new code. Today the panel only <em>awards</em> XP at the 5-cycle mark via <code>GameManager.AddandRemoveXp(temp, "+", "Breathing Five Cycles")</code> (<code>:380, 415</code>). The new mechanic is gate-deduct-then-refund: AJE-12's gate popup deducts entry XP on confirm; this panel posts a refund call at the 5-cycle mark <em>in addition to</em> the existing bonus award. See <a href="./SPEC_breathing.md">SPEC_breathing.md</a> "XP economics" for the full ladder.</div>
       </div>
 
       <div class="doc-section">
@@ -1807,7 +1807,7 @@
       <div class="doc-section">
         <h2>Open feasibility flags</h2>
         <ul>
-          <li><strong>5-cycle XP refund is net-new code.</strong> Confirm with product whether the bonus award (+5 free / +20 Pro) stays on top of the refund or replaces it. Jay's SMS implied <em>both</em> — the gate cost is refunded, the existing bonus is separate.</li>
+          <li><strong>5-cycle XP refund is net-new code.</strong> Worth a quick confirmation: does the bonus award (+5 free / +20 Pro) stay on top of the refund, or replace it? Reading your SMS again, "earned back after every 5 cycles" sounded like the gate cost is refunded <em>and</em> the existing bonus is separate — running with that interpretation unless you say otherwise.</li>
           <li><strong>Hardcoded 1s color-transition</strong> at <code>:430</code> overshoots Huberman's 1s INHALE. Suggest <code>Min(1f, phaseSeconds * 0.4f)</code>.</li>
           <li><strong><code>DOScale(4)</code> overflows mobile.</strong> The prototype clamped to 2.2×. Confirm preference vs containing the parent.</li>
           <li><strong>MotionPath dot polish on selection cards.</strong> No direct DOTween equivalent. Skip for v1 if static curve reads.</li>
