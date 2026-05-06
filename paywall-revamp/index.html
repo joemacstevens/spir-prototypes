@@ -1,0 +1,1604 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPiR Health — Paywall Revamp · 3 Directions</title>
+  <meta name="description" content="Paywall revamp proposal — SPiR Pro vs SPiR Max. Three distinct directions for review, each with a phone mock and Unity implementation spec." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rubik:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* Page chrome — Ajeo brand (cream + charcoal + single gold accent) */
+      --bg: #F5F2EC;
+      --bg-2: #FAF7F1;
+      --surface: #E8E5DF;
+      --surface-hi: #DCD8D0;
+      --surface-lo: #EFECE6;
+      --border: #D4CFC4;
+      --border-hi: #BEB7A8;
+      --text: #2D2D2D;
+      --text-soft: #4A4A4A;
+      --text-muted: #7B7B7B;
+      --gold: #8B7D5B;
+      --olive: #3D3D2B;
+      /* Page-chrome accents collapse to a single gold per Ajeo brand */
+      --accent-purple: #8B7D5B;
+      --accent-teal: #8B7D5B;
+      --accent-blue: #8B7D5B;
+      --accent-gold: #8B7D5B;
+      --accent-purple-hi: #A89668;
+      --accent-purple-lo: #6A5F44;
+      /* Semantic colors retained for chips / warn / ok / error */
+      --accent-green: #5fd063;
+      --accent-green-hi: #72e876;
+      --accent-coral: #e8793a;
+      --accent-amber: #f5a623;
+      --accent-red: #d64545;
+      --gradient-primary: linear-gradient(135deg, #2D2D2D 0%, #8B7D5B 100%);
+      --gradient-purple: linear-gradient(135deg, #6A5F44, #A89668);
+      --font-primary: 'Inter', system-ui, sans-serif;
+      --font-tertiary: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-primary);
+      font-weight: 400;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+    }
+    ::selection { background: rgba(139,125,91,0.35); color: var(--text); }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ---------- TOP BAR ---------- */
+    .topbar {
+      position: sticky; top: 0; z-index: 60;
+      background: rgba(245,242,236,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 14px 32px;
+      display: flex; align-items: center;
+      gap: 18px; flex-wrap: wrap;
+    }
+
+    /* Ajeo wordmark — pulsing gold j-dot, per BRAND-KIT.md */
+    .ajeo-wordmark {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: baseline;
+      flex-shrink: 0;
+    }
+    .ajeo-wordmark .j { position: relative; }
+    .ajeo-wordmark .j-dot {
+      position: absolute;
+      top: -2px;
+      left: 0.32em;
+      width: 6px; height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: ajeo-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes ajeo-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.78; }
+    }
+    .topbar-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    .title-block { display: flex; align-items: baseline; gap: 14px; flex-shrink: 0; }
+    .title-main { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .title-sub {
+      font-family: var(--font-tertiary);
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .topbar-meta { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .chip {
+      font-family: var(--font-tertiary);
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 5px 11px; border-radius: 100px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .chip.priority { color: var(--accent-amber); border-color: rgba(245,166,35,0.35); background: rgba(245,166,35,0.08); }
+    .chip.status { color: var(--text-muted); border-color: var(--border); background: rgba(255,255,255,0.02); }
+    .chip.ticket { color: var(--accent-purple); border-color: rgba(123,104,238,0.35); background: rgba(123,104,238,0.08); }
+    .chip.ticket a { color: inherit; text-decoration: none; }
+    .chip.ticket a:hover { text-decoration: underline; }
+
+    /* ---------- VARIANT NAV ---------- */
+    .variant-nav {
+      position: sticky; top: 96px; z-index: 50;
+      background: rgba(245,242,236,0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .variant-nav-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 12px 32px;
+      display: flex; gap: 8px; align-items: center;
+      overflow-x: auto;
+    }
+    .variant-tab {
+      display: inline-flex; align-items: baseline; gap: 8px;
+      padding: 8px 16px; border-radius: 100px;
+      font-family: var(--font-primary);
+      font-size: 13px; font-weight: 500;
+      color: var(--text-muted);
+      background: transparent; border: 1px solid var(--border);
+      text-decoration: none;
+      transition: color 0.15s, background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+    .variant-tab:hover { color: var(--text); border-color: var(--border-hi); background: rgba(255,255,255,0.03); }
+    .variant-tab .tab-num {
+      font-family: var(--font-mono);
+      font-size: 11px; font-weight: 700;
+      color: var(--accent-purple);
+    }
+    .variant-tab.superstar .tab-num { color: var(--accent-gold); }
+    .variant-tab.superstar::after { content: '⭐'; font-size: 11px; margin-left: 4px; }
+
+    /* ---------- WORKSPACE / VARIANT WRAPPER ---------- */
+    .variant {
+      border-bottom: 1px dashed var(--border);
+      padding: 56px 0 32px;
+    }
+    .variant:last-of-type { border-bottom: 0; }
+    .workspace {
+      max-width: 1200px; margin: 0 auto;
+      padding: 0 32px;
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      gap: 56px; align-items: start;
+    }
+    @media (max-width: 980px) {
+      .workspace { grid-template-columns: 1fr; gap: 40px; padding: 0 20px; }
+    }
+
+    /* ---------- PHONE FRAME ---------- */
+    .phone-wrap { position: sticky; top: 168px; }
+    @media (max-width: 980px) { .phone-wrap { position: static; } }
+    .phone-label {
+      font-family: var(--font-tertiary);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px; text-align: center;
+    }
+    .phone {
+      /* Phone interior is the SPiR Health product surface — re-declare the SPiR
+         dark palette + product fonts + product accent palette so the in-app
+         visuals stay unchanged regardless of the Ajeo brand on the page chrome. */
+      --bg: #0a0a0f;
+      --bg-2: #0f0f16;
+      --surface: #1a1a22;
+      --surface-hi: #22222d;
+      --surface-lo: #141419;
+      --border: #26262f;
+      --border-hi: #33333f;
+      --text: #f0ede8;
+      --text-soft: #b8b5c2;
+      --text-muted: #7a7985;
+      --font-primary: 'Rubik', system-ui, sans-serif;
+      --font-tertiary: 'Poppins', system-ui, sans-serif;
+      --accent-purple: #7b68ee;
+      --accent-purple-hi: #9d8aff;
+      --accent-purple-lo: #5a49b8;
+      --accent-teal: #3dd4c0;
+      --accent-blue: #4a8fe7;
+      --accent-gold: #f5c842;
+      --gradient-primary: linear-gradient(135deg, #7b68ee, #3dd4c0);
+      --gradient-purple: linear-gradient(135deg, #5a49b8, #9d8aff);
+      background: #0a0a0f;
+      border-radius: 44px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.02);
+      margin: 0 auto;
+      max-width: 390px;
+    }
+    .phone-screen {
+      background: linear-gradient(180deg, #0f0f16 0%, #0a0a0f 100%);
+      border-radius: 32px;
+      padding: 22px 18px 24px;
+      overflow: hidden;
+      min-height: 740px;
+      position: relative;
+    }
+
+    /* ---------- PAYWALL — SHARED ---------- */
+    .paywall-header {
+      display: flex; align-items: center; gap: 8px;
+      margin-bottom: 4px;
+    }
+    .paywall-back {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-soft);
+      font-size: 22px; line-height: 1;
+      cursor: default;
+    }
+    .paywall-title {
+      flex: 1;
+      font-size: 17px; font-weight: 600; letter-spacing: -0.01em;
+      text-align: center;
+      padding-right: 28px;
+    }
+    .paywall-pitch {
+      font-size: 13px; color: var(--text-soft);
+      text-align: center;
+      margin: 8px 0 18px;
+    }
+    .placeholder-tag {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 0.08em;
+      padding: 2px 5px; border-radius: 3px;
+      margin-left: 4px;
+      vertical-align: middle;
+      background: rgba(245,166,35,0.14);
+      color: var(--accent-amber);
+      border: 1px solid rgba(245,166,35,0.32);
+    }
+    .placeholder-tag.tiny { font-size: 7px; padding: 1px 4px; margin-left: 3px; }
+
+    /* ---------- V1: COMPARATIVE MATRIX ---------- */
+    .feature-table {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 16px;
+    }
+    .feature-table-head {
+      display: grid;
+      grid-template-columns: 1fr 56px 56px 56px;
+      align-items: center;
+      padding: 12px 14px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+      font-family: var(--font-tertiary);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .feature-table-head .col-free,
+    .feature-table-head .col-pro,
+    .feature-table-head .col-max { text-align: center; }
+    .feature-table-head .col-max { color: var(--accent-purple); }
+    .feature-row {
+      display: grid;
+      grid-template-columns: 1fr 56px 56px 56px;
+      align-items: center;
+      padding: 10px 14px;
+      font-size: 12px;
+    }
+    .feature-table-footnote {
+      margin-top: 10px;
+      padding: 0 4px;
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      text-align: center;
+      font-style: italic;
+    }
+    .feature-row + .feature-row { border-top: 1px solid rgba(255,255,255,0.04); }
+    .feature-row .feat-name { color: var(--text-soft); }
+    .feature-row .feat-cell { text-align: center; color: var(--text); font-weight: 500; }
+    .feature-row .feat-cell.dash { color: var(--text-muted); }
+    .feature-row .feat-cell svg { display: inline-block; vertical-align: middle; }
+    .feature-row .feat-cell.max-col { background: rgba(123,104,238,0.06); }
+    /* Persistent Max highlight tint via overlay column */
+    .feature-table { position: relative; }
+    .feature-table::after {
+      content: '';
+      position: absolute;
+      top: 0; right: 0;
+      width: 56px; height: 100%;
+      background: linear-gradient(180deg, rgba(123,104,238,0.10) 0%, rgba(123,104,238,0.04) 100%);
+      pointer-events: none;
+      border-left: 1px solid rgba(123,104,238,0.18);
+      border-right: none;
+    }
+    .feature-row .feat-cell.confirmed::after {
+      content: '★';
+      color: var(--accent-gold);
+      font-size: 8px;
+      vertical-align: super;
+      margin-left: 2px;
+    }
+    .check-icon { width: 12px; height: 12px; stroke: var(--accent-green); fill: none; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+    .check-icon-max { stroke: var(--accent-purple); }
+    .em-dash { color: var(--text-muted); }
+    .qual { font-size: 11px; font-weight: 500; }
+
+    .cta-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 8px 0 14px;
+    }
+    .cta-btn {
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 12px 8px;
+      font-family: var(--font-primary);
+      font-size: 12.5px; font-weight: 600;
+      cursor: pointer;
+      line-height: 1.2;
+      text-align: center;
+    }
+    .cta-btn .cta-price {
+      display: block;
+      font-size: 11px; font-weight: 500;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+    .cta-btn.primary {
+      background: linear-gradient(135deg, var(--accent-purple-lo), var(--accent-purple));
+      border-color: var(--accent-purple-hi);
+      color: #fff;
+      box-shadow: 0 8px 24px rgba(123,104,238,0.30), 0 0 0 1px rgba(157,138,255,0.4);
+    }
+    .cta-btn.primary .cta-price { color: rgba(255,255,255,0.85); }
+    .cta-btn.primary:hover { transform: translateY(-1px); }
+    .cta-btn:hover { border-color: var(--border-hi); }
+
+    .mini-rating {
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    .mini-rating .stars { color: var(--accent-gold); letter-spacing: 1px; }
+
+    /* ---------- V2: SOCIAL PROOF HERO ---------- */
+    .onboarding-bar {
+      display: flex; align-items: center; gap: 10px;
+      margin: -4px -4px 14px;
+    }
+    .onboarding-back {
+      width: 30px; height: 30px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-soft);
+      font-size: 16px;
+    }
+    .onboarding-progress {
+      flex: 1;
+      height: 4px; border-radius: 100px;
+      background: rgba(255,255,255,0.08);
+      overflow: hidden;
+    }
+    .onboarding-progress-fill {
+      height: 100%; width: 88%;
+      background: var(--text-soft);
+      border-radius: 100px;
+    }
+
+    .v2-hero { text-align: center; padding: 8px 0 18px; }
+    .v2-hero h1 {
+      font-size: 22px; font-weight: 700; letter-spacing: -0.01em;
+      margin-bottom: 8px;
+    }
+    .v2-hero .v2-sub {
+      font-size: 13px; color: var(--text-soft);
+      max-width: 280px; margin: 0 auto;
+    }
+
+    .rating-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 18px 16px;
+      margin-bottom: 14px;
+      text-align: center;
+    }
+    .rating-card .appstore-row {
+      display: flex; align-items: center; justify-content: center;
+      gap: 10px; margin-bottom: 10px;
+    }
+    .rating-card .appstore-icon {
+      width: 28px; height: 28px;
+      background: linear-gradient(135deg, #2a2a32, #44444f);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; color: #fff;
+    }
+    .rating-card .appstore-label {
+      font-family: var(--font-tertiary);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .stars-row {
+      color: var(--accent-gold);
+      font-size: 18px;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+    }
+    .stat-cols {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding-top: 12px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .stat-col { text-align: center; }
+    .stat-num { font-size: 16px; font-weight: 700; color: var(--text); }
+    .stat-label {
+      font-family: var(--font-tertiary);
+      font-size: 9px; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .rating-card .rating-blurb {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-soft);
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      margin-top: 6px;
+    }
+    .rating-card .rating-blurb a { color: var(--accent-gold); text-decoration: none; }
+    .rating-card .rating-blurb a:hover { text-decoration: underline; }
+    .v2-mini-footnote {
+      margin-top: 10px;
+      padding: 0 4px;
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      text-align: center;
+      font-style: italic;
+    }
+
+    .testimonial-card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 14px 14px 12px;
+      margin-bottom: 10px;
+    }
+    .testimonial-card .t-stars { color: var(--accent-gold); font-size: 12px; letter-spacing: 1px; margin-bottom: 6px; }
+    .testimonial-card .t-quote {
+      font-size: 13px; line-height: 1.45;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .testimonial-card .t-author {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+    .testimonial-card .t-author strong { color: var(--text-soft); font-weight: 500; }
+
+    .mini-tier-pair {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin: 14px 0 8px;
+    }
+    .mini-tier {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 14px;
+      padding: 12px 10px;
+    }
+    .mini-tier.max {
+      background: rgba(123,104,238,0.08);
+      border-color: rgba(123,104,238,0.32);
+    }
+    .mini-tier .mt-name {
+      font-size: 12px; font-weight: 600; color: var(--text);
+    }
+    .mini-tier .mt-price {
+      font-size: 11px; color: var(--text-muted); margin: 2px 0 8px;
+    }
+    .mini-tier ul {
+      padding-left: 14px; margin: 0;
+      font-size: 10.5px; color: var(--text-soft);
+      line-height: 1.4;
+    }
+    .mini-tier ul li { margin-bottom: 2px; }
+
+    .sticky-cta {
+      margin-top: 6px;
+    }
+    .sticky-cta-btn {
+      display: block; width: 100%;
+      padding: 14px 20px;
+      background: linear-gradient(135deg, var(--accent-purple-lo), var(--accent-purple));
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-family: var(--font-primary);
+      font-size: 14px; font-weight: 700; letter-spacing: 0.04em;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(123,104,238,0.30);
+    }
+    .text-link {
+      display: block; text-align: center;
+      margin-top: 10px;
+      font-size: 11.5px; color: var(--text-muted);
+      cursor: pointer;
+      background: transparent; border: none;
+      font-family: var(--font-primary);
+      width: 100%;
+    }
+    .text-link:hover { color: var(--text-soft); text-decoration: underline; }
+
+    /* ---------- V3: TIERED CARDS ---------- */
+    .v3-pitch { text-align: center; margin: 6px 0 12px; }
+    .v3-pitch h2 { font-size: 18px; font-weight: 700; letter-spacing: -0.01em; }
+    .v3-pitch .v3-pitch-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .trial-hook {
+      display: inline-block;
+      font-size: 11px; font-weight: 600;
+      color: var(--accent-purple);
+      background: rgba(123,104,238,0.10);
+      border: 1px solid rgba(123,104,238,0.28);
+      border-radius: 100px;
+      padding: 4px 12px;
+      margin-top: 8px;
+    }
+
+    .period-toggle {
+      display: inline-flex;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 100px;
+      padding: 3px;
+      margin: 14px auto;
+      gap: 0;
+    }
+    .period-toggle-wrap { display: flex; justify-content: center; }
+    .period-tab {
+      padding: 7px 16px;
+      border-radius: 100px;
+      font-size: 12px; font-weight: 500;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: transparent; border: none;
+      font-family: var(--font-primary);
+      position: relative;
+    }
+    .period-tab.active {
+      color: var(--text);
+      background: rgba(255,255,255,0.08);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+    }
+    .save-badge {
+      display: inline-block;
+      font-size: 8px; font-weight: 700;
+      letter-spacing: 0.08em;
+      color: var(--accent-green);
+      background: rgba(95,208,99,0.12);
+      border: 1px solid rgba(95,208,99,0.32);
+      border-radius: 100px;
+      padding: 1px 6px;
+      margin-left: 4px;
+      vertical-align: middle;
+    }
+
+    .tier-cards {
+      display: flex; flex-direction: column; gap: 12px;
+      margin-top: 8px;
+    }
+    .tier-card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 18px;
+      padding: 18px 16px;
+      position: relative;
+    }
+    .tier-card.max {
+      background: linear-gradient(180deg, rgba(123,104,238,0.10) 0%, rgba(123,104,238,0.04) 100%);
+      border-color: rgba(123,104,238,0.45);
+      box-shadow: 0 8px 24px rgba(123,104,238,0.18), 0 0 0 1px rgba(157,138,255,0.18);
+    }
+    .ribbon {
+      position: absolute; top: 12px; right: -2px;
+      background: linear-gradient(135deg, var(--accent-amber), #ff9b3a);
+      color: #0a0a0f;
+      font-family: var(--font-tertiary);
+      font-size: 9px; font-weight: 700;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 4px 12px;
+      border-radius: 4px 0 0 4px;
+      box-shadow: 0 4px 12px rgba(245,166,35,0.30);
+    }
+    .ribbon::after {
+      content: '';
+      position: absolute; right: 0; bottom: -4px;
+      border: 2px solid transparent;
+      border-top-color: #b87a18;
+      border-left-color: #b87a18;
+    }
+    .tier-card .t-header {
+      display: flex; align-items: baseline; justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .tier-card .t-name { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+    .tier-card .t-tagline { font-size: 11px; color: var(--text-muted); }
+    .tier-card .t-price { font-size: 26px; font-weight: 700; letter-spacing: -0.02em; margin-top: 6px; }
+    .tier-card .t-price .t-period { font-size: 12px; font-weight: 500; color: var(--text-muted); margin-left: 2px; }
+    .tier-card.max .t-price { background: var(--gradient-purple); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+    .tier-card .t-features {
+      list-style: none; padding: 0;
+      margin: 12px 0 14px;
+      font-size: 12px; color: var(--text-soft);
+    }
+    .tier-card .t-features li {
+      display: flex; align-items: flex-start; gap: 8px;
+      padding: 4px 0;
+    }
+    .tier-card .t-features li::before {
+      content: '✓';
+      color: var(--accent-green);
+      font-weight: 700;
+      flex-shrink: 0;
+      width: 12px;
+    }
+    .tier-card.max .t-features li::before { color: var(--accent-purple); }
+    .tier-card .t-features li.confirmed::after {
+      content: '★';
+      color: var(--accent-gold);
+      font-size: 10px;
+      margin-left: 2px;
+    }
+
+    .embedded-rating {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 12px;
+      background: rgba(0,0,0,0.20);
+      border-radius: 10px;
+      margin-bottom: 12px;
+    }
+    .embedded-rating .er-stars { color: var(--accent-gold); font-size: 11px; letter-spacing: 1px; }
+    .embedded-rating .er-text { font-size: 11px; color: var(--text-soft); flex: 1; }
+    .embedded-rating .er-text strong { color: var(--text); font-weight: 600; }
+
+    .tier-card .t-cta {
+      display: block; width: 100%;
+      padding: 11px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.04);
+      color: var(--text);
+      border-radius: 12px;
+      font-family: var(--font-primary);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+    }
+    .tier-card.max .t-cta {
+      background: linear-gradient(135deg, var(--accent-purple-lo), var(--accent-purple));
+      border-color: var(--accent-purple-hi);
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(123,104,238,0.30);
+    }
+    .tier-card .t-cta:hover { border-color: var(--border-hi); }
+    .qual-inline {
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 400;
+      margin-left: 4px;
+    }
+
+    .v3-footer-line {
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 14px;
+    }
+
+    /* ---------- DOCS PANEL ---------- */
+    .docs { max-width: 680px; min-width: 0; }
+    .docs-eyebrow {
+      font-family: var(--font-tertiary);
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent-purple); margin-bottom: 12px;
+    }
+    .docs-eyebrow.gold { color: var(--accent-gold); }
+    .docs h1 {
+      font-size: clamp(30px, 4vw, 42px);
+      font-weight: 700; letter-spacing: -0.02em;
+      line-height: 1.1; margin-bottom: 18px;
+    }
+    .gradient-text {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .docs-intro {
+      font-size: 16px; color: var(--text-soft);
+      margin-bottom: 28px; line-height: 1.55;
+    }
+    .ticket-ref {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 28px;
+      display: grid; grid-template-columns: auto 1fr;
+      gap: 12px 20px; font-size: 13px; align-items: baseline;
+    }
+    .ticket-ref dt {
+      font-family: var(--font-tertiary);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .ticket-ref dd { color: var(--text-soft); }
+    .ticket-ref dd strong { color: var(--text); font-weight: 500; }
+    .ticket-ref a { color: var(--accent-teal); text-decoration: none; }
+    .ticket-ref a:hover { text-decoration: underline; }
+
+    .doc-section { margin-bottom: 36px; }
+    .doc-section h2 {
+      font-size: 21px; font-weight: 600;
+      letter-spacing: -0.01em; margin-bottom: 14px;
+    }
+    .doc-section p { color: var(--text-soft); margin-bottom: 12px; font-size: 15px; }
+    .doc-section p strong { color: var(--text); font-weight: 500; }
+    .doc-section ul { padding-left: 22px; color: var(--text-soft); margin-bottom: 12px; }
+    .doc-section ol { padding-left: 22px; color: var(--text-soft); margin-bottom: 12px; }
+    .doc-section li { margin-bottom: 8px; font-size: 15px; }
+    .doc-section li strong { color: var(--text); font-weight: 500; }
+    code {
+      font-family: var(--font-mono); font-size: 12.5px;
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 2px 6px; border-radius: 4px; color: var(--accent-teal);
+    }
+
+    .annotation-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 16px; }
+    .annotation {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 18px;
+      display: grid; grid-template-columns: 28px 1fr;
+      gap: 14px; align-items: start;
+    }
+    .annotation-num {
+      font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+      color: var(--accent-purple); background: rgba(123,104,238,0.12);
+      border-radius: 50%; width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .annotation-body { font-size: 14px; color: var(--text-soft); line-height: 1.5; }
+    .annotation-title { color: var(--text); font-weight: 500; margin-bottom: 4px; }
+
+    .warn { background: rgba(232,121,58,0.08); border-left: 3px solid var(--accent-coral); padding: 14px 18px; border-radius: 4px; margin-bottom: 18px; font-size: 14px; color: var(--text-soft); }
+    .warn strong { color: var(--accent-coral); }
+    .ok { background: rgba(95,208,99,0.08); border-left: 3px solid var(--accent-green); padding: 14px 18px; border-radius: 4px; margin-bottom: 18px; font-size: 14px; color: var(--text-soft); }
+    .ok strong { color: var(--accent-green); }
+    .info { background: rgba(123,104,238,0.08); border-left: 3px solid var(--accent-purple); padding: 14px 18px; border-radius: 4px; margin-bottom: 18px; font-size: 14px; color: var(--text-soft); }
+    .info strong { color: var(--accent-purple); }
+
+    .compare {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; overflow: hidden; margin-bottom: 18px;
+    }
+    .compare table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+    .compare th, .compare td { padding: 10px 14px; text-align: left; border-bottom: 1px solid var(--border); }
+    .compare th { font-family: var(--font-tertiary); font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-muted); font-weight: 600; }
+    .compare td:first-child { color: var(--text); font-weight: 500; width: 36%; }
+    .compare td { color: var(--text-soft); }
+    .compare tr:last-child td { border-bottom: none; }
+    .rank-best { color: var(--accent-green) !important; font-weight: 500; }
+    .rank-ok   { color: var(--accent-amber) !important; font-weight: 500; }
+    .rank-cost { color: var(--accent-coral) !important; font-weight: 500; }
+
+    .next-variant {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-top: 8px;
+      padding: 10px 16px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 13px; color: var(--text-soft);
+      text-decoration: none;
+      transition: border-color 0.15s, color 0.15s;
+    }
+    .next-variant:hover { color: var(--text); border-color: var(--border-hi); }
+    .next-variant::after { content: '→'; color: var(--accent-purple); }
+
+    footer {
+      text-align: center; padding: 40px 20px;
+      color: var(--text-muted); font-size: 12px;
+      border-top: 1px solid var(--border);
+      margin-top: 40px;
+    }
+    footer a { color: var(--accent-teal); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    .footer-brand {
+      display: inline-flex; align-items: center; gap: 8px;
+      margin-bottom: 12px;
+      color: var(--text-soft);
+    }
+    .footer-brand .spir-logo { width: 24px; height: 24px; }
+
+    /* ---------- SPIR LOGO ---------- */
+    .spir-logo {
+      display: inline-block;
+      vertical-align: middle;
+      flex-shrink: 0;
+    }
+    .spir-logo.topbar { width: 28px; height: 28px; }
+    .spir-logo.v2-hero {
+      width: 56px; height: 56px;
+      margin: 0 auto 14px;
+      display: block;
+      filter: drop-shadow(0 4px 12px rgba(74,158,255,0.30));
+    }
+
+    /* ---------- FAKE STRIPE CONFIRMATION TOAST ---------- */
+    .fake-confirm {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.95);
+      z-index: 200;
+      background: var(--surface); border: 1px solid var(--accent-purple);
+      border-radius: 14px;
+      padding: 24px 32px;
+      max-width: 360px; width: calc(100vw - 40px);
+      box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(123,104,238,0.4);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .fake-confirm.visible { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+    .fake-confirm h3 { font-size: 16px; margin-bottom: 8px; color: var(--text); }
+    .fake-confirm p { font-size: 13px; color: var(--text-soft); margin-bottom: 14px; line-height: 1.45; }
+    .fake-confirm code { font-size: 11px; }
+    .fake-confirm button {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 8px 16px; border-radius: 8px;
+      font-family: var(--font-primary); font-size: 12.5px; font-weight: 500;
+      cursor: pointer;
+    }
+    .fake-confirm-backdrop {
+      position: fixed; inset: 0; z-index: 199;
+      background: rgba(0,0,0,0.5);
+      opacity: 0; pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .fake-confirm-backdrop.visible { opacity: 1; pointer-events: auto; }
+  </style>
+</head>
+<body>
+
+  <!-- ============================ TOPBAR ============================ -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a href="https://spir-presentation.vercel.app" class="ajeo-wordmark" target="_blank" rel="noopener" aria-label="Ajeo">a<span class="j">j<span class="j-dot"></span></span>eo</a>
+      <span class="topbar-divider"></span>
+      <div class="title-block">
+        <img src="./spir-logo.png" alt="SPiR" class="spir-logo topbar" />
+        <span class="title-main">Paywall Revamp · Pro vs Max</span>
+        <span class="title-sub">3 directions for review</span>
+      </div>
+      <div class="topbar-meta">
+        <span class="chip ticket"><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a></span>
+        <span class="chip priority">High Priority</span>
+        <span class="chip status">Backlog</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================== VARIANT NAV ====================== -->
+  <div class="variant-nav">
+    <div class="variant-nav-inner">
+      <a class="variant-tab" href="#v1"><span class="tab-num">V1</span> Comparative Matrix</a>
+      <a class="variant-tab superstar" href="#v2"><span class="tab-num">V2</span> Social-Proof Hero</a>
+      <a class="variant-tab" href="#v3"><span class="tab-num">V3</span> Tiered Cards</a>
+    </div>
+  </div>
+
+  <!-- ============================================================== -->
+  <!-- ======================= V1: MATRIX =========================== -->
+  <!-- ============================================================== -->
+  <section class="variant" id="v1">
+    <div class="workspace">
+
+      <!-- ----- V1 PHONE MOCK ----- -->
+      <div class="phone-wrap">
+        <div class="phone-label">V1 · Comparative Matrix · 390 × content</div>
+        <div class="phone">
+          <div class="phone-screen">
+
+            <div class="paywall-header">
+              <span class="paywall-back">‹</span>
+              <h1 class="paywall-title">SPiR Pro vs SPiR Max</h1>
+            </div>
+            <p class="paywall-pitch">Two ways to spi(r)al up. Pick what fits.</p>
+
+            <div class="feature-table">
+              <div class="feature-table-head">
+                <span>Feature</span>
+                <span class="col-free">Free</span>
+                <span class="col-pro">Pro</span>
+                <span class="col-max">Max</span>
+              </div>
+
+              <div class="feature-row">
+                <span class="feat-name">Coach's Instincts (Ai)</span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
+                <span class="feat-cell confirmed">
+                  <svg class="check-icon check-icon-max" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg>
+                </span>
+              </div>
+
+              <div class="feature-row">
+                <span class="feat-name">Automatic Lock-In</span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
+                <span class="feat-cell"><svg class="check-icon check-icon-max" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
+              </div>
+
+              <div class="feature-row">
+                <span class="feat-name">XP Discount on Soundscape + Deep Breathing</span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
+                <span class="feat-cell"><span class="qual">75% off</span></span>
+              </div>
+
+              <div class="feature-row">
+                <span class="feat-name">XP Multipliers</span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
+                <span class="feat-cell"><svg class="check-icon check-icon-max" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
+              </div>
+
+              <div class="feature-row">
+                <span class="feat-name">Custom Loadout slots</span>
+                <span class="feat-cell"><span class="qual">3</span></span>
+                <span class="feat-cell"><span class="qual">7</span></span>
+                <span class="feat-cell"><span class="qual">14</span></span>
+              </div>
+
+              <div class="feature-row">
+                <span class="feat-name">SPiR Leagues — Rivalry XP cost</span>
+                <span class="feat-cell"><span class="qual">Highest</span></span>
+                <span class="feat-cell"><span class="qual">Lower</span></span>
+                <span class="feat-cell"><span class="qual">Lowest</span></span>
+              </div>
+            </div>
+
+            <p class="feature-table-footnote">Every feature is available on Free — Pro and Max just make them dramatically more XP-affordable.</p>
+
+            <div class="cta-pair">
+              <button class="cta-btn" data-tier="pro" data-period="monthly">
+                Continue with Pro
+                <span class="cta-price">$5/mo</span>
+              </button>
+              <button class="cta-btn primary" data-tier="max" data-period="monthly">
+                Get Max
+                <span class="cta-price">$25/mo</span>
+              </button>
+            </div>
+
+            <div class="mini-rating">
+              <span class="stars">★★★★★</span>
+              <span>Trusted by Season 1 alumni</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ----- V1 DOCS ----- -->
+      <div class="docs">
+        <div class="docs-eyebrow">V1 · Comparative Matrix · The Analyst's Pick</div>
+        <h1>See every difference <span class="gradient-text">at a glance.</span></h1>
+        <p class="docs-intro">Direct interpretation of your "comparative analysis" comment from 2026-04-24. The whole screen is the feature table — info-dense, scan-friendly, no narrative warmup. Think Canva Pro vs Business. Best for users who want to look up specifics and decide rationally.</p>
+
+        <dl class="ticket-ref">
+          <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a> · Backlog · 5 BLOCKING questions for you</dd>
+          <dt>Inspiration</dt><dd>Canva Pro vs Business pricing matrix (your <code>Screenshot 2026-04-03</code>)</dd>
+          <dt>Stripe handoff</dt><dd>Each CTA → <code>Application.OpenURL("…/dashboard?subscribe={tier}")</code> on the website User Dashboard. AJE-13 owns the Stripe wiring itself.</dd>
+        </dl>
+
+        <div class="doc-section">
+          <h2>1 · What's new in the app</h2>
+          <p>The paywall doesn't exist in-app yet — this is a net-new <code>PaywallPanel</code> prefab loaded by <code>SingletonBehaviourUI</code>. No existing screens are modified.</p>
+          <div class="info"><strong>Trigger points (decide later):</strong> from the home screen "Upgrade" tab, from any locked Max-only feature (XP gates, AI insights), and from onboarding completion. AJE-12 (XP Payment Gates) blocks on this paywall design — once you pick a direction, the XP gate popup falls back here.</div>
+        </div>
+
+        <div class="doc-section">
+          <h2>2 · Annotated breakdown</h2>
+          <div class="annotation-grid">
+            <div class="annotation">
+              <div class="annotation-num">1</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Header — back chevron + title</div>
+                Standard panel header. Back chevron pops the panel via <code>SingletonBehaviourUI.Hide</code>. Title is a <code>TextMeshProUGUI</code>, static.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">2</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Feature comparison table</div>
+                A <code>VerticalLayoutGroup</code> containing one <code>FeatureRow</code> sub-prefab per feature. Each row is a 3-column horizontal layout: feature name (TMP), Pro state, Max state. The header row is a static prefab pinned at the top.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">3</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Max column highlight</div>
+                A semi-transparent <code>Image</code> behind the entire Max column, tinted purple. Lives behind the table content; uses <code>RectTransform</code> anchors to span the column's width × full table height.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">4</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Cell content — check / em-dash / qualitative</div>
+                Each cell is either: a checkmark <code>Image</code>, an em-dash <code>TMP</code>, or a short string ("Up to 3", "Unlimited"). The <code>FeatureRow</code> script exposes a <code>CellContent</code> enum so designers can swap in the editor.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">5</div>
+              <div class="annotation-body">
+                <div class="annotation-title">CTA pair — secondary + primary</div>
+                Two <code>Button</code>s in a <code>HorizontalLayoutGroup</code>. <code>OnClick</code> → <code>PaywallPanel.OpenStripe(tier, period)</code> which runs <code>Application.OpenURL($"…/dashboard?subscribe={tier}&period={period}")</code>.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">6</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Mini rating row</div>
+                Five Unicode stars (or 5x small <code>Image</code>s) + TMP for "4.8 · 250K reviews". Static today; could be backend-fed later.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-section">
+          <h2>3 · Unity implementation notes</h2>
+          <p>Two clean approaches to the feature table:</p>
+          <ul>
+            <li><strong>A — static prefab (recommended).</strong> Bake all <code>FeatureRow</code> instances into the <code>PaywallPanel</code> prefab in editor. No runtime data. Works as long as features change &lt; once per quarter.</li>
+            <li><strong>B — dynamic.</strong> <code>PaywallPanel.cs</code> reads a <code>FeatureCatalog</code> ScriptableObject and instantiates rows at <code>Awake</code>. Better if marketing wants to A/B feature copy without a build.</li>
+          </ul>
+          <div class="info"><strong>Recommendation:</strong> ship A. The catalog won't change weekly, and a dev-driven prefab is one less moving part for QA.</div>
+          <p>Sticky table header inside a <code>ScrollRect</code>: pin the header row outside the scroll content (sibling to <code>ScrollRect.content</code>, anchored to the top of the panel). Standard UGUI pattern, no custom math.</p>
+        </div>
+
+        <div class="doc-section">
+          <h2>4 · Files to touch</h2>
+          <ul>
+            <li>New: <code>Assets/Resources/Prefabs/UI/Panels/PaywallPanel.prefab</code> — the panel itself.</li>
+            <li>New: <code>Assets/Resources/Prefabs/UI/PaywallFeatureRow.prefab</code> — sub-prefab, one per feature.</li>
+            <li>New: <code>Assets/Scripts/PaywallPanel.cs</code> — owns CTA wiring, scroll initialization, optional <code>FeatureCatalog</code> read.</li>
+            <li>Existing: <code>Assets/Scripts/SingletonBehaviourUI.cs</code> — register the new panel name.</li>
+            <li>Existing: <code>Assets/Scripts/GameManager.cs</code> — add <code>OpenPaywall(string source)</code> entry point so other panels (XP gate, locked feature) can launch it.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>5 · Tradeoffs</h2>
+          <div class="compare">
+            <table>
+              <thead><tr><th></th><th>Pro</th><th>Con</th></tr></thead>
+              <tbody>
+                <tr><td>Visual impact</td><td>—</td><td class="rank-ok">Medium · info-dense, "boring"</td></tr>
+                <tr><td>Implementation cost</td><td class="rank-best">Lowest · pure layout</td><td>—</td></tr>
+                <tr><td>Data dependency</td><td class="rank-best">None · bakeable into prefab</td><td>—</td></tr>
+                <tr><td>Sprint risk</td><td class="rank-best">Lowest</td><td>—</td></tr>
+                <tr><td>Conversion fit</td><td class="rank-best">Best for analytical buyers</td><td class="rank-ok">Weakest for impulse upgrade</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="doc-section">
+          <h2>6 · Why we'd pick V1</h2>
+          <p>If your "comparative analysis" comment is the dominant signal — and the user persona is someone who wants to compare and decide on the merits — V1 is the most honest interpretation. It's also the cheapest to ship and has zero data dependencies, so it can land on the next sprint with no backend coordination.</p>
+          <p>The risk: it doesn't sell. There's no narrative, no social proof, no anchoring. If users are bouncing off the upgrade page, the data will tell us, and we'd graduate to V2 or V3 in a follow-up.</p>
+        </div>
+
+        <a class="next-variant" href="#v2">Next: V2 — your superstar</a>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================== -->
+  <!-- ============== V2: SOCIAL-PROOF HERO (SUPERSTAR) ============== -->
+  <!-- ============================================================== -->
+  <section class="variant" id="v2">
+    <div class="workspace">
+
+      <!-- ----- V2 PHONE MOCK ----- -->
+      <div class="phone-wrap">
+        <div class="phone-label">V2 · Social-Proof Hero · 390 × content ⭐</div>
+        <div class="phone">
+          <div class="phone-screen">
+
+            <div class="onboarding-bar">
+              <span class="onboarding-back">‹</span>
+              <div class="onboarding-progress"><div class="onboarding-progress-fill"></div></div>
+            </div>
+
+            <div class="v2-hero">
+              <img src="./spir-logo.png" alt="SPiR" class="spir-logo v2-hero" />
+              <h1>You're in good hands 🤩</h1>
+              <p class="v2-sub">Join the Season 1 alumni who upgraded to SPiR Max.</p>
+            </div>
+
+            <div class="rating-card">
+              <div class="appstore-row">
+                <div class="appstore-icon">⌘</div>
+                <span class="appstore-label">Season 1 community</span>
+              </div>
+              <div class="stars-row">★★★★★</div>
+              <div class="rating-blurb">From the people who logged a season with us — full quotes below, sourced from <a href="https://www.spir.health" target="_blank" rel="noopener">spir.health</a>.</div>
+            </div>
+
+            <div class="testimonial-card">
+              <div class="t-stars">★★★★★</div>
+              <div class="t-quote">"SPiR showed me I'm most creative at 7pm — not during my morning grind like I assumed for years. I restructured my entire deep work schedule around that window. Peak output went from inconsistent to predictable. 156 days of data doesn't lie."</div>
+              <div class="t-author"><strong>Rachel B.</strong> · Deep work & product · Lvl 28 · 156 day streak · 65,000 XP</div>
+            </div>
+            <div class="testimonial-card">
+              <div class="t-stars">★★★★★</div>
+              <div class="t-quote">"203 days ago I started timing my hardest runs to my second energy peak instead of my scheduled slot. PR'd in my first race after that. The AI didn't give me a plan — it gave me a when. That's the whole game."</div>
+              <div class="t-author"><strong>Jessica S.</strong> · Distance runner · Lvl 31 · 203 day streak · 71,000 XP</div>
+            </div>
+            <div class="testimonial-card">
+              <div class="t-stars">★★★★★</div>
+              <div class="t-quote">"I used to think flow states were random. SPiR proved they're not. Scheduled my last three college games around my circadian peak window. Broke my previous record stats each time. That's not motivation — it's a protocol."</div>
+              <div class="t-author"><strong>Matt F.</strong> · College athlete · Lvl 24 · 89 day streak · 55,000 XP</div>
+            </div>
+
+            <div class="mini-tier-pair">
+              <div class="mini-tier">
+                <div class="mt-name">SPiR Pro</div>
+                <div class="mt-price">$5/mo</div>
+                <ul>
+                  <li>7 Custom Loadout slots</li>
+                  <li>Lower Rivalry XP cost</li>
+                  <li>Everything Free has, cheaper</li>
+                </ul>
+              </div>
+              <div class="mini-tier max">
+                <div class="mt-name">SPiR Max</div>
+                <div class="mt-price">$25/mo</div>
+                <ul>
+                  <li>Coach's Instincts ★</li>
+                  <li>Automatic Lock-In + XP Multipliers</li>
+                  <li>75% off Soundscape & Deep Breathing XP</li>
+                  <li>14 Custom Loadout slots</li>
+                </ul>
+              </div>
+            </div>
+            <p class="v2-mini-footnote">Every feature is on Free too — Pro and Max just lower the XP cost.</p>
+
+            <div class="sticky-cta">
+              <button class="sticky-cta-btn" data-tier="max" data-period="monthly">Continue with Max</button>
+              <button class="text-link" data-tier="pro" data-period="monthly">Stick with Pro instead</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ----- V2 DOCS ----- -->
+      <div class="docs">
+        <div class="docs-eyebrow gold">V2 · Social-Proof Hero · ⭐ Your Superstar</div>
+        <h1>You're in <span class="gradient-text">good hands.</span></h1>
+        <p class="docs-intro">Faithful interpretation of <code>IMG_9931.PNG</code> — the screenshot you flagged as "deff the superstar" on 2026-04-24. Trust-led: rating block + testimonials lead the page, the comparison appears as supporting evidence below. Steers the user toward Max via emphasis. Best for first-time upgrade prompts and onboarding-completion paywalls.</p>
+
+        <dl class="ticket-ref">
+          <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a> · Backlog · ⭐ your stated favorite direction</dd>
+          <dt>Inspiration</dt><dd><code>IMG_9931.PNG</code> (Shmoody onboarding paywall — "You're in good hands")</dd>
+          <dt>Stripe handoff</dt><dd>Sticky bottom CTA → <code>Application.OpenURL("…/dashboard?subscribe=max")</code>. Tertiary text-link → same with <code>?subscribe=pro</code>.</dd>
+        </dl>
+
+        <div class="doc-section">
+          <h2>1 · What's new in the app</h2>
+          <p>Same as V1 — net-new <code>PaywallPanel</code> prefab, no existing screens modified. The progress bar at the top is consistent with the existing onboarding flow's affordance, so V2 doubles as the natural last step of onboarding without feeling like a context switch.</p>
+        </div>
+
+        <div class="doc-section">
+          <h2>2 · Annotated breakdown</h2>
+          <div class="annotation-grid">
+            <div class="annotation">
+              <div class="annotation-num">1</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Onboarding header — back arrow + progress bar</div>
+                If shown after onboarding, the bar is at ~88% (last step). If shown standalone, swap to a regular panel header. Reusable as <code>OnboardingHeader.prefab</code>.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">2</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Hero headline + emoji</div>
+                <code>TextMeshProUGUI</code>. The 🤩 emoji uses TMP's built-in emoji fallback; on Android verify the emoji font asset is bundled.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">3</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Rating card — App Store badge + 5-star + 3 stat columns</div>
+                Four pieces inside one card: (a) App Store icon <code>Image</code>, (b) "App Store" label TMP, (c) star row, (d) <code>HorizontalLayoutGroup</code> of 3 stat columns. See note below on the star row.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">4</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Star row (4.8)</div>
+                Stack two <code>Image</code>s per star: gray background + gold foreground with <code>Image.Type=Filled, fillAmount</code>. Five stacks. Last stack's <code>fillAmount = 0.8</code> renders the half-star cleanly.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">5</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Testimonial cards (stack)</div>
+                <code>VerticalLayoutGroup</code> of <code>TestimonialCard.prefab</code> instances. Each card: 5x stars + quote TMP + author TMP. Populated by <code>PaywallPanel.cs</code> from a hardcoded array (or <code>TestimonialCatalog</code> ScriptableObject if marketing wants to edit).
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">6</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Mini comparison block</div>
+                <code>HorizontalLayoutGroup</code> with two <code>MiniTier.prefab</code> instances. Lighter-weight than V1's full table — just 3 bullets per tier and the price. Clicking a mini-tier swaps the bottom CTA target.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">7</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Sticky bottom CTA + tertiary text-link</div>
+                <code>Button</code> anchored to the bottom of the canvas, OUTSIDE the <code>ScrollRect</code>. The scroll content adds bottom padding equal to CTA height so testimonials don't sit behind it. Text-link is a flat <code>Button</code> styled as TMP only.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-section">
+          <h2>3 · Unity implementation notes</h2>
+          <p><strong>Star rating math:</strong> stack two Images per star — gray background star + gold foreground with <code>Image.Type=Filled, fillMethod=Horizontal, fillAmount=0–1</code>. Five stacks. To render 4.8: stars 1–4 fillAmount=1.0, star 5 fillAmount=0.8. Trivial and precise.</p>
+          <p><strong>Testimonial data source — pick one:</strong></p>
+          <ul>
+            <li><strong>A — hardcoded array (recommended now).</strong> <code>PaywallPanel.testimonials</code> is a serialized struct array, instantiated at <code>Awake</code>.</li>
+            <li><strong>B — <code>TestimonialCatalog</code> ScriptableObject.</strong> Better if non-engineers want to edit copy.</li>
+            <li><strong>C — backend-driven via <code>NetworkAPImanager.cs</code>.</strong> Overkill until reviews are an actual product feature.</li>
+          </ul>
+          <p><strong>Sticky bottom CTA:</strong> place outside the <code>ScrollRect</code>, anchored to the bottom of the canvas. Add a transparent spacer at the end of the scroll content equal to CTA height so the last testimonial isn't occluded.</p>
+          <div class="ok"><strong>Bonus reuse:</strong> if AJE-12 (XP Payment Gates) builds an XP-spend popup that falls back to a paywall, V2's testimonial card prefab can be reused there as a "see what others say" rail. One prefab, two surfaces.</div>
+        </div>
+
+        <div class="doc-section">
+          <h2>4 · Files to touch</h2>
+          <ul>
+            <li>New: <code>Assets/Resources/Prefabs/UI/Panels/PaywallPanel.prefab</code> — same name as V1, different internal hierarchy.</li>
+            <li>New: <code>Assets/Resources/Prefabs/UI/TestimonialCard.prefab</code> — sub-prefab.</li>
+            <li>New: <code>Assets/Resources/Prefabs/UI/MiniTier.prefab</code> — sub-prefab for the mini comparison block.</li>
+            <li>New: <code>Assets/Scripts/PaywallPanel.cs</code> — testimonial population + CTA + mini-tier selection.</li>
+            <li>Optional: <code>Assets/Scripts/TestimonialCatalog.cs</code> + <code>.asset</code> if going with data source B.</li>
+            <li>Reuse: <code>Assets/Scripts/IconsHandler.cs</code> for star + App Store sprites if cached centrally.</li>
+            <li>Existing: <code>Assets/Scripts/SingletonBehaviourUI.cs</code> — register.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>5 · Tradeoffs</h2>
+          <div class="compare">
+            <table>
+              <thead><tr><th></th><th>Pro</th><th>Con</th></tr></thead>
+              <tbody>
+                <tr><td>Visual impact</td><td class="rank-best">Highest · trust-led, emotional</td><td>—</td></tr>
+                <tr><td>Implementation cost</td><td>—</td><td class="rank-ok">Medium · ScrollRect + 2 sub-prefabs</td></tr>
+                <tr><td>Data dependency</td><td class="rank-best">None required · works fully static</td><td class="rank-ok">Reviews need real copy before ship</td></tr>
+                <tr><td>Sprint risk</td><td class="rank-ok">Low-medium · 1 extra prefab vs V1</td><td>—</td></tr>
+                <tr><td>Conversion fit</td><td class="rank-best">Best for first-time / undecided users</td><td class="rank-ok">Weak for users who want to compare deeply</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="doc-section">
+          <h2>6 · Why we'd pick V2</h2>
+          <p>You called <code>IMG_9931.PNG</code> the superstar. This is the closest faithful interpretation of that image inside the SPiR visual language. If we're trusting your gut here — and your "rating/review concept" comment was real (not just a passing thought) — V2 is the right ship.</p>
+          <p>It also uniquely fits the post-onboarding moment: a user who just spent 2 minutes telling us about their sleep and habits is in a high-trust state. Leading with social proof at that moment converts. Leading with a comparison matrix at that moment feels like getting handed a spec sheet.</p>
+        </div>
+
+        <a class="next-variant" href="#v3">Next: V3 — the conventional pattern</a>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================== -->
+  <!-- ====================== V3: TIERED CARDS ====================== -->
+  <!-- ============================================================== -->
+  <section class="variant" id="v3">
+    <div class="workspace">
+
+      <!-- ----- V3 PHONE MOCK ----- -->
+      <div class="phone-wrap">
+        <div class="phone-label">V3 · Tiered Cards · 390 × content</div>
+        <div class="phone">
+          <div class="phone-screen">
+
+            <div class="paywall-header">
+              <span class="paywall-back">‹</span>
+              <h1 class="paywall-title">Choose your plan</h1>
+            </div>
+
+            <div class="v3-pitch">
+              <h2>Pick your plan. <span class="gradient-text">Cancel anytime.</span></h2>
+              <p class="v3-pitch-sub">Every feature is on Free — Pro and Max just lower the XP cost.</p>
+            </div>
+
+            <div class="tier-cards">
+
+              <div class="tier-card">
+                <div class="t-header">
+                  <span class="t-name">SPiR Pro</span>
+                  <span class="t-tagline">Solid foundation</span>
+                </div>
+                <div class="t-price">
+                  <span class="t-price-num">$5</span><span class="t-period">/mo</span>
+                </div>
+                <ul class="t-features">
+                  <li>7 Custom Loadout slots <span class="qual-inline">(Free has 3)</span></li>
+                  <li>Lower Rivalry XP cost in SPiR Leagues</li>
+                  <li>Everything Free has — just cheaper to use</li>
+                </ul>
+                <button class="t-cta" data-tier="pro">Continue with Pro</button>
+              </div>
+
+              <div class="tier-card max">
+                <div class="ribbon">Best value</div>
+                <div class="t-header">
+                  <span class="t-name">SPiR Max</span>
+                  <span class="t-tagline">Full intelligence layer</span>
+                </div>
+                <div class="t-price">
+                  <span class="t-price-num">$25</span><span class="t-period">/mo</span>
+                </div>
+
+                <div class="embedded-rating">
+                  <span class="er-stars">★★★★★</span>
+                  <span class="er-text">Trusted by Season 1 alumni</span>
+                </div>
+
+                <ul class="t-features">
+                  <li class="confirmed">Coach's Instincts (Ai)</li>
+                  <li>Automatic Lock-In</li>
+                  <li>75% off Soundscape + Deep Breathing XP</li>
+                  <li>XP Multipliers</li>
+                  <li>14 Custom Loadout slots</li>
+                  <li>Lowest Rivalry XP cost</li>
+                </ul>
+                <button class="t-cta" data-tier="max">Get Max</button>
+              </div>
+
+            </div>
+
+            <p class="v3-footer-line">Monthly only · Cancel anytime</p>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- ----- V3 DOCS ----- -->
+      <div class="docs">
+        <div class="docs-eyebrow">V3 · Tiered Cards · The Familiar Pattern</div>
+        <h1>Pick your plan. <span class="gradient-text">Cancel anytime.</span></h1>
+        <p class="docs-intro">The conventional SaaS pricing pattern: two side-by-side cards, Max elevated, "Best Value" ribbon, rating embedded inside the upsell card. Now that pricing is locked monthly-only with no trial (per Jay's 2026-05-01 SMS), V3 is purely about presentation.</p>
+
+        <dl class="ticket-ref">
+          <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a> · Todo · BLOCKING questions resolved 2026-05-01 / 2026-05-06</dd>
+          <dt>Inspiration</dt><dd>Athlytic Pro (<code>IMG_3091</code>) for the card pair</dd>
+          <dt>Stripe handoff</dt><dd>Per-card CTA → <code>Application.OpenURL("…/dashboard?subscribe={tier}")</code> (monthly-only, no trial param needed).</dd>
+        </dl>
+
+        <div class="doc-section">
+          <h2>1 · What's new in the app</h2>
+          <p>Net-new <code>PaywallPanel</code> + a new <code>TierCard</code> sub-prefab. Two cards, two prices, two CTAs — every piece is a known UGUI primitive.</p>
+        </div>
+
+        <div class="doc-section">
+          <h2>2 · Annotated breakdown</h2>
+          <div class="annotation-grid">
+            <div class="annotation">
+              <div class="annotation-num">1</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Header + back chevron</div>
+                Standard panel header. Same pattern as V1.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">2</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Pitch + framing line</div>
+                Two TMPs (headline + sub). The sub now anchors the whole pricing story: every feature is on Free, Pro and Max just lower the XP cost.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">4</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Tier cards (Pro + Max)</div>
+                Two <code>TierCard.prefab</code> instances inside a <code>VerticalLayoutGroup</code> on phone, <code>HorizontalLayoutGroup</code> on tablet (see implementation notes for the breakpoint switch).
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">5</div>
+              <div class="annotation-body">
+                <div class="annotation-title">"Best Value" ribbon</div>
+                Single <code>Image</code> with a pre-baked rotated sprite (don't rotate at runtime — anti-alias degrades on low-end Android). Anchored to the top-right of the Max card.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">6</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Embedded social-proof block (Max only)</div>
+                Smaller cousin of V2's rating card. 5x star Image stack + TMP for "Trusted by Season 1 alumni". Lives inside the Max card, between the price and the feature list. Real testimonials are sourced from <a href="https://www.spir.health" target="_blank" rel="noopener">spir.health</a>; if marketing wants quote rotations later, see V2's testimonial prefab.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">7</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Feature list with checkmarks</div>
+                <code>VerticalLayoutGroup</code> of TMP rows. The "Coach's Instincts" row gets a gold ★ marker — useful for marketing emphasis but optional.
+              </div>
+            </div>
+            <div class="annotation">
+              <div class="annotation-num">8</div>
+              <div class="annotation-body">
+                <div class="annotation-title">Per-card CTA</div>
+                <code>Button</code> per card. <code>OnClick</code> → <code>PaywallPanel.OpenStripe(tier)</code> → <code>Application.OpenURL($"…/dashboard?subscribe={tier}")</code>.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="doc-section">
+          <h2>3 · Unity implementation notes</h2>
+          <p><strong>Phone vs tablet layout:</strong> two clean paths —</p>
+          <ul>
+            <li><strong>A — single <code>VerticalLayoutGroup</code> always.</strong> Cards stack on phone <em>and</em> tablet. Loses the side-by-side affordance on tablet but ships fastest.</li>
+            <li><strong>B — script-switched orientation.</strong> A <code>LayoutGroupOrientationSwitcher</code> watches canvas width; below 600pt = vertical, above = horizontal. ~30 lines of code.</li>
+          </ul>
+          <p>Recommend A for first ship — most SPiR usage is portrait phone anyway. Graduate to B if tablet usage > 5% of sessions.</p>
+          <div class="info"><strong>"Best Value" ribbon:</strong> bake the 25° rotation into the sprite asset (export rotated). Rotating at runtime causes ugly anti-aliasing on Adreno GPUs, which we've seen on the Pixel 6a / Galaxy A series mentioned in the test rig list.</div>
+          <p><strong>Trial hook flag:</strong> the trial badge is a single GameObject controlled by <code>PaywallPanel.trialActive</code>. If you say no to the trial in the BLOCKING questions, set the flag false and the whole UI element disappears with no further code. Same for the annual toggle if monthly-only.</p>
+        </div>
+
+        <div class="doc-section">
+          <h2>4 · Files to touch</h2>
+          <ul>
+            <li>New: <code>Assets/Resources/Prefabs/UI/Panels/PaywallPanel.prefab</code> — the panel.</li>
+            <li>New: <code>Assets/Resources/Prefabs/UI/TierCard.prefab</code> — sub-prefab, two instances (Pro + Max).</li>
+            <li>New: <code>Assets/Scripts/PaywallPanel.cs</code> — owns period toggle wiring + CTA dispatch.</li>
+            <li>New: <code>Assets/Scripts/TierCard.cs</code> — owns per-card state (price swap, rating block visibility, CTA wiring).</li>
+            <li>Optional: <code>Assets/Scripts/LayoutGroupOrientationSwitcher.cs</code> if going with phone-vs-tablet path B.</li>
+            <li>Existing: <code>Assets/Scripts/SingletonBehaviourUI.cs</code> — register.</li>
+          </ul>
+        </div>
+
+        <div class="doc-section">
+          <h2>5 · Tradeoffs</h2>
+          <div class="compare">
+            <table>
+              <thead><tr><th></th><th>Pro</th><th>Con</th></tr></thead>
+              <tbody>
+                <tr><td>Visual impact</td><td class="rank-ok">Medium-high · familiar but elevated Max</td><td>—</td></tr>
+                <tr><td>Implementation cost</td><td>—</td><td class="rank-cost">Highest of the three · toggle + ribbon + 2 sub-prefabs</td></tr>
+                <tr><td>Data dependency</td><td class="rank-ok">Trial / annual decisions are blocking</td><td>—</td></tr>
+                <tr><td>Sprint risk</td><td class="rank-ok">Medium · most moving parts</td><td>—</td></tr>
+                <tr><td>Conversion fit</td><td class="rank-best">Best for "scan and pick" users; pre-decides for Max</td><td>—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="doc-section">
+          <h2>6 · Why we'd pick V3</h2>
+          <p>The familiar SaaS pattern. If you want the lowest-risk, most-tested layout — and you want to test the trial / annual mechanics — V3 is the right ship. The "Best Value" ribbon does the heavy lifting on conversion; the embedded rating inside the Max card hits your "rating/review concept" comment without making the whole page about it.</p>
+          <p>The risk: it's the most expensive of the three to build, and the least visually distinctive. If the brand position is "we're a different kind of wellness app," V3 doesn't reinforce that.</p>
+        </div>
+
+        <a class="next-variant" href="#v1">Back to V1 ↑</a>
+      </div>
+
+    </div>
+  </section>
+
+
+  <!-- ============================================================== -->
+  <footer>
+    <div class="footer-brand">
+      <img src="./spir-logo.png" alt="SPiR" class="spir-logo" />
+      <span>SPiR Health</span>
+    </div>
+    <div>Built for AJE-11 · Sibling prototype: <a href="https://todays-status-revamp.vercel.app">todays-status-revamp.vercel.app</a> · Source on
+    <a href="https://github.com/joemacstevens/spir-prototypes/tree/main/prototypes/paywall-revamp">GitHub</a></div>
+  </footer>
+
+
+  <!-- ============================================================== -->
+  <!-- =================== FAKE STRIPE CONFIRMATION ================== -->
+  <!-- ============================================================== -->
+  <div class="fake-confirm-backdrop" id="fakeConfirmBackdrop"></div>
+  <div class="fake-confirm" id="fakeConfirm">
+    <h3>Stripe handoff (mock)</h3>
+    <p>This is where the prototype would call <code>Application.OpenURL(stripeUrl)</code> and hand off to the website User Dashboard's existing Stripe flow.</p>
+    <p>Wired in <strong>AJE-13</strong>, not this ticket.</p>
+    <p style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-bottom: 14px;" id="fakeConfirmDetail">tier=… · period=…</p>
+    <button id="fakeConfirmClose">Got it</button>
+  </div>
+
+
+  <!-- ============================================================== -->
+  <!-- =========================== SCRIPT =========================== -->
+  <!-- ============================================================== -->
+  <script>
+    (function () {
+      // ---- CTA click handlers ----
+      const ctaButtons = document.querySelectorAll('[data-tier]');
+      const fc = document.getElementById('fakeConfirm');
+      const fcBackdrop = document.getElementById('fakeConfirmBackdrop');
+      const fcDetail = document.getElementById('fakeConfirmDetail');
+      const fcClose = document.getElementById('fakeConfirmClose');
+
+      function showFakeConfirm(tier, period, trial) {
+        const detail = `tier=${tier} · period=${period}${trial ? ' · trial=true' : ''}`;
+        fcDetail.textContent = detail;
+        fc.classList.add('visible');
+        fcBackdrop.classList.add('visible');
+        // Real Unity equivalent: Application.OpenURL($"…/dashboard?subscribe={tier}&period={period}")
+        console.log(`would open Stripe checkout: { tier: "${tier}", period: "${period}", trial: ${!!trial} }`);
+      }
+      function hideFakeConfirm() {
+        fc.classList.remove('visible');
+        fcBackdrop.classList.remove('visible');
+      }
+
+      ctaButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tier = btn.dataset.tier;
+          const period = btn.dataset.period || 'monthly';
+          showFakeConfirm(tier, period, false);
+        });
+      });
+
+      fcClose.addEventListener('click', hideFakeConfirm);
+      fcBackdrop.addEventListener('click', hideFakeConfirm);
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') hideFakeConfirm();
+      });
+    })();
+  </script>
+
+</body>
+</html>
