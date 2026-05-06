@@ -1,0 +1,1271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPiR Health — Today's Status Revamp · Final Direction</title>
+  <meta name="description" content="Final Checkin Screen direction — V1 layout with V2's recovery snapshot. Hand-off spec for the Unity team." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Rubik:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* Page chrome — Ajeo brand (cream + charcoal + single gold accent) */
+      --bg: #F5F2EC;
+      --bg-2: #FAF7F1;
+      --surface: #E8E5DF;
+      --surface-hi: #DCD8D0;
+      --surface-lo: #EFECE6;
+      --border: #D4CFC4;
+      --border-hi: #BEB7A8;
+      --text: #2D2D2D;
+      --text-soft: #4A4A4A;
+      --text-muted: #7B7B7B;
+      --gold: #8B7D5B;
+      --olive: #3D3D2B;
+      /* Page-chrome accents collapse to a single gold per Ajeo brand */
+      --accent-purple: #8B7D5B;
+      --accent-teal: #8B7D5B;
+      --accent-blue: #8B7D5B;
+      /* Semantic colors retained for chips / warn / ok / error */
+      --accent-green: #5fd063;
+      --accent-green-hi: #72e876;
+      --accent-green-lo: #3aa03e;
+      --accent-coral: #e8793a;
+      --accent-amber: #f5a623;
+      --accent-red: #d64545;
+      --gradient-primary: linear-gradient(135deg, #2D2D2D 0%, #8B7D5B 100%);
+      --font-primary: 'Inter', system-ui, sans-serif;
+      --font-tertiary: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-primary);
+      font-weight: 400;
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      min-height: 100vh;
+    }
+    ::selection { background: rgba(139,125,91,0.35); color: var(--text); }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+
+    /* ----- TOP BAR ----- */
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(245,242,236,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .topbar-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 14px 32px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+
+    /* Ajeo wordmark — pulsing gold j-dot, per BRAND-KIT.md */
+    .ajeo-wordmark {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: -0.02em;
+      color: var(--text);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: baseline;
+      flex-shrink: 0;
+    }
+    .ajeo-wordmark .j { position: relative; }
+    .ajeo-wordmark .j-dot {
+      position: absolute;
+      top: -2px;
+      left: 0.32em;
+      width: 6px; height: 6px;
+      background: var(--gold);
+      border-radius: 50%;
+      animation: ajeo-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes ajeo-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.78; }
+    }
+    .topbar-divider {
+      width: 1px;
+      height: 18px;
+      background: var(--border);
+      flex-shrink: 0;
+    }
+
+    .title-block { display: flex; align-items: baseline; gap: 14px; flex-shrink: 0; }
+    .title-main { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+    .title-sub {
+      font-family: var(--font-tertiary);
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .topbar-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-left: auto;
+    }
+    .chip {
+      font-family: var(--font-tertiary);
+      font-size: 10px;
+      font-weight: 500;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      padding: 5px 11px;
+      border-radius: 100px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .chip.priority { color: var(--accent-amber); border-color: rgba(245,166,35,0.35); background: rgba(245,166,35,0.08); }
+    .chip.status { color: var(--accent-teal); border-color: rgba(61,212,192,0.35); background: rgba(61,212,192,0.08); }
+    .chip.ticket { color: var(--accent-purple); border-color: rgba(123,104,238,0.35); background: rgba(123,104,238,0.08); }
+
+    /* ----- LAYOUT ----- */
+    .workspace {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 56px 32px 96px;
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      gap: 56px;
+      align-items: start;
+    }
+    @media (max-width: 980px) {
+      .workspace { grid-template-columns: 1fr; gap: 40px; padding: 32px 20px 64px; }
+    }
+
+    /* ----- PHONE FRAME ----- */
+    .phone-wrap {
+      position: sticky;
+      top: 96px;
+    }
+    @media (max-width: 980px) { .phone-wrap { position: static; } }
+    .phone-label {
+      font-family: var(--font-tertiary);
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .phone {
+      /* Phone interior is the SPiR Health product surface — re-declare the SPiR
+         dark palette + product fonts + product accent palette so the in-app
+         visuals stay unchanged regardless of the Ajeo brand on the page chrome. */
+      --bg: #0a0a0f;
+      --bg-2: #0f0f16;
+      --surface: #1a1a22;
+      --surface-hi: #22222d;
+      --surface-lo: #141419;
+      --border: #26262f;
+      --border-hi: #33333f;
+      --text: #f0ede8;
+      --text-soft: #b8b5c2;
+      --text-muted: #7a7985;
+      --font-primary: 'Rubik', system-ui, sans-serif;
+      --font-tertiary: 'Poppins', system-ui, sans-serif;
+      --accent-purple: #7b68ee;
+      --accent-teal: #3dd4c0;
+      --accent-blue: #4a8fe7;
+      --gradient-primary: linear-gradient(135deg, #7b68ee, #3dd4c0);
+      background: #0a0a0f;
+      border-radius: 44px;
+      padding: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.02);
+      margin: 0 auto;
+      max-width: 390px;
+    }
+    .phone-screen {
+      background: linear-gradient(180deg, #0f0f16 0%, #0a0a0f 100%);
+      border-radius: 32px;
+      padding: 28px 20px 32px;
+      overflow: hidden;
+      position: relative; /* anchor for in-phone modal + toast */
+    }
+
+    /* ----- SECTION CARDS ----- */
+    .card {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 22px;
+      padding: 20px 18px;
+      margin-bottom: 14px;
+    }
+    .card h2 {
+      font-size: 20px;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 4px;
+    }
+    .card .card-sub {
+      font-size: 13.5px;
+      color: var(--text-soft);
+      margin-bottom: 18px;
+      font-weight: 400;
+    }
+    .card-label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 12px;
+    }
+    .card-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.06);
+      margin: 18px 0 16px;
+    }
+
+    /* ----- BATTERY ICONS + SLIDER ----- */
+    .battery-row { display: flex; align-items: center; gap: 14px; }
+    .batteries { display: flex; align-items: flex-end; gap: 4px; }
+    .battery { position: relative; width: 22px; height: 32px; flex-shrink: 0; }
+    .battery-body {
+      position: absolute; inset: 3px 0 0 0;
+      border: 1.5px solid rgba(255,255,255,0.5);
+      border-radius: 4px; overflow: hidden; background: transparent;
+    }
+    .battery-body::before {
+      content: ''; position: absolute;
+      top: -4px; left: 50%; transform: translateX(-50%);
+      width: 8px; height: 3px;
+      background: rgba(255,255,255,0.5); border-radius: 1px 1px 0 0;
+    }
+    .battery-fill { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 2px; }
+    .battery-bolt { position: absolute; right: -7px; top: 8px; font-size: 14px; line-height: 1; }
+    .bolt-red { color: #d64545; }
+    .bolt-amber { color: #f5a623; }
+    .bolt-yellow { color: #e8c642; }
+    .bolt-green { color: var(--accent-green); filter: drop-shadow(0 0 6px rgba(95,208,99,0.6)); }
+
+    .slider-track-wrap { flex: 1; display: flex; align-items: center; gap: 12px; }
+    .slider-track {
+      flex: 1; position: relative; height: 8px;
+      background: rgba(255,255,255,0.08); border-radius: 100px;
+    }
+    .slider-fill {
+      position: absolute; inset: 0 20% 0 0;
+      background: linear-gradient(90deg, #3aa03e 0%, var(--accent-green) 60%, var(--accent-green-hi) 100%);
+      border-radius: 100px; box-shadow: 0 0 12px rgba(95,208,99,0.4);
+    }
+    .slider-thumb {
+      position: absolute; top: 50%; left: 80%;
+      transform: translate(-50%, -50%);
+      width: 22px; height: 22px; border-radius: 50%;
+      background: #f5f3ee;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5), 0 0 0 2px rgba(255,255,255,0.1);
+    }
+    .slider-value {
+      font-family: var(--font-primary);
+      font-size: 18px; font-weight: 700;
+      color: var(--text);
+      min-width: 48px; text-align: right;
+      letter-spacing: -0.01em;
+    }
+
+    /* ----- PROGRESS BAR (Energy Consumed) ----- */
+    .progress-bar {
+      height: 14px; background: rgba(255,255,255,0.06);
+      border-radius: 100px; overflow: hidden; position: relative;
+      margin-bottom: 14px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #3aa03e 0%, var(--accent-green) 70%, var(--accent-green-hi) 100%);
+      box-shadow: 0 0 12px rgba(95,208,99,0.35) inset;
+      border-radius: 100px;
+    }
+    .progress-caption { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: var(--text-soft); }
+    .mini-battery { width: 18px; height: 26px; position: relative; flex-shrink: 0; }
+
+    /* ----- SECOND WIND COLLAPSED ----- */
+    .expand-row {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 22px; padding: 18px 18px; margin-bottom: 14px;
+      display: flex; align-items: center; gap: 14px;
+    }
+    .plus-btn {
+      width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(255,255,255,0.08);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .plus-btn svg { width: 14px; height: 14px; stroke: rgba(255,255,255,0.7); }
+    .expand-body { flex: 1; }
+    .expand-title { font-size: 16px; font-weight: 600; color: var(--text); }
+    .expand-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+    .chevron { color: var(--text-muted); font-size: 18px; flex-shrink: 0; }
+
+    .section-header {
+      font-size: 22px; font-weight: 600; letter-spacing: -0.01em;
+      margin: 22px 0 14px; padding: 0 4px;
+    }
+
+    /* ----- RECOVERY (V2 SATELLITE RINGS + COMPACT EDIT CARD) ----- */
+    .recovery-icon {
+      width: 28px; height: 28px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .satellite-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 10px; margin-bottom: 14px;
+    }
+    .satellite {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-radius: 18px; padding: 14px 10px;
+      text-align: center;
+    }
+    .mini-ring { position: relative; width: 60px; height: 60px; margin: 0 auto 8px; }
+    .mini-ring svg { width: 60px; height: 60px; }
+    .mini-ring-val {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 600; color: var(--text);
+    }
+    .satellite-label {
+      font-family: var(--font-tertiary);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .row { display: flex; align-items: center; gap: 14px; padding: 14px 0; }
+    .row + .row { border-top: 1px solid rgba(255,255,255,0.05); }
+    .row-body { flex: 1; }
+    .row-title { font-size: 15px; font-weight: 600; color: var(--text); }
+    .row-sub { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+    .edit-btn {
+      background: rgba(255,255,255,0.08); border: none; color: var(--text);
+      font-family: var(--font-primary); font-size: 13px; font-weight: 500;
+      padding: 8px 18px; border-radius: 100px; cursor: pointer;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .edit-btn:hover { background: rgba(255,255,255,0.14); }
+    .edit-btn:active { transform: scale(0.96); }
+    .edit-btn.deferred {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.14);
+      color: var(--text-muted);
+      cursor: help;
+    }
+    .edit-btn.deferred::after { content: ' →'; opacity: 0.7; }
+
+    /* ----- SECOND WIND: EXPAND/COLLAPSE ----- */
+    .expand-row { cursor: pointer; transition: background 0.15s; }
+    .expand-row:hover { background: rgba(255,255,255,0.045); }
+    .expand-row .chevron { transition: transform 0.3s ease; }
+    .expand-row.open .chevron { transform: rotate(180deg); }
+    .expand-row.open .plus-btn svg path:first-child { display: none; }
+
+    .expand-panel {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: max-height 0.4s ease, opacity 0.25s ease, margin-bottom 0.4s ease;
+      margin-bottom: 0;
+    }
+    .expand-panel.open {
+      max-height: 400px;
+      opacity: 1;
+      margin-bottom: 14px;
+    }
+    .expand-panel-inner {
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      border-top: none;
+      border-radius: 0 0 22px 22px;
+      padding: 14px 18px 20px;
+    }
+    .expand-row.open {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      margin-bottom: 0;
+      border-bottom-color: transparent;
+    }
+
+    /* ----- IN-PHONE MODAL OVERLAY (Nap edit) — scoped to .phone-screen ----- */
+    .modal-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(5, 5, 10, 0.78);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      display: none;
+      align-items: flex-end;
+      justify-content: stretch;
+      z-index: 10;
+      border-radius: 32px; /* match phone-screen radius so the overlay clips cleanly */
+      animation: fadeIn 0.2s ease;
+    }
+    .modal-backdrop.open { display: flex; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    .modal-sheet {
+      width: 100%;
+      background: linear-gradient(180deg, #15151c 0%, #0f0f15 100%);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      border-radius: 24px 24px 32px 32px; /* bottom corners hug the phone frame */
+      padding: 18px 18px 24px;
+      box-shadow: 0 -16px 40px rgba(0,0,0,0.6);
+      animation: slideUp 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    @keyframes slideUp { from { transform: translateY(60px); opacity: 0.4; } to { transform: translateY(0); opacity: 1; } }
+
+    .modal-handle {
+      width: 36px; height: 4px;
+      background: rgba(255,255,255,0.18);
+      border-radius: 100px;
+      margin: 0 auto 14px;
+    }
+    .modal-title {
+      font-size: 17px; font-weight: 600;
+      letter-spacing: -0.01em;
+      margin-bottom: 2px;
+      text-align: center;
+    }
+    .modal-sub {
+      font-size: 12.5px; color: var(--text-soft);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+    .time-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .time-field {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      transition: border-color 0.15s;
+    }
+    .time-field:focus-within {
+      border-color: var(--accent-purple);
+      box-shadow: 0 0 0 3px rgba(123,104,238,0.18);
+    }
+    .time-field-label {
+      font-family: var(--font-tertiary);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+    .time-field input {
+      background: transparent; border: none; outline: none;
+      color: var(--text);
+      font-family: var(--font-primary);
+      font-size: 15px; font-weight: 600;
+      width: 100%;
+      letter-spacing: -0.01em;
+    }
+    .time-field input::-webkit-calendar-picker-indicator {
+      filter: invert(0.6);
+      cursor: pointer;
+    }
+
+    .modal-duration {
+      text-align: center;
+      font-family: var(--font-tertiary);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 14px;
+    }
+    .modal-duration strong {
+      color: var(--accent-blue);
+      font-family: var(--font-primary);
+      font-weight: 700;
+      font-size: 14px;
+      letter-spacing: -0.01em;
+      text-transform: none;
+      margin-left: 4px;
+    }
+
+    .modal-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .modal-btn {
+      padding: 12px;
+      border-radius: 100px;
+      border: none;
+      font-family: var(--font-primary);
+      font-size: 14px; font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, background 0.15s;
+    }
+    .modal-btn:active { transform: scale(0.97); }
+    .modal-btn.cancel {
+      background: rgba(255,255,255,0.08);
+      color: var(--text-soft);
+    }
+    .modal-btn.cancel:hover { background: rgba(255,255,255,0.14); }
+    .modal-btn.save {
+      background: var(--accent-blue);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(74,143,231,0.35);
+    }
+    .modal-btn.save:hover { background: #5e9ee9; }
+
+    /* Toast confirmation — scoped to .phone-screen */
+    .toast {
+      position: absolute;
+      bottom: 24px;
+      left: 50%;
+      transform: translate(-50%, 60px);
+      background: rgba(95,208,99,0.96);
+      color: #0a0a0f;
+      padding: 10px 18px;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 13px;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(114,232,118,0.4);
+      z-index: 20;
+      opacity: 0;
+      transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+    .toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+    .success-banner {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 18px; background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06); border-radius: 22px;
+      margin: 16px 0;
+    }
+    .success-check {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--accent-green);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      box-shadow: 0 0 16px rgba(95,208,99,0.4);
+    }
+    .success-check svg { width: 16px; height: 16px; stroke: #0a0a0f; stroke-width: 3; }
+    .success-text { font-size: 14px; color: var(--text); line-height: 1.4; font-weight: 500; padding-top: 4px; }
+
+    .finish-btn {
+      display: block; margin: 18px auto 0;
+      padding: 18px 72px;
+      background: var(--accent-green); color: #0a0a0f;
+      border: none; border-radius: 100px;
+      font-family: var(--font-primary);
+      font-size: 18px; font-weight: 700; letter-spacing: 0.1em;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(95,208,99,0.3), 0 0 0 1px rgba(114,232,118,0.4);
+      transition: transform 0.15s;
+    }
+    .finish-btn:hover { transform: translateY(-1px); }
+
+    /* ----- DOCS PANEL ----- */
+    .docs { max-width: 680px; min-width: 0; }
+    .docs-eyebrow {
+      font-family: var(--font-tertiary);
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent-purple); margin-bottom: 12px;
+    }
+    .docs h1 {
+      font-size: clamp(32px, 4vw, 44px);
+      font-weight: 700; letter-spacing: -0.02em;
+      line-height: 1.1; margin-bottom: 18px;
+    }
+    .gradient-text {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .docs-intro {
+      font-size: 17px; color: var(--text-soft);
+      margin-bottom: 32px; line-height: 1.55;
+    }
+
+    .ticket-ref {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 20px; margin-bottom: 32px;
+      display: grid; grid-template-columns: auto 1fr;
+      gap: 14px 20px; font-size: 13.5px; align-items: baseline;
+    }
+    .ticket-ref dt {
+      font-family: var(--font-tertiary);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--text-muted);
+    }
+    .ticket-ref dd { color: var(--text-soft); }
+    .ticket-ref dd strong { color: var(--text); font-weight: 500; }
+    .ticket-ref a { color: var(--accent-teal); text-decoration: none; }
+    .ticket-ref a:hover { text-decoration: underline; }
+
+    .doc-section { margin-bottom: 40px; }
+    .doc-section h2 {
+      font-size: 22px; font-weight: 600;
+      letter-spacing: -0.01em; margin-bottom: 14px;
+    }
+    .doc-section h3 {
+      font-size: 15px; font-weight: 600;
+      margin-top: 24px; margin-bottom: 10px;
+    }
+    .doc-section p { color: var(--text-soft); margin-bottom: 14px; font-size: 15px; }
+    .doc-section p strong { color: var(--text); font-weight: 500; }
+    .doc-section ul { padding-left: 22px; color: var(--text-soft); margin-bottom: 14px; }
+    .doc-section li { margin-bottom: 8px; font-size: 15px; }
+    .doc-section li strong { color: var(--text); font-weight: 500; }
+    code {
+      font-family: var(--font-mono); font-size: 12.5px;
+      background: var(--surface); border: 1px solid var(--border);
+      padding: 2px 6px; border-radius: 4px; color: var(--accent-teal);
+    }
+
+    .annotation-grid { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+    .annotation {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 18px;
+      display: grid; grid-template-columns: 28px 1fr;
+      gap: 14px; align-items: start;
+    }
+    .annotation-num {
+      font-family: var(--font-mono); font-size: 13px; font-weight: 600;
+      color: var(--accent-purple); background: rgba(123,104,238,0.12);
+      border-radius: 50%; width: 24px; height: 24px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .annotation-body { font-size: 14px; color: var(--text-soft); line-height: 1.5; }
+    .annotation-title { color: var(--text); font-weight: 500; margin-bottom: 4px; }
+
+    .warn {
+      background: rgba(232,121,58,0.08);
+      border-left: 3px solid var(--accent-coral);
+      padding: 14px 18px; border-radius: 4px;
+      margin-bottom: 20px; font-size: 14px; color: var(--text-soft);
+    }
+    .warn strong { color: var(--accent-coral); }
+    .ok {
+      background: rgba(95,208,99,0.08);
+      border-left: 3px solid var(--accent-green);
+      padding: 14px 18px; border-radius: 4px;
+      margin-bottom: 20px; font-size: 14px; color: var(--text-soft);
+    }
+    .ok strong { color: var(--accent-green); }
+    .info {
+      background: rgba(123,104,238,0.08);
+      border-left: 3px solid var(--accent-purple);
+      padding: 14px 18px; border-radius: 4px;
+      margin-bottom: 20px; font-size: 14px; color: var(--text-soft);
+    }
+    .info strong { color: var(--accent-purple); }
+
+    .source-tag {
+      display: inline-block;
+      font-family: var(--font-mono);
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.06em;
+      padding: 2px 6px; border-radius: 3px;
+      margin-left: 6px;
+      vertical-align: middle;
+    }
+    .source-tag.v1 { background: rgba(95,208,99,0.12); color: var(--accent-green); border: 1px solid rgba(95,208,99,0.3); }
+    .source-tag.v2 { background: rgba(61,212,192,0.12); color: var(--accent-teal); border: 1px solid rgba(61,212,192,0.3); }
+
+    footer {
+      text-align: center; padding: 40px 20px;
+      color: var(--text-muted); font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HIDDEN SVG DEFS FOR RINGS -->
+  <svg width="0" height="0" style="position:absolute">
+    <defs>
+      <linearGradient id="grad-blue" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#2a76bf"/>
+        <stop offset="100%" stop-color="#4a8fe7"/>
+      </linearGradient>
+      <linearGradient id="grad-purple" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0%" stop-color="#5a49b8"/>
+        <stop offset="100%" stop-color="#9d8aff"/>
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a href="https://spir-presentation.vercel.app" class="ajeo-wordmark" target="_blank" rel="noopener" aria-label="Ajeo">a<span class="j">j<span class="j-dot"></span></span>eo</a>
+      <span class="topbar-divider"></span>
+      <div class="title-block">
+        <span class="title-main">Today's Status · Checkin Screen</span>
+        <span class="title-sub">Final Direction</span>
+      </div>
+      <div class="topbar-meta">
+        <span class="chip ticket"><a href="https://linear.app/ajeo/issue/AJE-10/todays-status-checkin-screen-merge-v1-layout-v2-recovery-snapshot-ship" style="color:inherit; text-decoration:none;">AJE-10</a></span>
+        <span class="chip priority">Medium Priority</span>
+        <span class="chip status">In Review</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================= MERGED DESIGN: V1 LAYOUT + V2 RECOVERY SNAPSHOT ======================= -->
+  <div class="workspace">
+
+    <div class="phone-wrap">
+      <div class="phone-label">Today's Status · Final · 390 × content</div>
+      <div class="phone">
+        <div class="phone-screen">
+
+          <!-- First Wind Energy card (V1 base + V2 polish: centered head, gradient %) -->
+          <div class="card">
+            <h2 style="text-align:center;">First Wind Energy</h2>
+            <p class="card-sub" style="text-align:center;">How did you use your peak energy today?</p>
+
+            <div class="card-label">Energy Consumed</div>
+            <div class="battery-row">
+              <div class="batteries">
+                <div class="battery">
+                  <div class="battery-body"><div class="battery-fill" style="height:12%;background:var(--accent-red);"></div></div>
+                  <div class="battery-bolt bolt-red">⚡</div>
+                </div>
+                <div class="battery">
+                  <div class="battery-body"><div class="battery-fill" style="height:32%;background:var(--accent-amber);"></div></div>
+                  <div class="battery-bolt bolt-amber">⚡</div>
+                </div>
+                <div class="battery">
+                  <div class="battery-body"><div class="battery-fill" style="height:55%;background:#c29a2f;"></div></div>
+                  <div class="battery-bolt bolt-yellow">⚡</div>
+                </div>
+                <div class="battery" style="width:24px;height:34px;">
+                  <div class="battery-body" style="border-color:var(--accent-green);box-shadow:0 0 12px rgba(95,208,99,0.35);">
+                    <div class="battery-fill" style="height:78%;background:linear-gradient(180deg,var(--accent-green-hi),var(--accent-green));"></div>
+                  </div>
+                  <div class="battery-bolt bolt-green">⚡</div>
+                </div>
+              </div>
+              <div class="slider-track-wrap">
+                <div class="slider-track">
+                  <div class="slider-fill"></div>
+                  <div class="slider-thumb"></div>
+                </div>
+                <div class="slider-value gradient-text">80%</div>
+              </div>
+            </div>
+
+            <div class="card-divider"></div>
+
+            <div class="card-label">Energy Consumed</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:80%"></div></div>
+            <div class="progress-caption">
+              <div class="mini-battery">
+                <div class="battery-body" style="border-color:var(--accent-green);">
+                  <div class="battery-fill" style="height:80%;background:var(--accent-green);"></div>
+                </div>
+              </div>
+              <span>You used <strong style="color:var(--text);font-weight:600;">80%</strong> of your First Wind.</span>
+            </div>
+          </div>
+
+          <!-- Second Wind expand row (V1) — interactive: tap to expand -->
+          <div class="expand-row" id="secondWindToggle" role="button" tabindex="0" aria-expanded="false" aria-controls="secondWindPanel">
+            <div class="plus-btn">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/></svg>
+            </div>
+            <div class="expand-body">
+              <div class="expand-title">Second Wind Energy</div>
+              <div class="expand-sub" id="secondWindSub">Did you have a second wind today?</div>
+            </div>
+            <div class="chevron">⌄</div>
+          </div>
+
+          <!-- Second Wind expanded panel (mirrors First Wind input) -->
+          <div class="expand-panel" id="secondWindPanel" aria-hidden="true">
+            <div class="expand-panel-inner">
+              <div class="card-label" style="margin-top:10px;">Energy Consumed</div>
+              <div class="battery-row">
+                <div class="batteries">
+                  <div class="battery" data-sw-bat="0">
+                    <div class="battery-body"><div class="battery-fill" style="height:12%;background:var(--accent-red);"></div></div>
+                    <div class="battery-bolt bolt-red">⚡</div>
+                  </div>
+                  <div class="battery" data-sw-bat="1">
+                    <div class="battery-body"><div class="battery-fill" style="height:32%;background:var(--accent-amber);"></div></div>
+                    <div class="battery-bolt bolt-amber">⚡</div>
+                  </div>
+                  <div class="battery" data-sw-bat="2">
+                    <div class="battery-body"><div class="battery-fill" style="height:55%;background:#c29a2f;"></div></div>
+                    <div class="battery-bolt bolt-yellow">⚡</div>
+                  </div>
+                  <div class="battery" data-sw-bat="3" style="width:24px;height:34px;">
+                    <div class="battery-body" id="secondWindActiveBattery">
+                      <div class="battery-fill" style="height:50%;background:linear-gradient(180deg,#c29a2f,#c29a2f);"></div>
+                    </div>
+                    <div class="battery-bolt bolt-yellow" id="secondWindActiveBolt">⚡</div>
+                  </div>
+                </div>
+                <div class="slider-track-wrap">
+                  <div class="slider-track" id="secondWindTrack" style="cursor:pointer;">
+                    <div class="slider-fill" id="secondWindFill" style="inset: 0 50% 0 0; background: linear-gradient(90deg, #c29a2f 0%, #c29a2f 100%); box-shadow: 0 0 12px rgba(194,154,47,0.3);"></div>
+                    <div class="slider-thumb" id="secondWindThumb" style="left:50%;"></div>
+                  </div>
+                  <div class="slider-value gradient-text" id="secondWindValue">50%</div>
+                </div>
+              </div>
+              <p style="font-size:12px;color:var(--text-muted);margin-top:14px;text-align:center;">
+                Tap a battery or drag the slider to set your second wind level.
+              </p>
+            </div>
+          </div>
+
+          <h3 class="section-header">Recovery Snapshot</h3>
+
+          <!-- V2 RECOVERY SNAPSHOT (verbatim): satellite rings + compact edit card -->
+          <div class="satellite-row">
+            <div class="satellite">
+              <div class="mini-ring">
+                <svg viewBox="0 0 60 60">
+                  <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>
+                  <circle cx="30" cy="30" r="24" stroke="url(#grad-blue)" stroke-width="5" fill="none"
+                          stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="37.7"
+                          transform="rotate(-90 30 30)" style="filter: drop-shadow(0 0 6px rgba(74,143,231,0.45));"/>
+                </svg>
+                <div class="mini-ring-val">3/4</div>
+              </div>
+              <div class="satellite-label">Hydration</div>
+            </div>
+            <div class="satellite">
+              <div class="mini-ring">
+                <svg viewBox="0 0 60 60">
+                  <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>
+                </svg>
+                <div class="mini-ring-val" style="font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.1em;">—</div>
+              </div>
+              <div class="satellite-label">Deep Breathing Mins</div>
+            </div>
+            <div class="satellite">
+              <div class="mini-ring">
+                <svg viewBox="0 0 60 60">
+                  <circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>
+                  <circle cx="30" cy="30" r="24" stroke="url(#grad-purple)" stroke-width="5" fill="none"
+                          stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="0"
+                          transform="rotate(-90 30 30)" style="filter: drop-shadow(0 0 6px rgba(123,104,238,0.45));"/>
+                </svg>
+                <div class="mini-ring-val">14h</div>
+              </div>
+              <div class="satellite-label">Soundscape Minutes</div>
+            </div>
+          </div>
+
+          <div class="card" style="padding: 14px 18px;">
+            <div class="row" style="padding: 6px 0;">
+              <div class="recovery-icon">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><ellipse cx="12" cy="12" rx="8" ry="5" fill="var(--accent-blue)"/><circle cx="9.5" cy="12" r="1.2" fill="#0a0a0f"/><circle cx="14.5" cy="12" r="1.2" fill="#0a0a0f"/></svg>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Deep Breathing</div>
+                <div class="row-sub" id="napStatus">No deep breathing logged</div>
+              </div>
+              <button class="edit-btn" id="napEditBtn">Edit</button>
+            </div>
+            <div class="row" style="padding: 6px 0;">
+              <div class="recovery-icon">
+                <svg viewBox="0 0 24 24" fill="none" width="20" height="20"><path d="M20 14 A 8 8 0 1 1 10 4 A 6 6 0 0 0 20 14 z" fill="var(--accent-purple)"/></svg>
+              </div>
+              <div class="row-body">
+                <div class="row-title">Soundscape</div>
+                <div class="row-sub">14h · 8:00 PM → 10:00 AM</div>
+              </div>
+              <button class="edit-btn deferred" id="fastingEditBtn" title="Opens the existing in-app Soundscape tool — no new flow in this prototype">Open Soundscape</button>
+            </div>
+          </div>
+
+          <div class="success-banner">
+            <div class="success-check">
+              <svg viewBox="0 0 24 24" fill="none"><polyline points="5 12 10 17 19 7" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="success-text">Great day! Your energy, hydration, and recovery are all on track.</div>
+          </div>
+
+          <button class="finish-btn">FINISH</button>
+
+          <!-- ===== IN-PHONE NAP EDIT MODAL (overlays only the phone screen) ===== -->
+          <div class="modal-backdrop" id="napModal" role="dialog" aria-modal="true" aria-labelledby="napModalTitle">
+            <div class="modal-sheet">
+              <div class="modal-handle"></div>
+              <h3 class="modal-title" id="napModalTitle">Log deep breathing</h3>
+              <p class="modal-sub">Tap to set start and end times.</p>
+              <div class="time-row">
+                <div class="time-field">
+                  <div class="time-field-label">Start</div>
+                  <input type="time" id="napStart" value="13:30" />
+                </div>
+                <div class="time-field">
+                  <div class="time-field-label">End</div>
+                  <input type="time" id="napEnd" value="14:30" />
+                </div>
+              </div>
+              <div class="modal-duration">Duration<strong id="napDuration">1h 0m</strong></div>
+              <div class="modal-actions">
+                <button class="modal-btn cancel" id="napCancelBtn">Cancel</button>
+                <button class="modal-btn save" id="napSaveBtn">Save</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== IN-PHONE TOAST ===== -->
+          <div class="toast" id="toast">Deep breathing logged</div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ======================= DOCS PANEL: HAND-OFF SUMMARY ======================= -->
+    <div class="docs">
+      <div class="docs-eyebrow">AJE-10 · Final Direction · Ready for your team</div>
+      <h1>V1 layout. <span class="gradient-text">V2's recovery snapshot.</span> Shipped together.</h1>
+      <p class="docs-intro">
+        You reviewed the three exploration variants on 2026-04-24 and chose:
+        <em>"v1 with the recovery snapshot of v2"</em>. This is that. The merged spec
+        is captured below; the line-by-line build instruction for Abdul
+        lives in <code>SPEC_AJE-10.md</code> alongside this prototype.
+      </p>
+
+      <dl class="ticket-ref">
+        <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-10/todays-status-checkin-screen-merge-v1-layout-v2-recovery-snapshot-ship">AJE-10 — Today's Status (Checkin Screen): merge v1 layout + v2 recovery snapshot</a></dd>
+        <dt>Spec</dt><dd><a href="./SPEC_AJE-10.md">SPEC_AJE-10.md</a> · element-by-element Unity build table for Abdul</dd>
+        <dt>Status</dt><dd>In Review · pending Abdul's feasibility check on the existing Checkin Screen panel</dd>
+      </dl>
+
+      <div class="doc-section">
+        <h2>What changes vs your current in-app Checkin Screen</h2>
+        <p>
+          Today, your First Wind input is a 3-state battery picker
+          (<code>"low"</code> / <code>"medium"</code> / <code>"high"</code>) on the
+          <code>HabbitPanel.firstWind[]</code> Image array, set via
+          <code>LoadoutEnergyBar.SetFirstWindData()</code>. Recovery information
+          shows hydration as a row + segmented bars and Deep Breathing/Soundscape as edit rows
+          inside one card.
+        </p>
+        <p>
+          What you'll see in the new direction:
+        </p>
+        <ul>
+          <li><strong>First Wind input becomes a continuous slider (0–100%)</strong> with the 4 battery icons as a visual reference for what each level looks like. <span class="source-tag v1">V1</span></li>
+          <li><strong>Energy Consumed visual bar</strong> (display-only, not yet wired) sits below a divider in the same card. <span class="source-tag v1">V1</span></li>
+          <li><strong>Recovery Snapshot becomes 3 satellite mini-rings</strong> (Hydration, Deep Breathing Mins, Soundscape Minutes) above a compact card with just Deep Breathing + Soundscape edit rows. Hydration loses its segmented bars and "1.5 liters" caption — it now shows only as a ring fill (e.g. 3/4). <span class="source-tag v2">V2</span></li>
+          <li><strong>Centered card heading + gradient % readout</strong> on the First Wind card — visual polish carried in from V2. <span class="source-tag v2">V2</span></li>
+        </ul>
+        <div class="warn"><strong>Backend dependency you should know about.</strong> <code>Survey.firstWindValue</code> and <code>Survey.secondWindValue</code> in <code>GameManager.cs</code> are currently <code>string</code> ("low"/"medium"/"high"). To ship the slider, they need to accept a numeric percentage (0–100). We'd have Abdul coordinate with your API owner before implementation lands.</div>
+      </div>
+
+      <div class="doc-section">
+        <h2>Annotated walkthrough</h2>
+        <div class="annotation-grid">
+          <div class="annotation">
+            <div class="annotation-num">1</div>
+            <div class="annotation-body">
+              <div class="annotation-title">First Wind card — centered header + subtitle <span class="source-tag v2">V2 polish</span></div>
+              UGUI <code>TMP_Text</code> with <code>alignment = Center</code>. Header "First Wind Energy", subtitle "How did you use your peak energy today?". Lives on the existing First Wind card inside the Checkin Screen prefab (owning panel: <code>CheckInsPanel.cs</code>).
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">2</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Battery row (4 visual states) <span class="source-tag v1">V1</span></div>
+              <code>HabbitPanel.firstWind[]</code> is currently a 3-Image array. Extend to 4 elements matching the slider ranges (red 0–25, amber 26–50, yellow 51–75, green 76–100). Drive colors via the slider's <code>OnValueChanged</code> rather than user click — batteries become a reflection of the slider.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">3</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Slider + % readout (primary input) <span class="source-tag v1">V1</span></div>
+              Built-in Unity <code>UnityEngine.UI.Slider</code>, range 0–100, no whole-number snap. Bind <code>onValueChanged</code> to (a) update the battery row tint and (b) write to <code>DataConfig.userTodaySurvey.firstWindValue</code> (after the model change). The "80%" readout is a <code>TMP_Text</code> with the gradient color treatment.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">4</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Energy Consumed bar (visual only) <span class="source-tag v1">V1</span></div>
+              Build the visual exactly as shown, hardcode 80%. Per the original ticket scope: don't wire the logic in this pass. <code>Image</code> with <code>Type = Filled</code>, <code>Fill Method = Horizontal</code>, <code>Fill Origin = Left</code>.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">5</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Second Wind expand row (collapsed) <span class="source-tag v1">V1</span></div>
+              Tapping expands into the same First Wind layout (slider + battery row). Use the existing <code>PopupAndDownAnimator.cs</code> pattern — DOTween <code>DOScale(Vector3.one, 0.5f).SetEase(Ease.OutBack)</code> on enable. Backing field: <code>DataConfig.userTodaySurvey.secondWindValue</code>.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">6</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Recovery Snapshot — 3 satellite mini-rings <span class="source-tag v2">V2</span></div>
+              Three <code>Image</code> elements with <code>Type = Filled</code>, <code>Fill Method = Radial360</code>, <code>Fill Origin = Top</code>. Drive <code>image.fillAmount</code> from data: Hydration <code>= DataConfig.userTodaySurvey.hydrationValue / 4f</code>, Nap = 0 if no nap (greyed-out empty ring), Fasting <code>= DataConfig.userTodaySurvey.fastingValue / hoursTarget</code>. Animate with <code>image.DOFillAmount(target, 0.5f).SetEase(Ease.OutCubic)</code>. The custom <code>OuterRoundedFillFixed.shader</code> in <code>Assets/Custom Shader/</code> is the upgrade path if rounded caps / glow are wanted.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">7</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Deep Breathing edit row <span class="source-tag v2">V2</span></div>
+              Edit button → <code>AddNapTodayPopup.Show()</code> (already a <code>SingletonBehaviourUI</code>). After save, <code>SaveDateAndTime()</code> POSTs to <code>NetworkAPImanager.AddNapToCheckIn()</code> and triggers <code>GameManager.SpawnEffect(confettiBlue)</code>.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">8</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Soundscape edit row <span class="source-tag v2">V2</span></div>
+              Edit button → <code>FastingPopup.Show()</code> + <code>FastingPopup.Instance.EnableBGOpacity()</code>. Subtitle copy: "14h · 8:00 PM → 10:00 AM" (V2 wording — replaces V1's "14h from 8:00 PM to 10:00 AM"). Fasting icon uses <code>--accent-purple</code> instead of blue.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">9</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Success banner <span class="source-tag v1">V1</span></div>
+              Shown when thresholds hit. Suggested defaults — happy to pressure-test these with you: First Wind ≥ 60%, Hydration ≥ 3/4, Soundscape minutes hit target.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">10</div>
+            <div class="annotation-body">
+              <div class="annotation-title">FINISH button <span class="source-tag v1">V1</span></div>
+              Existing handler: <code>CheckInsPanel.MarkTodaysStatusComplete()</code> → <code>NetworkAPImanager.IsTodaysStatusBtnAvailable()</code>. Unchanged.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h2>What Abdul will touch on your Unity side</h2>
+        <ul>
+          <li><code>Assets/My Scripts/CheckInsPanel.cs</code> — owning panel for the Checkin Screen.</li>
+          <li><code>Assets/My Scripts/HabbitPanel.cs</code> — <code>firstWind[]</code> / <code>secondWind[]</code> Image arrays (line ~3781), <code>SetFirstWindData(int)</code> / <code>SetSecondWindData(int)</code> setters (currently 3-case switch); extend to 4 elements + numeric mapping.</li>
+          <li><code>Assets/My Scripts/LoadoutEnergyBar.cs</code> — refactor the 3-case switch in <code>SetFirstWindData()</code> / <code>SetSecondWindData()</code> to a numeric → color mapping.</li>
+          <li><code>Assets/My Scripts/GameManager.cs</code> — <code>Survey</code> class (line 1782): <code>firstWindValue</code> / <code>secondWindValue</code> change from <code>string</code> to numeric. Also drop or repurpose <code>energy_List</code> (line 302) once the enum goes away.</li>
+          <li><code>Assets/Resources/Prefabs/UI/Panels/</code> — Checkin Screen prefab: add slider GameObject, add 4th battery, add 3 mini-ring GameObjects, restructure recovery card.</li>
+          <li><code>Assets/Custom Shader/OuterRoundedFillFixed.shader</code> — optional upgrade for the mini-rings if you want rounded caps + glow.</li>
+        </ul>
+        <div class="info"><strong>This prototype repo doesn't modify any of your Unity scripts.</strong> The list above is for Abdul's planning; the Unity work is the downstream ticket once you're happy with this direction.</div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <footer>
+    SPiR Health · Today's Status / Checkin Screen · Final Direction · AJE-10
+  </footer>
+
+  <script>
+  (function () {
+    /* ---------- Second Wind expand/collapse ---------- */
+    var swToggle = document.getElementById('secondWindToggle');
+    var swPanel  = document.getElementById('secondWindPanel');
+    var swSub    = document.getElementById('secondWindSub');
+
+    function toggleSecondWind() {
+      var open = swToggle.classList.toggle('open');
+      swPanel.classList.toggle('open', open);
+      swToggle.setAttribute('aria-expanded', open);
+      swPanel.setAttribute('aria-hidden', !open);
+      if (open) {
+        swSub.textContent = 'Set your level below.';
+      } else {
+        swSub.textContent = swValue > 0
+          ? 'Recorded ' + swValue + '% — tap to edit.'
+          : 'Did you have a second wind today?';
+      }
+    }
+    swToggle.addEventListener('click', toggleSecondWind);
+    swToggle.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleSecondWind(); }
+    });
+
+    /* ---------- Second Wind slider/battery sync ---------- */
+    var swValue = 50;
+    var swTrack       = document.getElementById('secondWindTrack');
+    var swFill        = document.getElementById('secondWindFill');
+    var swThumb       = document.getElementById('secondWindThumb');
+    var swReadout     = document.getElementById('secondWindValue');
+    var swActiveBat   = document.getElementById('secondWindActiveBattery');
+    var swActiveBolt  = document.getElementById('secondWindActiveBolt');
+    var swActiveFill  = swActiveBat.querySelector('.battery-fill');
+    var swBatteries   = document.querySelectorAll('[data-sw-bat]');
+
+    // Color map for battery + slider fill, matched to slider buckets (0/25/50/75/100)
+    function colorForValue(pct) {
+      if (pct <= 25) return { color: '#d64545', light: '#e16464', name: 'red',    boltClass: 'bolt-red' };
+      if (pct <= 50) return { color: '#c29a2f', light: '#dab64a', name: 'amber',  boltClass: 'bolt-amber' };
+      if (pct <= 75) return { color: '#5fd063', light: '#72e876', name: 'green',  boltClass: 'bolt-green' };
+      return                 { color: '#5fd063', light: '#72e876', name: 'greenHi', boltClass: 'bolt-green' };
+    }
+
+    function setSecondWind(pct) {
+      pct = Math.max(0, Math.min(100, Math.round(pct)));
+      swValue = pct;
+      var c = colorForValue(pct);
+      // slider visuals
+      swFill.style.inset = '0 ' + (100 - pct) + '% 0 0';
+      swFill.style.background = 'linear-gradient(90deg, ' + c.color + ' 0%, ' + c.light + ' 100%)';
+      swFill.style.boxShadow = '0 0 12px ' + (pct >= 75 ? 'rgba(95,208,99,0.4)' : 'rgba(' + (pct <= 25 ? '214,69,69' : '194,154,47') + ',0.3)');
+      swThumb.style.left = pct + '%';
+      swReadout.textContent = pct + '%';
+      // active battery (the rightmost — battery #3 — acts as the "current state" indicator)
+      swActiveFill.style.height = Math.max(15, pct) + '%';
+      swActiveFill.style.background = 'linear-gradient(180deg,' + c.light + ',' + c.color + ')';
+      swActiveBat.style.borderColor = c.color;
+      swActiveBat.style.boxShadow = '0 0 12px ' + (pct >= 75 ? 'rgba(95,208,99,0.35)' : 'transparent');
+      swActiveBolt.className = 'battery-bolt ' + c.boltClass;
+    }
+
+    function trackPct(evt) {
+      var rect = swTrack.getBoundingClientRect();
+      var x = (evt.touches ? evt.touches[0].clientX : evt.clientX) - rect.left;
+      return (x / rect.width) * 100;
+    }
+    var dragging = false;
+    swTrack.addEventListener('pointerdown', function (e) {
+      dragging = true;
+      swTrack.setPointerCapture(e.pointerId);
+      setSecondWind(trackPct(e));
+    });
+    swTrack.addEventListener('pointermove', function (e) {
+      if (dragging) setSecondWind(trackPct(e));
+    });
+    swTrack.addEventListener('pointerup', function () { dragging = false; });
+    swTrack.addEventListener('pointercancel', function () { dragging = false; });
+
+    // Tap a battery icon → snap to its bucket midpoint (12.5 / 37.5 / 62.5 / 87.5)
+    var bucketMid = [12.5, 37.5, 62.5, 87.5];
+    swBatteries.forEach(function (bat, i) {
+      bat.style.cursor = 'pointer';
+      bat.addEventListener('click', function (e) {
+        e.stopPropagation();
+        setSecondWind(bucketMid[i]);
+      });
+    });
+
+    /* ---------- Nap modal ---------- */
+    var napBtn       = document.getElementById('napEditBtn');
+    var napModal     = document.getElementById('napModal');
+    var napCancel    = document.getElementById('napCancelBtn');
+    var napSave      = document.getElementById('napSaveBtn');
+    var napStart     = document.getElementById('napStart');
+    var napEnd       = document.getElementById('napEnd');
+    var napDuration  = document.getElementById('napDuration');
+    var napStatus    = document.getElementById('napStatus');
+    var napRingTile  = document.querySelectorAll('.satellite')[1]; // Nap is the 2nd satellite
+    var napRingVal   = napRingTile.querySelector('.mini-ring-val');
+    var napRingSvg   = napRingTile.querySelector('.mini-ring svg');
+
+    function openNap()  { napModal.classList.add('open'); recalcDuration(); }
+    function closeNap() { napModal.classList.remove('open'); }
+    napBtn.addEventListener('click', openNap);
+    napCancel.addEventListener('click', closeNap);
+    napModal.addEventListener('click', function (e) {
+      if (e.target === napModal) closeNap();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape') closeNap();
+    });
+
+    function parseTime(t) {
+      var parts = t.split(':');
+      return parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+    }
+    function fmt12(t) {
+      var parts = t.split(':');
+      var h = parseInt(parts[0], 10);
+      var m = parts[1];
+      var ampm = h >= 12 ? 'PM' : 'AM';
+      var h12 = h % 12; if (h12 === 0) h12 = 12;
+      return h12 + ':' + m + ' ' + ampm;
+    }
+    function diffMinutes(start, end) {
+      var s = parseTime(start), e = parseTime(end);
+      var d = e - s;
+      if (d <= 0) d += 24 * 60; // wrap to next day
+      return d;
+    }
+    function fmtDuration(mins) {
+      var h = Math.floor(mins / 60);
+      var m = mins % 60;
+      if (h === 0) return m + 'm';
+      if (m === 0) return h + 'h';
+      return h + 'h ' + m + 'm';
+    }
+    function recalcDuration() {
+      napDuration.textContent = fmtDuration(diffMinutes(napStart.value, napEnd.value));
+    }
+    napStart.addEventListener('input', recalcDuration);
+    napEnd.addEventListener('input', recalcDuration);
+
+    napSave.addEventListener('click', function () {
+      var mins = diffMinutes(napStart.value, napEnd.value);
+      var dur = fmtDuration(mins);
+      napStatus.textContent = dur + ' · ' + fmt12(napStart.value) + ' → ' + fmt12(napEnd.value);
+      napStatus.style.color = 'var(--accent-blue)';
+
+      // Update Nap satellite ring: empty → filled
+      // Nap target = 90 minutes (1.5h) for visual fill
+      var target = 90;
+      var fillPct = Math.min(1, mins / target);
+      var circumference = 150.8; // matches stroke-dasharray
+      var offset = circumference * (1 - fillPct);
+
+      napRingSvg.innerHTML =
+        '<circle cx="30" cy="30" r="24" stroke="rgba(255,255,255,0.08)" stroke-width="5" fill="none"/>' +
+        '<circle cx="30" cy="30" r="24" stroke="url(#grad-blue)" stroke-width="5" fill="none" ' +
+        'stroke-linecap="round" stroke-dasharray="150.8" stroke-dashoffset="' + offset.toFixed(1) + '" ' +
+        'transform="rotate(-90 30 30)" style="filter: drop-shadow(0 0 6px rgba(74,143,231,0.45));"/>';
+      napRingVal.style.fontSize = '14px';
+      napRingVal.style.color = 'var(--text)';
+      napRingVal.style.textTransform = 'none';
+      napRingVal.style.letterSpacing = 'normal';
+      napRingVal.textContent = dur;
+
+      closeNap();
+      showToast('Nap saved · ' + dur);
+    });
+
+    /* ---------- Fasting deferred (intentionally non-interactive) ---------- */
+    var fastBtn = document.getElementById('fastingEditBtn');
+    fastBtn.addEventListener('click', function () {
+      showToast('In-app: opens existing Soundscape tool');
+    });
+
+    /* ---------- Toast ---------- */
+    var toast = document.getElementById('toast');
+    var toastTimer;
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.classList.add('show');
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(function () { toast.classList.remove('show'); }, 2400);
+    }
+  })();
+  </script>
+
+</body>
+</html>
