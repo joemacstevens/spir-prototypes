@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SPiR Health · 2026 Q2 Prototype Review · Ajeo</title>
-  <meta name="description" content="Three prototypes for review: Today's Status Checkin Screen, SPiR Pro vs Max paywall, and XP Payment Gates. Designed and built by Ajeo." />
+  <meta name="description" content="Four prototypes for review: Today's Status Checkin Screen, SPiR Pro vs Max paywall, XP Payment Gates, and the Breathing Module polish pass. Designed and built by Ajeo." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -814,6 +814,7 @@
         <a href="#status">01 / Status</a>
         <a href="#paywall">02 / Paywall</a>
         <a href="#gates">03 / Gates</a>
+        <a href="#breathing">04 / Breathing</a>
         <a href="https://linear.app/ajeo/project/spir-88970eb13262" class="pill" target="_blank" rel="noopener">Linear</a>
       </div>
     </div>
@@ -831,11 +832,11 @@
         SPiR Health <span class="gold-dot"></span> 2026 Q2 Prototype Review
       </div>
       <h1 class="reveal">
-        Three prototypes<span class="gold">.</span><br/>
+        Four prototypes<span class="gold">.</span><br/>
         One direction<span class="gold">.</span>
       </h1>
       <p class="lede reveal">
-        Today's Status, the Pro vs Max paywall, and XP Payment Gates — designed and built end-to-end, ready for your review and one set of decisions to ship them.
+        Today's Status, the Pro vs Max paywall, XP Payment Gates, and the Breathing Module polish pass — designed and built end-to-end, ready for your review and one set of decisions to ship them.
       </p>
       <p class="fineprint reveal">
         Each section below has the live interactive prototype. Click through to tap, slide, and drive the actual flow.
@@ -1104,6 +1105,93 @@
             <span class="arrow">→</span>
           </a>
           <div class="ticket"><a href="https://linear.app/ajeo/issue/AJE-12" target="_blank" rel="noopener">AJE-12</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 04 · BREATHING MODULE ====================== -->
+  <section class="proto" id="breathing">
+    <div class="proto-inner">
+      <div class="proto-eyebrow reveal">
+        <span class="num">04</span>
+        <span class="divider"></span>
+        Breathing Module
+      </div>
+      <h2 class="reveal">
+        Same patterns you built<span class="gold">,</span><br/>
+        wrapped in glow + a summary<span class="gold">.</span>
+      </h2>
+      <p class="subhead reveal">
+        Your four breathing patterns (4-7-8, Box, Huberman, Resonant) — same timings, same flow. Now with a soft outer glow on the breathing circle, rounded-cap progress rings, an inline 5-cycle XP bar, and a post-session summary screen.
+      </p>
+
+      <div class="phone-stage reveal">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-notch"></div>
+            <div class="phone-content" style="display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding: 30px 20px 24px; background: radial-gradient(ellipse at 30% 20%, rgba(82,172,255,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 80%, rgba(130,80,220,0.06) 0%, transparent 50%), #0a0a1a;">
+
+              <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(245,242,236,0.5);">4-7-8 Breathing</div>
+
+              <!-- Breathing circle + concentric rings -->
+              <div style="position: relative; width: 200px; height: 200px; display: flex; align-items: center; justify-content: center;">
+                <!-- Outer rings (3 concentric for 4-7-8) -->
+                <svg viewBox="0 0 200 200" style="position: absolute; inset: 0; width: 100%; height: 100%;">
+                  <circle cx="100" cy="100" r="92" stroke="rgba(255,255,255,0.06)" stroke-width="3" fill="none"/>
+                  <circle cx="100" cy="100" r="92" stroke="#52ACFF" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="578" stroke-dashoffset="0" transform="rotate(-90 100 100)" style="filter: drop-shadow(0 0 6px rgba(82,172,255,0.5));"/>
+                  <circle cx="100" cy="100" r="80" stroke="rgba(255,255,255,0.06)" stroke-width="3" fill="none"/>
+                  <circle cx="100" cy="100" r="80" stroke="#52ACFF" stroke-width="3" fill="none" stroke-linecap="round" stroke-dasharray="503" stroke-dashoffset="100" transform="rotate(-90 100 100)" style="filter: drop-shadow(0 0 6px rgba(82,172,255,0.5));"/>
+                  <circle cx="100" cy="100" r="68" stroke="rgba(255,255,255,0.06)" stroke-width="3" fill="none"/>
+                </svg>
+                <!-- Glow halo -->
+                <div style="position: absolute; width: 132px; height: 132px; border-radius: 50%; background: radial-gradient(circle, rgba(82,172,255,0.35) 0%, rgba(82,172,255,0) 65%); filter: blur(8px);"></div>
+                <!-- Inner breathing circle -->
+                <div style="position: relative; width: 88px; height: 88px; border-radius: 50%; background: linear-gradient(135deg, #6BBCFF, #52ACFF); box-shadow: 0 0 40px rgba(82,172,255,0.5), inset 0 0 20px rgba(255,255,255,0.15);"></div>
+              </div>
+
+              <!-- Status + counter -->
+              <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                <div style="font-size: 22px; font-weight: 700; letter-spacing: 0.32em; color: #fff;">INHALE</div>
+                <div style="font-size: 13px; color: rgba(245,242,236,0.6);">x3</div>
+              </div>
+
+              <!-- 5-cycle XP bar -->
+              <div style="width: 100%;">
+                <div style="display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(245,242,236,0.5); margin-bottom: 6px;">
+                  <span>3 / 5 cycles</span>
+                  <span>+20 XP at 5</span>
+                </div>
+                <div style="position: relative; width: 100%; height: 6px; background: rgba(255,255,255,0.08); border-radius: 100px; overflow: hidden;">
+                  <div style="position: absolute; inset: 0 40% 0 0; background: linear-gradient(90deg, #52ACFF, #8BC9FF); border-radius: 100px; box-shadow: 0 0 12px rgba(82,172,255,0.6);"></div>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="proto-foot reveal">
+        <div class="proto-notes">
+          <div class="proto-notes-label">What's wired</div>
+          <ul>
+            <li>The four patterns + timings stay exactly as you built them — same `BreathworkPanel.cs:73–117`. This is polish, not a rewrite.</li>
+            <li>Soft outer glow halo around the breathing circle (1.6× the inner scale, color-matched to the active phase).</li>
+            <li>Concentric rings now use the rounded-cap shader from Today's Status (visual language matches across screens).</li>
+            <li>Circle scale capped at 2.2× — your existing `DOScale(4)` overflows mobile viewports; flagged in the spec.</li>
+            <li>3-second countdown overlay between Start and the animation, plus a post-session summary screen with cycles / minutes / pattern / avg-cycle / XP earned.</li>
+            <li>5-cycle XP refund mechanic from your 2026-05-01 SMS is captured as the spec's biggest open feasibility flag — needs a quick confirmation on whether the existing bonus award stacks on top of the refund.</li>
+            <li>Full Unity hand-off spec at <code>SPEC_breathing.md</code>: TL;DR, element table, GSAP→DOTween mapping, files Abdul touches.</li>
+          </ul>
+        </div>
+        <div class="proto-cta">
+          <div class="label">Open prototype</div>
+          <a class="link" href="https://breathing-module.vercel.app" target="_blank" rel="noopener">
+            <span>breathing-module</span>
+            <span class="arrow">→</span>
+          </a>
+          <div class="ticket"><a href="https://linear.app/ajeo/issue/AJE-65" target="_blank" rel="noopener">AJE-65</a></div>
         </div>
       </div>
     </div>
