@@ -93,9 +93,16 @@
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--chrome-bg);
       min-height: 100vh;
+      /* Default text color is the chrome (dark on cream); the phone interior
+         restores its own white default below so in-phone elements that
+         inherit color stay readable on the dark device background. */
       color: var(--chrome-text);
       -webkit-font-smoothing: antialiased;
     }
+    /* Device-frame is the phone interior — restore the breathing module's
+       original white text default so anything inside (selection-screen
+       titles, mode names, etc.) stays readable on the #0a0a1a background. */
+    .device-frame { color: var(--color-text-primary); }
     html { scroll-behavior: smooth; }
 
     /* ============================================================
