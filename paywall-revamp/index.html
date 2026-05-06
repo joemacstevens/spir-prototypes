@@ -130,25 +130,6 @@
     .chip.ticket a { color: inherit; text-decoration: none; }
     .chip.ticket a:hover { text-decoration: underline; }
 
-    /* ---------- PLACEHOLDER BANNER ---------- */
-    .placeholder-banner {
-      position: sticky; top: 56px; z-index: 55;
-      background: rgba(245,166,35,0.10);
-      border-bottom: 1px solid rgba(245,166,35,0.25);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-    }
-    .placeholder-banner-inner {
-      max-width: 1200px; margin: 0 auto;
-      padding: 10px 32px;
-      display: flex; align-items: center; gap: 12px;
-      font-size: 13px; color: var(--text-soft);
-      flex-wrap: wrap;
-    }
-    .placeholder-banner strong { color: var(--accent-amber); font-weight: 600; }
-    .placeholder-banner a { color: var(--accent-teal); text-decoration: none; }
-    .placeholder-banner a:hover { text-decoration: underline; }
-
     /* ---------- VARIANT NAV ---------- */
     .variant-nav {
       position: sticky; top: 96px; z-index: 50;
@@ -298,7 +279,7 @@
     }
     .feature-table-head {
       display: grid;
-      grid-template-columns: 1fr 60px 60px;
+      grid-template-columns: 1fr 56px 56px 56px;
       align-items: center;
       padding: 12px 14px;
       background: rgba(255,255,255,0.03);
@@ -308,15 +289,25 @@
       letter-spacing: 0.16em; text-transform: uppercase;
       color: var(--text-muted);
     }
+    .feature-table-head .col-free,
     .feature-table-head .col-pro,
     .feature-table-head .col-max { text-align: center; }
     .feature-table-head .col-max { color: var(--accent-purple); }
     .feature-row {
       display: grid;
-      grid-template-columns: 1fr 60px 60px;
+      grid-template-columns: 1fr 56px 56px 56px;
       align-items: center;
       padding: 10px 14px;
       font-size: 12px;
+    }
+    .feature-table-footnote {
+      margin-top: 10px;
+      padding: 0 4px;
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      text-align: center;
+      font-style: italic;
     }
     .feature-row + .feature-row { border-top: 1px solid rgba(255,255,255,0.04); }
     .feature-row .feat-name { color: var(--text-soft); }
@@ -330,7 +321,7 @@
       content: '';
       position: absolute;
       top: 0; right: 0;
-      width: 60px; height: 100%;
+      width: 56px; height: 100%;
       background: linear-gradient(180deg, rgba(123,104,238,0.10) 0%, rgba(123,104,238,0.04) 100%);
       pointer-events: none;
       border-left: 1px solid rgba(123,104,238,0.18);
@@ -471,6 +462,25 @@
       letter-spacing: 0.14em; text-transform: uppercase;
       color: var(--text-muted);
       margin-top: 2px;
+    }
+    .rating-card .rating-blurb {
+      font-size: 12px;
+      line-height: 1.5;
+      color: var(--text-soft);
+      padding-top: 10px;
+      border-top: 1px solid rgba(255,255,255,0.06);
+      margin-top: 6px;
+    }
+    .rating-card .rating-blurb a { color: var(--accent-gold); text-decoration: none; }
+    .rating-card .rating-blurb a:hover { text-decoration: underline; }
+    .v2-mini-footnote {
+      margin-top: 10px;
+      padding: 0 4px;
+      font-size: 11.5px;
+      line-height: 1.5;
+      color: var(--text-muted);
+      text-align: center;
+      font-style: italic;
     }
 
     .testimonial-card {
@@ -696,6 +706,12 @@
       box-shadow: 0 6px 18px rgba(123,104,238,0.30);
     }
     .tier-card .t-cta:hover { border-color: var(--border-hi); }
+    .qual-inline {
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 400;
+      margin-left: 4px;
+    }
 
     .v3-footer-line {
       text-align: center;
@@ -894,14 +910,6 @@
     </div>
   </div>
 
-  <!-- ===================== PLACEHOLDER BANNER ===================== -->
-  <div class="placeholder-banner">
-    <div class="placeholder-banner-inner">
-      <strong>PLACEHOLDER content.</strong>
-      <span>Pricing, feature lists, and reviews are mock until you confirm the 5 BLOCKING questions on AJE-11. See <a href="./ASSUMPTIONS.md">ASSUMPTIONS.md</a> for the full list.</span>
-    </div>
-  </div>
-
   <!-- ====================== VARIANT NAV ====================== -->
   <div class="variant-nav">
     <div class="variant-nav-inner">
@@ -932,12 +940,14 @@
             <div class="feature-table">
               <div class="feature-table-head">
                 <span>Feature</span>
+                <span class="col-free">Free</span>
                 <span class="col-pro">Pro</span>
                 <span class="col-max">Max</span>
               </div>
 
               <div class="feature-row">
-                <span class="feat-name">SPiR Ai · Actionable insights</span>
+                <span class="feat-name">Coach's Instincts (Ai)</span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
                 <span class="feat-cell dash"><span class="em-dash">—</span></span>
                 <span class="feat-cell confirmed">
                   <svg class="check-icon check-icon-max" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg>
@@ -945,69 +955,57 @@
               </div>
 
               <div class="feature-row">
-                <span class="feat-name">Sleep tracking & debt</span>
-                <span class="feat-cell"><svg class="check-icon" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
-                <span class="feat-cell"><svg class="check-icon check-icon-max" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
-              </div>
-
-              <div class="feature-row">
-                <span class="feat-name">Hydration tracker</span>
-                <span class="feat-cell"><svg class="check-icon" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
-                <span class="feat-cell"><svg class="check-icon check-icon-max" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
-              </div>
-
-              <div class="feature-row">
-                <span class="feat-name">Fasting timer</span>
-                <span class="feat-cell"><svg class="check-icon" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
-                <span class="feat-cell"><svg class="check-icon check-icon-max" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
-              </div>
-
-              <div class="feature-row">
-                <span class="feat-name">Breathwork library</span>
-                <span class="feat-cell"><span class="qual">4 sessions</span></span>
-                <span class="feat-cell"><span class="qual">20+ sessions</span></span>
-              </div>
-
-              <div class="feature-row">
-                <span class="feat-name">Habit loadouts</span>
-                <span class="feat-cell"><span class="qual">Up to 3</span></span>
-                <span class="feat-cell"><span class="qual">Unlimited</span></span>
-              </div>
-
-              <div class="feature-row">
-                <span class="feat-name">HRV trends + weekly reports</span>
+                <span class="feat-name">Automatic Lock-In</span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
                 <span class="feat-cell dash"><span class="em-dash">—</span></span>
                 <span class="feat-cell"><svg class="check-icon check-icon-max" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
               </div>
 
               <div class="feature-row">
-                <span class="feat-name">Multi-device sync</span>
-                <span class="feat-cell"><svg class="check-icon" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
+                <span class="feat-name">XP Discount on Soundscape + Deep Breathing</span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
+                <span class="feat-cell"><span class="qual">75% off</span></span>
+              </div>
+
+              <div class="feature-row">
+                <span class="feat-name">XP Multipliers</span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
+                <span class="feat-cell dash"><span class="em-dash">—</span></span>
                 <span class="feat-cell"><svg class="check-icon check-icon-max" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
               </div>
 
               <div class="feature-row">
-                <span class="feat-name">Priority support</span>
-                <span class="feat-cell dash"><span class="em-dash">—</span></span>
-                <span class="feat-cell"><svg class="check-icon check-icon-max" viewBox="0 0 24 24"><polyline points="5 12 10 17 19 7"/></svg></span>
+                <span class="feat-name">Custom Loadout slots</span>
+                <span class="feat-cell"><span class="qual">3</span></span>
+                <span class="feat-cell"><span class="qual">7</span></span>
+                <span class="feat-cell"><span class="qual">14</span></span>
+              </div>
+
+              <div class="feature-row">
+                <span class="feat-name">SPiR Leagues — Rivalry XP cost</span>
+                <span class="feat-cell"><span class="qual">Highest</span></span>
+                <span class="feat-cell"><span class="qual">Lower</span></span>
+                <span class="feat-cell"><span class="qual">Lowest</span></span>
               </div>
             </div>
+
+            <p class="feature-table-footnote">Every feature is available on Free — Pro and Max just make them dramatically more XP-affordable.</p>
 
             <div class="cta-pair">
               <button class="cta-btn" data-tier="pro" data-period="monthly">
                 Continue with Pro
-                <span class="cta-price">$9.99/mo<span class="placeholder-tag tiny">PH</span></span>
+                <span class="cta-price">$5/mo</span>
               </button>
               <button class="cta-btn primary" data-tier="max" data-period="monthly">
                 Get Max
-                <span class="cta-price">$19.99/mo<span class="placeholder-tag tiny">PH</span></span>
+                <span class="cta-price">$25/mo</span>
               </button>
             </div>
 
             <div class="mini-rating">
               <span class="stars">★★★★★</span>
-              <span>4.8 · 250K reviews</span>
-              <span class="placeholder-tag tiny">MOCK</span>
+              <span>Trusted by Season 1 alumni</span>
             </div>
 
           </div>
@@ -1151,63 +1149,56 @@
             <div class="v2-hero">
               <img src="./spir-logo.png" alt="SPiR" class="spir-logo v2-hero" />
               <h1>You're in good hands 🤩</h1>
-              <p class="v2-sub">Join 250K people who upgraded to SPiR Max.</p>
+              <p class="v2-sub">Join the Season 1 alumni who upgraded to SPiR Max.</p>
             </div>
 
             <div class="rating-card">
               <div class="appstore-row">
                 <div class="appstore-icon">⌘</div>
-                <span class="appstore-label">App Store</span>
+                <span class="appstore-label">Season 1 community</span>
               </div>
               <div class="stars-row">★★★★★</div>
-              <div class="stat-cols">
-                <div class="stat-col">
-                  <div class="stat-num">250K</div>
-                  <div class="stat-label">Reviews</div>
-                </div>
-                <div class="stat-col">
-                  <div class="stat-num">4.8</div>
-                  <div class="stat-label">Rating</div>
-                </div>
-                <div class="stat-col">
-                  <div class="stat-num">1.2M</div>
-                  <div class="stat-label">Downloads</div>
-                </div>
-              </div>
-              <div style="margin-top: 10px;"><span class="placeholder-tag tiny">MOCK</span></div>
+              <div class="rating-blurb">From the people who logged a season with us — full quotes below, sourced from <a href="https://www.spir.health" target="_blank" rel="noopener">spir.health</a>.</div>
             </div>
 
             <div class="testimonial-card">
               <div class="t-stars">★★★★★</div>
-              <div class="t-quote">"Finally an app that connects sleep, hydration, and habits in one place. Max insights are like having a coach in your pocket."</div>
-              <div class="t-author"><strong>Megan I.</strong> · 32 · marathon runner</div>
+              <div class="t-quote">"SPiR showed me I'm most creative at 7pm — not during my morning grind like I assumed for years. I restructured my entire deep work schedule around that window. Peak output went from inconsistent to predictable. 156 days of data doesn't lie."</div>
+              <div class="t-author"><strong>Rachel B.</strong> · Deep work & product · Lvl 28 · 156 day streak · 65,000 XP</div>
             </div>
             <div class="testimonial-card">
               <div class="t-stars">★★★★★</div>
-              <div class="t-quote">"I cancelled my other 3 wellness apps after switching to Max. The HRV reports alone are worth it."</div>
-              <div class="t-author"><strong>Devon T.</strong> · 41 · software eng</div>
+              <div class="t-quote">"203 days ago I started timing my hardest runs to my second energy peak instead of my scheduled slot. PR'd in my first race after that. The AI didn't give me a plan — it gave me a when. That's the whole game."</div>
+              <div class="t-author"><strong>Jessica S.</strong> · Distance runner · Lvl 31 · 203 day streak · 71,000 XP</div>
+            </div>
+            <div class="testimonial-card">
+              <div class="t-stars">★★★★★</div>
+              <div class="t-quote">"I used to think flow states were random. SPiR proved they're not. Scheduled my last three college games around my circadian peak window. Broke my previous record stats each time. That's not motivation — it's a protocol."</div>
+              <div class="t-author"><strong>Matt F.</strong> · College athlete · Lvl 24 · 89 day streak · 55,000 XP</div>
             </div>
 
             <div class="mini-tier-pair">
               <div class="mini-tier">
                 <div class="mt-name">SPiR Pro</div>
-                <div class="mt-price">$9.99/mo<span class="placeholder-tag tiny">PH</span></div>
+                <div class="mt-price">$5/mo</div>
                 <ul>
-                  <li>Sleep, hydration, fasting</li>
-                  <li>3 habit loadouts</li>
-                  <li>4 breathwork sessions</li>
+                  <li>7 Custom Loadout slots</li>
+                  <li>Lower Rivalry XP cost</li>
+                  <li>Everything Free has, cheaper</li>
                 </ul>
               </div>
               <div class="mini-tier max">
                 <div class="mt-name">SPiR Max</div>
-                <div class="mt-price">$19.99/mo<span class="placeholder-tag tiny">PH</span></div>
+                <div class="mt-price">$25/mo</div>
                 <ul>
-                  <li>Everything in Pro</li>
-                  <li>Ai insights ★</li>
-                  <li>HRV + weekly reports</li>
+                  <li>Coach's Instincts ★</li>
+                  <li>Automatic Lock-In + XP Multipliers</li>
+                  <li>75% off Soundscape & Deep Breathing XP</li>
+                  <li>14 Custom Loadout slots</li>
                 </ul>
               </div>
             </div>
+            <p class="v2-mini-footnote">Every feature is on Free too — Pro and Max just lower the XP cost.</p>
 
             <div class="sticky-cta">
               <button class="sticky-cta-btn" data-tier="max" data-period="monthly">Continue with Max</button>
@@ -1364,15 +1355,7 @@
 
             <div class="v3-pitch">
               <h2>Pick your plan. <span class="gradient-text">Cancel anytime.</span></h2>
-              <p class="v3-pitch-sub">Upgrade for the full SPiR experience.</p>
-              <span class="trial-hook">7-day free Max trial · no card required<span class="placeholder-tag tiny">PH</span></span>
-            </div>
-
-            <div class="period-toggle-wrap">
-              <div class="period-toggle" id="v3-toggle">
-                <button class="period-tab active" data-period="monthly">Monthly</button>
-                <button class="period-tab" data-period="annual">Annual <span class="save-badge">-25%</span></button>
-              </div>
+              <p class="v3-pitch-sub">Every feature is on Free — Pro and Max just lower the XP cost.</p>
             </div>
 
             <div class="tier-cards">
@@ -1383,14 +1366,12 @@
                   <span class="t-tagline">Solid foundation</span>
                 </div>
                 <div class="t-price">
-                  <span class="t-price-num" data-monthly="$9.99" data-annual="$79.99">$9.99</span><span class="t-period" data-monthly="/mo" data-annual="/yr">/mo</span><span class="placeholder-tag tiny">PH</span>
+                  <span class="t-price-num">$5</span><span class="t-period">/mo</span>
                 </div>
                 <ul class="t-features">
-                  <li>Sleep tracking & debt</li>
-                  <li>Hydration & fasting timers</li>
-                  <li>Up to 3 habit loadouts</li>
-                  <li>Breathwork — 4 sessions</li>
-                  <li>Multi-device sync</li>
+                  <li>7 Custom Loadout slots <span class="qual-inline">(Free has 3)</span></li>
+                  <li>Lower Rivalry XP cost in SPiR Leagues</li>
+                  <li>Everything Free has — just cheaper to use</li>
                 </ul>
                 <button class="t-cta" data-tier="pro">Continue with Pro</button>
               </div>
@@ -1402,29 +1383,28 @@
                   <span class="t-tagline">Full intelligence layer</span>
                 </div>
                 <div class="t-price">
-                  <span class="t-price-num" data-monthly="$19.99" data-annual="$179.99">$19.99</span><span class="t-period" data-monthly="/mo" data-annual="/yr">/mo</span><span class="placeholder-tag tiny">PH</span>
+                  <span class="t-price-num">$25</span><span class="t-period">/mo</span>
                 </div>
 
                 <div class="embedded-rating">
                   <span class="er-stars">★★★★★</span>
-                  <span class="er-text"><strong>4.8</strong> · 250K reviews</span>
-                  <span class="placeholder-tag tiny">MOCK</span>
+                  <span class="er-text">Trusted by Season 1 alumni</span>
                 </div>
 
                 <ul class="t-features">
-                  <li class="confirmed">SPiR Ai · Actionable insights</li>
-                  <li>Everything in Pro</li>
-                  <li>HRV trends + weekly reports</li>
-                  <li>Unlimited habit loadouts</li>
-                  <li>Breathwork — 20+ sessions</li>
-                  <li>Priority support</li>
+                  <li class="confirmed">Coach's Instincts (Ai)</li>
+                  <li>Automatic Lock-In</li>
+                  <li>75% off Soundscape + Deep Breathing XP</li>
+                  <li>XP Multipliers</li>
+                  <li>14 Custom Loadout slots</li>
+                  <li>Lowest Rivalry XP cost</li>
                 </ul>
-                <button class="t-cta" data-tier="max">Start free 7-day trial</button>
+                <button class="t-cta" data-tier="max">Get Max</button>
               </div>
 
             </div>
 
-            <p class="v3-footer-line">Cancel anytime · Money-back guarantee</p>
+            <p class="v3-footer-line">Monthly only · Cancel anytime</p>
 
           </div>
         </div>
@@ -1434,18 +1414,17 @@
       <div class="docs">
         <div class="docs-eyebrow">V3 · Tiered Cards · The Familiar Pattern</div>
         <h1>Pick your plan. <span class="gradient-text">Cancel anytime.</span></h1>
-        <p class="docs-intro">The conventional SaaS pricing pattern: two side-by-side cards, Max elevated, "Best Value" ribbon, rating embedded inside the upsell card. Adds an annual/monthly toggle and a 7-day free trial hook on Max — both are tests of mechanics you haven't decided on yet, so V3 doubles as a way to surface those decisions.</p>
+        <p class="docs-intro">The conventional SaaS pricing pattern: two side-by-side cards, Max elevated, "Best Value" ribbon, rating embedded inside the upsell card. Now that pricing is locked monthly-only with no trial (per Jay's 2026-05-01 SMS), V3 is purely about presentation.</p>
 
         <dl class="ticket-ref">
-          <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a> · Backlog · 5 BLOCKING questions for you</dd>
-          <dt>Inspiration</dt><dd>Athlytic Pro (<code>IMG_3091</code>) for the card pair, Opal (<code>IMG_2621</code>) for the period toggle</dd>
-          <dt>Stripe handoff</dt><dd>Per-card CTA → <code>Application.OpenURL("…/dashboard?subscribe={tier}&period={period}&trial={bool}")</code>.</dd>
+          <dt>Ticket</dt><dd><a href="https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen">AJE-11</a> · Todo · BLOCKING questions resolved 2026-05-01 / 2026-05-06</dd>
+          <dt>Inspiration</dt><dd>Athlytic Pro (<code>IMG_3091</code>) for the card pair</dd>
+          <dt>Stripe handoff</dt><dd>Per-card CTA → <code>Application.OpenURL("…/dashboard?subscribe={tier}")</code> (monthly-only, no trial param needed).</dd>
         </dl>
 
         <div class="doc-section">
           <h2>1 · What's new in the app</h2>
-          <p>Net-new <code>PaywallPanel</code> + a new <code>TierCard</code> sub-prefab + an annual/monthly toggle. V3 is the most moving parts of the three but every piece is a known UGUI primitive.</p>
-          <div class="warn"><strong>Decision needed before ship:</strong> the trial hook ("7-day free Max trial") is one of your BLOCKING questions. The trial subprefab is wrapped in a <code>trialActive</code> bool so the whole hook can be hidden via flag if you say no. Same for the annual toggle.</div>
+          <p>Net-new <code>PaywallPanel</code> + a new <code>TierCard</code> sub-prefab. Two cards, two prices, two CTAs — every piece is a known UGUI primitive.</p>
         </div>
 
         <div class="doc-section">
@@ -1461,15 +1440,8 @@
             <div class="annotation">
               <div class="annotation-num">2</div>
               <div class="annotation-body">
-                <div class="annotation-title">Pitch + trial hook badge</div>
-                Two TMPs (pitch + sub) plus a small pill <code>Image</code> + TMP for the trial. The trial hook is a single GameObject toggled by <code>trialActive</code>.
-              </div>
-            </div>
-            <div class="annotation">
-              <div class="annotation-num">3</div>
-              <div class="annotation-body">
-                <div class="annotation-title">Annual/Monthly toggle</div>
-                Unity <code>Toggle</code> styled as a pill switch. <code>OnValueChanged(bool isAnnual)</code> calls <code>PaywallPanel.SetPeriod(isAnnual)</code>. That method walks each <code>TierCard</code> and updates its price string + period suffix.
+                <div class="annotation-title">Pitch + framing line</div>
+                Two TMPs (headline + sub). The sub now anchors the whole pricing story: every feature is on Free, Pro and Max just lower the XP cost.
               </div>
             </div>
             <div class="annotation">
@@ -1489,22 +1461,22 @@
             <div class="annotation">
               <div class="annotation-num">6</div>
               <div class="annotation-body">
-                <div class="annotation-title">Embedded rating block (Max only)</div>
-                Smaller version of V2's rating card. 5x star Image stack + TMP for "4.8 · 250K reviews". Lives inside the Max card, between the price and the feature list.
+                <div class="annotation-title">Embedded social-proof block (Max only)</div>
+                Smaller cousin of V2's rating card. 5x star Image stack + TMP for "Trusted by Season 1 alumni". Lives inside the Max card, between the price and the feature list. Real testimonials are sourced from <a href="https://www.spir.health" target="_blank" rel="noopener">spir.health</a>; if marketing wants quote rotations later, see V2's testimonial prefab.
               </div>
             </div>
             <div class="annotation">
               <div class="annotation-num">7</div>
               <div class="annotation-body">
                 <div class="annotation-title">Feature list with checkmarks</div>
-                <code>VerticalLayoutGroup</code> of TMP rows. The confirmed-by-you "SPiR Ai" row gets a gold ★ marker — useful for marketing emphasis but optional.
+                <code>VerticalLayoutGroup</code> of TMP rows. The "Coach's Instincts" row gets a gold ★ marker — useful for marketing emphasis but optional.
               </div>
             </div>
             <div class="annotation">
               <div class="annotation-num">8</div>
               <div class="annotation-body">
                 <div class="annotation-title">Per-card CTA</div>
-                <code>Button</code> per card. <code>OnClick</code> → <code>PaywallPanel.OpenStripe(tier, period, trial)</code> → <code>Application.OpenURL($"…/dashboard?subscribe={tier}&period={period}&trial={trial}")</code>.
+                <code>Button</code> per card. <code>OnClick</code> → <code>PaywallPanel.OpenStripe(tier)</code> → <code>Application.OpenURL($"…/dashboard?subscribe={tier}")</code>.
               </div>
             </div>
           </div>
@@ -1512,7 +1484,6 @@
 
         <div class="doc-section">
           <h2>3 · Unity implementation notes</h2>
-          <p><strong>Period toggle wiring:</strong> a <code>Toggle</code> with <code>OnValueChanged(bool isAnnual)</code>. Each <code>TierCard</code> exposes a <code>SetPeriod(bool isAnnual)</code> method that updates <code>priceLabel.text</code> and <code>periodLabel.text</code> from a serialized struct of monthly/annual values. Show/hide the "Save 25%" badge on the annual tab.</p>
           <p><strong>Phone vs tablet layout:</strong> two clean paths —</p>
           <ul>
             <li><strong>A — single <code>VerticalLayoutGroup</code> always.</strong> Cards stack on phone <em>and</em> tablet. Loses the side-by-side affordance on tablet but ships fastest.</li>
@@ -1616,15 +1587,8 @@
       ctaButtons.forEach(btn => {
         btn.addEventListener('click', () => {
           const tier = btn.dataset.tier;
-          // Period: explicit data-period, or look up from V3 toggle, or default monthly
-          let period = btn.dataset.period;
-          if (!period) {
-            const activeTab = document.querySelector('#v3-toggle .period-tab.active');
-            period = activeTab ? activeTab.dataset.period : 'monthly';
-          }
-          // Trial flag: V3 Max card's CTA implies trial
-          const trial = btn.classList.contains('t-cta') && tier === 'max';
-          showFakeConfirm(tier, period, trial);
+          const period = btn.dataset.period || 'monthly';
+          showFakeConfirm(tier, period, false);
         });
       });
 
@@ -1633,27 +1597,6 @@
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') hideFakeConfirm();
       });
-
-      // ---- V3 period toggle ----
-      const toggle = document.getElementById('v3-toggle');
-      if (toggle) {
-        const tabs = toggle.querySelectorAll('.period-tab');
-        tabs.forEach(tab => {
-          tab.addEventListener('click', () => {
-            tabs.forEach(t => t.classList.remove('active'));
-            tab.classList.add('active');
-            const period = tab.dataset.period;
-
-            // Update price labels in V3
-            document.querySelectorAll('#v3 .t-price-num').forEach(el => {
-              el.textContent = el.dataset[period] || el.textContent;
-            });
-            document.querySelectorAll('#v3 .t-period').forEach(el => {
-              el.textContent = el.dataset[period] || el.textContent;
-            });
-          });
-        });
-      }
     })();
   </script>
 

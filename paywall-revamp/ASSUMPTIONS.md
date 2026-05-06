@@ -1,54 +1,45 @@
-# ASSUMPTIONS — paywall-revamp
+# Source-of-truth changelog — paywall-revamp
 
-This prototype uses **placeholder data** in every numerical, copy, and tier field.
-Each row below maps a placeholder to one of the 5 BLOCKING questions you need to answer
-on [AJE-11](https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen).
+All five BLOCKING questions on [AJE-11](https://linear.app/ajeo/issue/AJE-11/paywall-spir-pro-vs-spir-max-comparative-analysis-screen) are now **RESOLVED**. This doc is the audit trail for what landed in `index.html`, with a single open item left.
 
-Once you answer, swapping placeholders for real values is a find-and-replace pass
-in `index.html`.
+## Resolved
 
-| Placeholder | Used in | BLOCKING question |
-|---|---|---|
-| SPiR Pro · **$9.99/mo** | V1, V2, V3 | Final price points for SPiR Pro and SPiR Max? |
-| SPiR Max · **$19.99/mo** | V1, V2, V3 | (same) |
-| Annual: Pro $79.99/yr · Max $179.99/yr (Save 25%) | V3 toggle | Billing cadence — monthly only? annual option? |
-| 7-day free Max trial — no card required | V3 only | Free trial or intro offer? |
-| 10 invented features split Pro / Max / Pro&Max | V1, V2, V3 | Full feature differentiation — what's Max-only beyond AI insights? |
-| 3 mock testimonials (Megan I., Devon T., Priya K.) | V2, V3 | Copy for the rating/review element — real, mock, or placeholder? |
-| Rating "4.8 stars / 250K reviews / 1.2M downloads" | V2, V3 | (same) |
+| Question | Answer | Source | Landed in |
+|---|---|---|---|
+| Final price points | **Pro $5/mo · Max $25/mo** | Jay (SMS, 2026-05-01 23:35 ET) | V1 CTAs · V2 mini-tier · V3 tier cards |
+| Billing cadence | **Monthly only** | Jay (SMS, 2026-05-01 23:35 ET) | V3 annual toggle removed; footer reads "Monthly only · Cancel anytime" |
+| Free trial / intro offer | **No** | Jay (SMS, 2026-05-01 23:35 ET) | V3 trial-hook badge removed; Max CTA changed from "Start free 7-day trial" to "Get Max" |
+| Feature differentiation | See feature matrix below | Jay (SMS, 2026-05-01 23:35 ET) | V1 comparison table rebuilt · V2 mini-tier rebuilt · V3 cards rebuilt |
+| Rating / review copy | **Real testimonials from spir.health (Season 1 site)** | Jay (SMS, 2026-05-01 23:35 ET) — "We still have the reviews from the Season 1 website"; URL confirmed by Joe 2026-05-06 | V2 testimonial cards (Rachel B., Jessica S., Matt F.) · rating block reframed to "Trusted by Season 1 alumni" |
+| AI feature naming | **Coach's Instincts** (formerly "SPiR Ai · Actionable insights") | Jay (SMS, 2026-05-06 12:47 ET, after a back-and-forth that resolved on Coach's Instincts as the brand-aligned alternative to "Insights") | V1 feature row · V2 mini-tier · V3 Max card feature list (with gold ★ confirmed marker) |
 
-## Confirmed (not placeholder)
+## Confirmed feature matrix
 
-- ✅ **SPiR Ai (Actionable insights)** — Max only. Confirmed by you on 2026-04-24.
+Free is the canonical experience — every feature is available there. Pro and Max scale up by lowering XP costs and unlocking automation.
 
-## Invented Features (PLACEHOLDER, drawn from app surface in CLAUDE.md)
+| Feature | Free | Pro ($5/mo) | Max ($25/mo) |
+|---|---|---|---|
+| Coach's Instincts (Ai) | — | — | ✓ |
+| Automatic Lock-In | — | — | ✓ |
+| 75% XP Discount on Soundscape + Deep Breathing | — | — | ✓ |
+| XP Multipliers | — | — | ✓ |
+| Custom Loadout slots | 3 | 7 | 14 |
+| SPiR Leagues — Rivalry XP cost | Highest | Lower | Lowest |
 
-These are filler so the comparison table has something to render. **All must be confirmed by you** before shipping.
+Source: Jay (SMS, 2026-05-01 23:35 ET).
 
-| Feature | Pro | Max |
-|---|---|---|
-| SPiR Ai (Actionable insights) | — | ✓ ⭐ confirmed |
-| Sleep tracking & debt analysis | ✓ | ✓ |
-| Hydration tracker | ✓ | ✓ |
-| Fasting timer | ✓ | ✓ |
-| Breathwork library — basic 4 sessions | ✓ | — |
-| Breathwork library — full 20+ sessions | — | ✓ |
-| Habit loadouts | up to 3 | unlimited |
-| HRV trends & weekly reports | — | ✓ |
-| Multi-device sync | ✓ | ✓ |
-| Priority support | — | ✓ |
+## CTA wiring (still mock)
 
-## CTA Wiring (Mock)
+- Every CTA opens a fake confirmation overlay and `console.log("would open Stripe checkout: { tier, period }")`.
+- Stripe is wired on the website User Dashboard already — the in-app CTA hand-off in production becomes `Application.OpenURL("https://spir.health/dashboard?subscribe={tier}")` (monthly-only — `period` and `trial` params no longer needed).
+- AJE-13 owns the website-side Stripe XP-package definitions; Jay paused that ticket on 2026-05-02 because users were racking 15-20K XP/week against the current packages. Don't touch.
 
-- Every "Subscribe" / "Get Max" / "Continue with Pro" button currently does **nothing functional** — the click handler runs `console.log("would open Stripe checkout: { tier, period }")`.
-- In production, per your 2026-04-24 SMS, these CTAs hand off to the **existing Stripe flow on the website User Dashboard**.
-- Stripe wiring is **out of scope** for this ticket — tracked downstream in AJE-13.
-- Unity-side, the CTA would be `Application.OpenURL("https://spir.health/dashboard?subscribe={tier}&period={period}")` or similar.
+## One open item
+
+- **Confirm with Jay that the three Season 1 testimonials chosen (Rachel B., Jessica S., Matt F.) are the ones we want to surface in V2.** The two we omitted are Sarah K. (Marketing Director) and the INSPiRED tribe quote — both available at https://www.spir.health if Jay would rather swap one in. The three we picked all carry a Level + streak + XP badge, which gives the V2 cards a richer texture.
 
 ## What needs to happen before this ships
 
-1. You answer the 5 BLOCKING questions above.
-2. Replace placeholders in `index.html` with confirmed values.
-3. Real review copy / rating numbers swapped in (or backend endpoint wired up if reviews are dynamic).
-4. Pick ONE variant. The Linear ticket can then move to **In Review**, with the chosen variant's **Files to touch** section becoming the dev brief for Abdul.
-5. Stripe URL pattern confirmed with the website team so the Unity `Application.OpenURL` call points at the right endpoint.
+1. Jay confirms the testimonial selection above (or swaps).
+2. Jay picks a single variant (V1 / V2 / V3) — the docs section for the chosen variant becomes the Unity dev brief for Abdul.
+3. Stripe URL pattern verified with the website team so the Unity `Application.OpenURL` call points at the right endpoint.
