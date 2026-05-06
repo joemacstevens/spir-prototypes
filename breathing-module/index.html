@@ -61,6 +61,21 @@
 
       /* Ring progress track */
       --ring-circumference: 150.796;
+
+      /* ----- PAGE CHROME (Ajeo brand kit, matches AJE-10 / AJE-11) ----- */
+      --chrome-bg: #F5F2EC;
+      --chrome-bg-2: #FAF7F1;
+      --chrome-surface: #E8E5DF;
+      --chrome-border: #D4CFC4;
+      --chrome-border-hi: #BEB7A8;
+      --chrome-text: #2D2D2D;
+      --chrome-text-soft: #4A4A4A;
+      --chrome-text-muted: #7B7B7B;
+      --chrome-gold: #8B7D5B;
+      --chrome-purple: #7B68EE;
+      --chrome-amber: #f5a623;
+      --chrome-teal: #3DD4C0;
+      --chrome-gradient: linear-gradient(135deg, #2D2D2D 0%, #8B7D5B 100%);
     }
 
     /* ============================================================
@@ -76,15 +91,216 @@
 
     body {
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #050510;
-      display: flex;
-      justify-content: center;
-      align-items: center;
+      background: var(--chrome-bg);
       min-height: 100vh;
-      overflow: hidden;
-      color: var(--color-text-primary);
+      color: var(--chrome-text);
       -webkit-font-smoothing: antialiased;
     }
+    html { scroll-behavior: smooth; }
+
+    /* ============================================================
+       PAGE CHROME (matches AJE-10 / AJE-11 landing page pattern)
+       ============================================================ */
+    .topbar {
+      position: sticky; top: 0; z-index: 60;
+      background: rgba(245,242,236,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--chrome-border);
+    }
+    .topbar-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 14px 32px;
+      display: flex; align-items: center;
+      gap: 18px; flex-wrap: wrap;
+    }
+    .ajeo-wordmark {
+      font-family: 'Inter', system-ui, sans-serif;
+      font-weight: 700; font-size: 22px;
+      letter-spacing: -0.02em;
+      color: var(--chrome-text);
+      text-decoration: none;
+      display: inline-flex; align-items: baseline;
+      flex-shrink: 0;
+    }
+    .ajeo-wordmark .j { position: relative; }
+    .ajeo-wordmark .j-dot {
+      position: absolute; top: -2px; left: 0.32em;
+      width: 6px; height: 6px;
+      background: var(--chrome-gold);
+      border-radius: 50%;
+      animation: ajeo-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes ajeo-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.78; }
+    }
+    .topbar-divider { width: 1px; height: 18px; background: var(--chrome-border); flex-shrink: 0; }
+    .title-block { display: flex; align-items: baseline; gap: 14px; flex-shrink: 0; }
+    .title-main { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--chrome-text); }
+    .title-sub {
+      font-size: 11px; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--chrome-text-muted);
+    }
+    .topbar-meta { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .chip {
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 5px 11px; border-radius: 100px;
+      border: 1px solid var(--chrome-border);
+      color: var(--chrome-text-muted);
+      background: rgba(255,255,255,0.4);
+    }
+    .chip.priority { color: var(--chrome-amber); border-color: rgba(245,166,35,0.35); background: rgba(245,166,35,0.08); }
+    .chip.status { color: var(--chrome-teal); border-color: rgba(61,212,192,0.35); background: rgba(61,212,192,0.08); }
+    .chip.ticket { color: var(--chrome-purple); border-color: rgba(123,104,238,0.35); background: rgba(123,104,238,0.08); }
+    .chip.ticket a { color: inherit; text-decoration: none; }
+    .chip.ticket a:hover { text-decoration: underline; }
+
+    .workspace {
+      max-width: 1200px; margin: 0 auto;
+      padding: 56px 32px 96px;
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      gap: 56px; align-items: start;
+    }
+    @media (max-width: 980px) {
+      .workspace { grid-template-columns: 1fr; gap: 40px; padding: 32px 20px 64px; }
+    }
+    .phone-wrap { position: sticky; top: 96px; display: flex; flex-direction: column; align-items: center; }
+    @media (max-width: 980px) { .phone-wrap { position: static; } }
+    .phone-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--chrome-text-muted);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    /* ----- DOCS PANEL ----- */
+    .docs { color: var(--chrome-text); max-width: 660px; }
+    .docs-eyebrow {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--chrome-gold);
+      margin-bottom: 14px;
+    }
+    .docs h1 {
+      font-size: 38px; font-weight: 700; line-height: 1.1;
+      letter-spacing: -0.02em; margin-bottom: 18px;
+      color: var(--chrome-text);
+    }
+    .docs h1 .gradient-text {
+      background: var(--chrome-gradient);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .docs .docs-intro {
+      font-size: 17px; line-height: 1.55;
+      color: var(--chrome-text-soft);
+      margin-bottom: 32px;
+    }
+    .ticket-ref {
+      display: grid; grid-template-columns: 140px 1fr;
+      gap: 8px 18px;
+      padding: 16px 18px;
+      background: rgba(255,255,255,0.5);
+      border: 1px solid var(--chrome-border);
+      border-radius: 12px;
+      margin-bottom: 36px;
+      font-size: 13px;
+    }
+    .ticket-ref dt {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--chrome-text-muted);
+      align-self: center;
+    }
+    .ticket-ref dd { color: var(--chrome-text); align-self: center; word-break: break-word; }
+    .ticket-ref dd a { color: var(--chrome-purple); text-decoration: none; }
+    .ticket-ref dd a:hover { text-decoration: underline; }
+    .ticket-ref dd code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12px; padding: 2px 6px; background: rgba(0,0,0,0.05); border-radius: 4px; }
+
+    .doc-section { margin-bottom: 36px; }
+    .doc-section h2 {
+      font-size: 14px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--chrome-text-muted);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--chrome-border);
+    }
+    .doc-section p { font-size: 14.5px; line-height: 1.6; color: var(--chrome-text-soft); margin-bottom: 12px; }
+    .doc-section p strong { color: var(--chrome-text); font-weight: 600; }
+    .doc-section ul { list-style: none; padding: 0; }
+    .doc-section ul li {
+      font-size: 14.5px; line-height: 1.6;
+      color: var(--chrome-text-soft);
+      padding: 8px 0 8px 22px;
+      position: relative;
+    }
+    .doc-section ul li::before {
+      content: '';
+      position: absolute; left: 4px; top: 17px;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--chrome-gold);
+    }
+    .doc-section code { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 12.5px; padding: 2px 6px; background: rgba(0,0,0,0.05); border-radius: 4px; }
+    .doc-section a { color: var(--chrome-purple); text-decoration: none; font-weight: 500; }
+    .doc-section a:hover { text-decoration: underline; }
+
+    .annotation-grid { display: grid; gap: 10px; }
+    .annotation {
+      display: grid; grid-template-columns: 32px 1fr;
+      gap: 14px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.5);
+      border: 1px solid var(--chrome-border);
+      border-radius: 10px;
+    }
+    .annotation-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--chrome-gradient);
+      color: #fff;
+      font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .annotation-body { font-size: 13.5px; line-height: 1.55; color: var(--chrome-text-soft); }
+    .annotation-title { font-weight: 600; font-size: 14px; color: var(--chrome-text); margin-bottom: 4px; }
+
+    .info {
+      padding: 12px 14px;
+      background: rgba(123,104,238,0.07);
+      border: 1px solid rgba(123,104,238,0.2);
+      border-radius: 8px;
+      font-size: 13.5px; line-height: 1.55;
+      color: var(--chrome-text-soft);
+      margin: 14px 0;
+    }
+    .info strong { color: var(--chrome-purple); }
+    .warn {
+      padding: 12px 14px;
+      background: rgba(245,166,35,0.07);
+      border: 1px solid rgba(245,166,35,0.25);
+      border-radius: 8px;
+      font-size: 13.5px; line-height: 1.55;
+      color: var(--chrome-text-soft);
+      margin: 14px 0;
+    }
+    .warn strong { color: var(--chrome-amber); }
+    .ok {
+      padding: 12px 14px;
+      background: rgba(95,208,99,0.08);
+      border: 1px solid rgba(95,208,99,0.3);
+      border-radius: 8px;
+      font-size: 13.5px; line-height: 1.55;
+      color: var(--chrome-text-soft);
+      margin: 14px 0;
+    }
+    .ok strong { color: #3aa03e; }
 
     /* ============================================================
        MOBILE VIEWPORT SHELL
@@ -1004,13 +1220,20 @@
 
     /* ============================================================
        RESPONSIVE
+       Note: at <430px the breathing module used to take over the
+       full viewport. Now that the page has chrome (topbar + docs
+       panel) wrapping it, we keep the device-frame at 390px and
+       let the workspace's own <980px breakpoint stack docs below.
+       Page padding shrinks at very narrow widths so the phone fits.
        ============================================================ */
     @media screen and (max-width: 430px) {
+      .workspace { padding-left: 8px; padding-right: 8px; }
+      .topbar-inner { padding-left: 16px; padding-right: 16px; }
       .device-frame {
-        width: 100vw;
-        height: 100vh;
-        border-radius: 0;
-        box-shadow: none;
+        width: 100%;
+        max-width: 390px;
+        height: 80vh;
+        max-height: 844px;
       }
     }
 
@@ -1143,6 +1366,27 @@
 </head>
 
 <body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a href="https://spir-presentation.vercel.app" class="ajeo-wordmark" target="_blank" rel="noopener" aria-label="Ajeo">a<span class="j">j<span class="j-dot"></span></span>eo</a>
+      <span class="topbar-divider"></span>
+      <div class="title-block">
+        <span class="title-main">Breathing Module</span>
+        <span class="title-sub">Existing in-app screen, polished</span>
+      </div>
+      <div class="topbar-meta">
+        <span class="chip ticket"><a href="https://linear.app/ajeo/issue/AJE-65/breathing-module-unity-hand-off-spec-for-the-existing-prototype">AJE-65</a></span>
+        <span class="chip priority">Medium Priority</span>
+        <span class="chip status">Backlog</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="workspace">
+
+    <div class="phone-wrap">
+      <div class="phone-label">Breathing Module · 390 × 844</div>
 
   <div class="device-frame" id="app">
 
@@ -1443,6 +1687,149 @@
 
     <audio id="ambient-audio" loop></audio>
   </div>
+
+    </div><!-- /.phone-wrap -->
+
+    <!-- ====================== DOCS PANEL ====================== -->
+    <div class="docs">
+      <div class="docs-eyebrow">AJE-65 · Breathing Module · Existing in-app screen, polished</div>
+      <h1>Same patterns Jay built. <span class="gradient-text">Wrapped in glow + a summary.</span></h1>
+      <p class="docs-intro">
+        The breathing module already lives in the Unity app at <code>BreathworkPanel.cs</code> (460 lines). This prototype is the visual + interaction reference for tightening the existing screen up — adding a glow layer around the breathing circle, replacing the bare ring with rounded-cap progress rings, an inline 5-cycle XP bar, and a post-session summary screen. The four breathing patterns and their timings are unchanged.
+      </p>
+
+      <dl class="ticket-ref">
+        <dt>Ticket</dt>
+        <dd><a href="https://linear.app/ajeo/issue/AJE-65/breathing-module-unity-hand-off-spec-for-the-existing-prototype">AJE-65</a> · Backlog · awaiting Abdul feasibility review</dd>
+        <dt>Owning panel</dt>
+        <dd><code>Assets/My Scripts/BreathworkPanel.cs:8</code> — <code>BreathworkPanel : SingletonBehaviourUI&lt;BreathworkPanel&gt;</code></dd>
+        <dt>Live spec</dt>
+        <dd><a href="./SPEC_breathing.md">SPEC_breathing.md</a> — full Unity hand-off (TL;DR, element table, GSAP→DOTween mapping, files Abdul touches, open feasibility flags)</dd>
+        <dt>Hands off to</dt>
+        <dd><a href="../todays-status-revamp/">AJE-10 Today's Status</a> (Deep Breathing row routes here) · <a href="../paywall-revamp/">AJE-11 Paywall</a> (Pro/Max XP economics live here) · <a href="https://linear.app/ajeo/issue/AJE-12">AJE-12 XP gate popup</a> (deducts entry XP — refunded after 5 cycles)</dd>
+        <dt>Source</dt>
+        <dd><code><a href="./index.html">index.html</a></code> — single static file, GSAP via CDN, no build step</dd>
+      </dl>
+
+      <div class="doc-section">
+        <h2>What changes vs your current in-app screen</h2>
+        <p>
+          The four patterns and their timings stay exactly as they are today (4-7-8, Box, Huberman, Resonant — all hardcoded in <code>BreathworkPanel.cs:73–117</code>). The phase state machine in <code>RunBreathingCycle()</code> (<code>:385–418</code>) and <code>RunHubermanBreathingCycle()</code> (<code>:350–383</code>) drives the same INHALE → HOLD → EXHALE rhythm.
+        </p>
+        <p>What you'll see in the prototype that's new:</p>
+        <ul>
+          <li><strong>Soft outer glow layer</strong> around the breathing circle, sized 1.6× the inner circle and color-matched to the active phase</li>
+          <li><strong>Circle scaling capped at 2.2×</strong> instead of the existing <code>DOScale(4)</code> at <code>:426</code> — the 4× target overflows mobile viewports during testing</li>
+          <li><strong>Concentric progress rings with rounded caps</strong> using the existing <code>OuterRoundedFillFixed.shader</code> (the same shader AJE-10's hydration ring uses)</li>
+          <li><strong>Pattern-card carousel with mini line-art previews</strong> of each pattern's breathing curve — replaces the static 4-button selection</li>
+          <li><strong>3-second countdown</strong> between tapping Start and the animation beginning</li>
+          <li><strong>Post-session summary screen</strong> showing cycles / minutes / pattern / avg-cycle-time / XP earned, with a celebratory pulse on the XP block</li>
+          <li><strong>Inline 5-cycle XP bar</strong> with a smoother <code>DOFillAmount</code> tween instead of the instant <code>fillAmount</code> set at <code>:364, 399</code></li>
+        </ul>
+        <div class="info"><strong>Backend dependency you should know about.</strong> The <strong>5-cycle XP refund</strong> mechanic Jay specified on 2026-05-01 23:46 is net-new code. Today the panel only <em>awards</em> XP at the 5-cycle mark via <code>GameManager.AddandRemoveXp(temp, "+", "Breathing Five Cycles")</code> (<code>:380, 415</code>). The new mechanic is gate-deduct-then-refund: AJE-12's gate popup deducts entry XP on confirm; this panel posts a refund call at the 5-cycle mark <em>in addition to</em> the existing bonus award. See <a href="./SPEC_breathing.md">SPEC_breathing.md</a> "XP economics" for the full ladder.</div>
+      </div>
+
+      <div class="doc-section">
+        <h2>Annotated walkthrough</h2>
+        <div class="annotation-grid">
+          <div class="annotation">
+            <div class="annotation-num">1</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Pattern carousel + dot indicator</div>
+              Existing <code>breathSelectionScrollbar</code> at <code>BreathworkPanel.cs:32–66</code> already drives <code>breathModeDots[]</code> active/inactive in 0.25 bands — keep that. Replace static cards with <code>BreathPatternCard.prefab</code> instances containing a baked SVG-equivalent line preview of each breathing curve. The animated dot tracing the curve uses GSAP's <code>MotionPathPlugin</code> on web — Unity equivalent is <code>transform.DOPath()</code> on a baked <code>BezierPath</code>; mark this optional polish, skip for v1 if the static curve reads.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">2</div>
+            <div class="annotation-body">
+              <div class="annotation-title">3-second countdown overlay</div>
+              New. <code>TextMeshProUGUI</code> with three <code>DOFade</code> sequences ("3 → 2 → 1 → GO"), then the existing <code>CanvasGroup.DOFade</code> screen swap at <code>BreathworkPanel.cs:166–168</code>.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">3</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Breathing circle + glow layer</div>
+              Inner circle is the existing <code>blueCircle</code> driven by <code>transform.DOScale(2.2f, phase).SetEase(Ease.InOutSine)</code> at <code>:426</code> (capped from <code>DOScale(4)</code>). New outer <code>Image</code> with a radial-gradient sprite scales to <code>1.6f * inner</code> on the same easing. Color crossfade via <code>image.DOColor(phaseColor, 1f)</code> stays at <code>:429–430</code>; consider clamping that 1s duration to <code>Min(1f, phaseSeconds * 0.4f)</code> so Huberman's 1s INHALE doesn't overshoot.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">4</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Concentric progress rings (3/4/4/2 per pattern)</div>
+              <code>progressImages[]</code> already implemented at <code>:423</code> via <code>DOFillAmount(1, phase)</code>. Switch to <code>OuterRoundedFillFixed.shader</code> for rounded caps + glow — same shader AJE-10 uses for hydration / soundscape mini-rings, so the visual language matches across both screens.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">5</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Status text + cycle counter</div>
+              <code>Status_Text.text = status</code> at <code>:422</code> (INHALE / HOLD / EXHALE, all-caps, 22px, 6px letter-spacing). Cycle counter <code>"x" + counterIndex</code> at <code>:358, 393</code>. Tween in/out with <code>text.DOFade()</code> on phase changes for less jarring transitions.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">6</div>
+            <div class="annotation-body">
+              <div class="annotation-title">5-cycle XP bar</div>
+              <code>xpBar.fillAmount = progressStep * 0.2f</code> at <code>:364, 399</code> — currently set instantly. Switch to <code>xpBar.DOFillAmount(progressStep / 5f, 0.4f).SetEase(Ease.OutCubic)</code> for a smooth fill. Gradient fill (accent → light blue) lives in the existing prefab's <code>Image</code> sprite, no code change.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">7</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Pause / play / end controls</div>
+              Existing <code>playBreathingAnimation()</code> at <code>:277–326</code> handles pause/resume; <code>endBreathing()</code> at <code>:218–247</code> exits. Net-new step: <code>endBreathing()</code> now shows a summary screen (see annotation 8) before re-activating the selection screen.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">8</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Post-session summary screen</div>
+              New <code>breathSummary</code> <code>GameObject</code> sibling to <code>breathSelection</code> and <code>breathAnimation</code>. 2×2 stat grid (cycles / minutes / pattern / avg-cycle), XP-earned celebration block with a <code>DOPunchScale</code> on first show, and a "Back to selection" button that triggers the existing exit flow.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h2>Files Abdul will touch</h2>
+        <ul>
+          <li><code>Assets/My Scripts/BreathworkPanel.cs</code> — cap <code>DOScale(4)</code> → <code>DOScale(2.2f)</code>, add glow-layer scale tween, add countdown + summary states, add the refund-side <code>AddandRemoveXp</code> call paired with the existing bonus award, smooth XP bar via <code>DOFillAmount</code> tween</li>
+          <li><code>Assets/Resources/Prefabs/UI/Panels/BreathworkPanel.prefab</code> — new glow-layer <code>Image</code>, countdown overlay, summary screen, pattern-card sub-prefab instances</li>
+          <li><strong>New:</strong> <code>Assets/Resources/Prefabs/UI/BreathPatternCard.prefab</code> — pattern card with bg / curve preview / name / premium badge</li>
+          <li><strong>New:</strong> <code>Assets/Resources/Prefabs/UI/BreathSummary.prefab</code> — post-session stats grid + XP celebration</li>
+          <li><strong>Reuse:</strong> <code>Assets/Custom Shader/OuterRoundedFillFixed.shader</code> for the 4 progress rings (matches AJE-10's hydration / soundscape mini-rings)</li>
+        </ul>
+        <p><strong>Existing helpers reused, no changes:</strong> <code>SingletonBehaviourUI&lt;T&gt;</code>, <code>GameManager.AddandRemoveXp()</code>, <code>DataConfig.isProSubscribed / isMaxSubscribed / maxDiscount / proDiscount</code>, <code>CanvasGroup.DOFade()</code>.</p>
+        <p><strong>External callers (don't break):</strong> <code>FooterMenu.cs</code> (footer-bar entry) and <code>FocusModePanel.cs</code> (focus-mode launch). New caller: AJE-10's "Open Deep Breathing →" button on the Today's Status compact card.</p>
+      </div>
+
+      <div class="doc-section">
+        <h2>Open feasibility flags</h2>
+        <ul>
+          <li><strong>5-cycle XP refund is net-new code.</strong> Confirm with product whether the bonus award (+5 free / +20 Pro) stays on top of the refund or replaces it. Jay's SMS implied <em>both</em> — the gate cost is refunded, the existing bonus is separate.</li>
+          <li><strong>Hardcoded 1s color-transition</strong> at <code>:430</code> overshoots Huberman's 1s INHALE. Suggest <code>Min(1f, phaseSeconds * 0.4f)</code>.</li>
+          <li><strong><code>DOScale(4)</code> overflows mobile.</strong> The prototype clamped to 2.2×. Confirm preference vs containing the parent.</li>
+          <li><strong>MotionPath dot polish on selection cards.</strong> No direct DOTween equivalent. Skip for v1 if static curve reads.</li>
+          <li><strong>Audio.</strong> Prototype synthesizes via Web Audio API — no <code>.mp3</code> files. If Unity wants audio, coordinate with Pau (animator/sound). Out of scope for this spec.</li>
+          <li><strong>Commented-out XP block at <code>:228–268</code></strong> — old free/Pro logic, dead code, follow-up cleanup ticket.</li>
+        </ul>
+      </div>
+
+      <div class="doc-section">
+        <h2>How this fits with the rest of the work</h2>
+        <p>
+          This module is one of three Linear-tracked prototypes that hand off to the dev team as a coherent set. Index lives at <a href="../AJE_PROTOTYPES.md">AJE_PROTOTYPES.md</a>.
+        </p>
+        <ul>
+          <li><a href="../todays-status-revamp/">Today's Status (AJE-10)</a> — its Deep Breathing satellite ring reads cycle data from this panel; the "Open Deep Breathing →" row routes here</li>
+          <li><a href="../paywall-revamp/">Paywall (AJE-11)</a> — advertises the 75% Max XP discount on Soundscape + Deep Breathing that's wired through <code>DataConfig.maxDiscount</code> in this panel; advertises the 5-cycle XP refund mechanic that gets implemented here</li>
+          <li><a href="https://linear.app/ajeo/issue/AJE-12">XP gate popup (AJE-12)</a> — deducts entry XP when the user opens Deep Breathing from any surface; the refund posted at the 5-cycle mark on this panel zeroes out that deduction</li>
+        </ul>
+      </div>
+    </div>
+
+  </div><!-- /.workspace -->
 
   <script>
     /* ================================================================
