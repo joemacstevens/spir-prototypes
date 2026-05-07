@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Linear ticket** | [AJE-66](https://linear.app/ajeo/issue/AJE-66/fasting-tracker-full-mini-app-revamp-replaces-giant-ring-8-wheel) |
-| **Live prototype** | https://fasting-tracker.vercel.app |
+| **Live prototype** | https://spir-fasting-tracker.vercel.app |
 | **Source HTML** | [`index.html`](./index.html) — single static file (~1,200 lines), GSAP via CDN, no build step |
 | **Owning Unity panel** | `Assets/My Scripts/FastingPopup.cs:9` — `FastingPopup : SingletonBehaviourUI<FastingPopup>` (921 lines) |
 | **Existing Unity prefab** | `Assets/Resources/Prefabs/UI/Panels/FastingPopup.prefab` |
@@ -32,7 +32,7 @@ Backend touches stay the same: `NetworkAPImanager.weeklyFasting()`, `AddEnergyTo
 
 Live prototype walks through all three screens — selection (with the when-chips, hour slider, preset cards, hold-to-start), active fast (refined ring with phase color, info row, extend + swipe-to-end), and summary (XP celebration block).
 
-**Live:** https://fasting-tracker.vercel.app
+**Live:** https://spir-fasting-tracker.vercel.app
 
 The prototype runs an **accelerated clock** (a "16h" fast finishes in ~16 seconds) so reviewers can see all three phases (amber → gold → green) and the completion summary without waiting hours. The Unity implementation uses real-time elapsed seconds — see the `Update()` method at `FastingPopup.cs:438–463`.
 
@@ -175,7 +175,7 @@ All five entry points stay. `Show()` should land on the **active screen** if a f
 * [x] **Topbar + phone mock + docs panel chrome matches AJE-10 / AJE-11 / AJE-65** — same Ajeo brand kit, same workspace grid.
 * [x] **Spec grounded in `FastingPopup.cs` line numbers** — every Unity reference cites a line in the 921-line source.
 * [ ] **Listed as 05 on `spir-presentation` + entry added to `AJE_PROTOTYPES.md` index** — pending, ships in the same commit as this file.
-* [ ] **Live at `https://fasting-tracker.vercel.app`** — pending Vercel deploy in this commit.
+* [ ] **Live at `https://spir-fasting-tracker.vercel.app`** — pending Vercel deploy in this commit.
 * [ ] **Abdul confirms feasibility against existing `FastingPopup.cs`** — pending Abdul. Joe to route.
 
 ---
