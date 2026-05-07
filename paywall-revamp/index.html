@@ -138,6 +138,38 @@
     }
     a.chip.phone-link:hover { background: rgba(123,104,238,0.22); }
 
+    /* ----- QR MODAL (Open on phone) ----- */
+    .qr-modal { position: fixed; inset: 0; z-index: 100; display: none; }
+    .qr-modal.open { display: block; }
+    body.fullscreen .qr-modal { display: none !important; }
+    .qr-backdrop { position: absolute; inset: 0; background: rgba(45,45,45,0.55); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    .qr-sheet {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+      background: #FAF7F1; border: 1px solid #D4CFC4; border-radius: 18px;
+      padding: 28px 28px 22px; width: 320px; max-width: calc(100vw - 32px);
+      box-shadow: 0 30px 60px rgba(0,0,0,0.25);
+      text-align: center; color: #2D2D2D;
+      font-family: 'Inter', system-ui, sans-serif;
+    }
+    .qr-close {
+      position: absolute; top: 10px; right: 10px;
+      width: 30px; height: 30px; border-radius: 50%;
+      background: rgba(0,0,0,0.05); border: 0;
+      font-size: 20px; line-height: 1; color: #7B7B7B;
+      cursor: pointer; display: flex; align-items: center; justify-content: center;
+    }
+    .qr-close:hover { background: rgba(0,0,0,0.1); color: #2D2D2D; }
+    .qr-eyebrow { font-size: 11px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase; color: #8B7D5B; margin-bottom: 14px; }
+    .qr-img-wrap { background: #fff; padding: 12px; border-radius: 10px; display: inline-block; margin-bottom: 14px; border: 1px solid #E8E5DF; }
+    .qr-img-wrap img { display: block; width: 200px; height: 200px; }
+    .qr-url-row { display: flex; gap: 6px; align-items: center; padding: 6px 6px 6px 10px; background: rgba(0,0,0,0.04); border-radius: 8px; margin-bottom: 12px; }
+    .qr-url { flex: 1; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 11px; color: #4A4A4A; text-decoration: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; }
+    .qr-url:hover { color: #7B68EE; }
+    .qr-copy { padding: 5px 11px; border-radius: 6px; background: #2D2D2D; color: #FAF7F1; border: 0; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; transition: background 0.15s; }
+    .qr-copy:hover { background: #8B7D5B; }
+    .qr-copy.copied { background: #5FD063; color: #fff; }
+    .qr-hint { font-size: 12px; color: #7B7B7B; line-height: 1.45; }
+
     /* ----- FULLSCREEN MODE -----
        Auto-applied at <=720px (mobile) OR via ?fullscreen=1 / ?app=1.
        Paywall has 3 variants — fullscreen shows only V3 (Jay's pick on
@@ -1621,12 +1653,67 @@
   <!-- ============================================================== -->
   <!-- =========================== SCRIPT =========================== -->
   <!-- ============================================================== -->
+  <!-- QR modal — opened by .chip.phone-link clicks (auto-hidden in fullscreen) -->
+  <div class="qr-modal" id="qrModal" role="dialog" aria-modal="true" aria-labelledby="qrEyebrow">
+    <div class="qr-backdrop" id="qrBackdrop"></div>
+    <div class="qr-sheet">
+      <button class="qr-close" id="qrClose" aria-label="Close">×</button>
+      <div class="qr-eyebrow" id="qrEyebrow">Open on phone</div>
+      <div class="qr-img-wrap"><img id="qrImg" alt="QR code to open this prototype on a phone" /></div>
+      <div class="qr-url-row">
+        <a class="qr-url" id="qrUrl" href="#" target="_blank" rel="noopener">…</a>
+        <button class="qr-copy" id="qrCopy">Copy</button>
+      </div>
+      <p class="qr-hint">Scan with your phone's camera. Opens fullscreen — V3 only (your chosen direction).</p>
+    </div>
+  </div>
+
   <script>
     // Fullscreen toggle: ?fullscreen=1 or ?app=1 hides chrome + V1/V2, shows V3 full-bleed.
     // Auto-applied <=720px via CSS.
     if (/(?:^|[?&])(?:fullscreen|app)=1(?:&|$)/.test(location.search)) {
       document.body.classList.add('fullscreen');
     }
+
+    // QR modal — opened by clicking any .chip.phone-link in the topbar.
+    (function () {
+      var modal = document.getElementById('qrModal');
+      if (!modal) return;
+      var backdrop = document.getElementById('qrBackdrop');
+      var closeBtn = document.getElementById('qrClose');
+      var img = document.getElementById('qrImg');
+      var urlA = document.getElementById('qrUrl');
+      var copyBtn = document.getElementById('qrCopy');
+      var phoneLinks = document.querySelectorAll('a.chip.phone-link');
+      function getFullscreenUrl(chipEl) {
+        var href = chipEl.getAttribute('href') || '?fullscreen=1';
+        return new URL(href, location.href).toString();
+      }
+      function openModal(e) {
+        e.preventDefault();
+        var url = getFullscreenUrl(e.currentTarget);
+        img.src = 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&margin=0&data=' + encodeURIComponent(url);
+        urlA.href = url;
+        urlA.textContent = url.replace(/^https?:\/\//, '');
+        modal.classList.add('open');
+      }
+      function closeModal() {
+        modal.classList.remove('open');
+        copyBtn.classList.remove('copied');
+        copyBtn.textContent = 'Copy';
+      }
+      Array.prototype.forEach.call(phoneLinks, function (link) { link.addEventListener('click', openModal); });
+      backdrop.addEventListener('click', closeModal);
+      closeBtn.addEventListener('click', closeModal);
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) closeModal(); });
+      copyBtn.addEventListener('click', function () {
+        if (navigator.clipboard) navigator.clipboard.writeText(urlA.href).then(function () {
+          copyBtn.textContent = 'Copied';
+          copyBtn.classList.add('copied');
+          setTimeout(function () { copyBtn.classList.remove('copied'); copyBtn.textContent = 'Copy'; }, 1800);
+        });
+      });
+    })();
 
     (function () {
       // ---- CTA click handlers ----
