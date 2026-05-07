@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>SPiR Health · 2026 Q2 Prototype Review · Ajeo</title>
-  <meta name="description" content="Four prototypes for review: Today's Status Checkin Screen, SPiR Pro vs Max paywall, XP Payment Gates, and the Breathing Module polish pass. Designed and built by Ajeo." />
+  <meta name="description" content="Five prototypes for review: Today's Status Checkin Screen, SPiR Pro vs Max paywall, XP Payment Gates, the Breathing Module polish pass, and the Fasting Tracker mini-app revamp. Designed and built by Ajeo." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
@@ -815,6 +815,7 @@
         <a href="#paywall">02 / Paywall</a>
         <a href="#gates">03 / Gates</a>
         <a href="#breathing">04 / Breathing</a>
+        <a href="#fasting">05 / Fasting</a>
         <a href="https://linear.app/ajeo/project/spir-88970eb13262" class="pill" target="_blank" rel="noopener">Linear</a>
       </div>
     </div>
@@ -832,11 +833,11 @@
         SPiR Health <span class="gold-dot"></span> 2026 Q2 Prototype Review
       </div>
       <h1 class="reveal">
-        Four prototypes<span class="gold">.</span><br/>
+        Five prototypes<span class="gold">.</span><br/>
         One direction<span class="gold">.</span>
       </h1>
       <p class="lede reveal">
-        Today's Status, the Pro vs Max paywall, XP Payment Gates, and the Breathing Module polish pass — designed and built end-to-end, ready for your review and one set of decisions to ship them.
+        Today's Status, the Pro vs Max paywall, XP Payment Gates, the Breathing Module polish pass, and the Fasting Tracker mini-app revamp — designed and built end-to-end, ready for your review and one set of decisions to ship them.
       </p>
       <p class="fineprint reveal">
         Each section below has the live interactive prototype. Click through to tap, slide, and drive the actual flow.
@@ -1192,6 +1193,100 @@
             <span class="arrow">→</span>
           </a>
           <div class="ticket"><a href="https://linear.app/ajeo/issue/AJE-65" target="_blank" rel="noopener">AJE-65</a></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ====================== 05 · FASTING TRACKER ====================== -->
+  <section class="proto" id="fasting">
+    <div class="proto-inner">
+      <div class="proto-eyebrow reveal">
+        <span class="num">05</span>
+        <span class="divider"></span>
+        Fasting Tracker
+      </div>
+      <h2 class="reveal">
+        From sprawling popup<span class="gold">,</span><br/>
+        to a focused mini-app<span class="gold">.</span>
+      </h2>
+      <p class="subhead reveal">
+        Same backbone you built — same `FastingPopup.cs` lifecycle, same PlayerPrefs state, same `weeklyFasting` API call. New shape: three self-contained screens (selection → active → summary), no overflow scrolling, refined ring instead of the screen-eater, swipe-to-end instead of fat-finger stop.
+      </p>
+
+      <div class="phone-stage reveal">
+        <div class="phone">
+          <div class="phone-screen">
+            <div class="phone-notch"></div>
+            <div class="phone-content" style="display:flex; flex-direction:column; align-items:center; justify-content:space-between; padding: 30px 20px 24px; background: radial-gradient(ellipse at 30% 15%, rgba(245,166,35,0.08) 0%, transparent 60%), radial-gradient(ellipse at 70% 85%, rgba(95,208,99,0.05) 0%, transparent 50%), #0a0a0f;">
+
+              <div style="font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(245,166,35,0.85);">Fat-burning window · 8h 12m in</div>
+
+              <!-- Refined ring (~168px, NOT the current 300px+ screen-eater) -->
+              <div style="position: relative; width: 168px; height: 168px; display: flex; align-items: center; justify-content: center;">
+                <!-- Glow halo -->
+                <div style="position: absolute; inset: -8px; border-radius: 50%; background: radial-gradient(circle, rgba(194,154,47,0.22) 0%, rgba(194,154,47,0) 70%); filter: blur(6px);"></div>
+                <svg viewBox="0 0 168 168" style="position: absolute; inset: 0; width: 100%; height: 100%; transform: rotate(-90deg);">
+                  <circle cx="84" cy="84" r="76" fill="none" stroke="rgba(255,255,255,0.06)" stroke-width="8"/>
+                  <circle cx="84" cy="84" r="76" fill="none" stroke="#C29A2F" stroke-width="8" stroke-linecap="round" stroke-dasharray="477.5" stroke-dashoffset="244.5" style="filter: drop-shadow(0 0 4px rgba(194,154,47,0.6));"/>
+                </svg>
+                <div style="position: relative; z-index: 1; text-align: center;">
+                  <div style="font-family: var(--font-mono); font-size: 32px; font-weight: 700; color: #f0ede8; letter-spacing: -0.02em; line-height: 1;">07:48</div>
+                  <div style="font-family: var(--font-mono); font-size: 9px; font-weight: 500; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(240,237,232,0.4); margin-top: 6px;">51% &middot; 7h 48m left</div>
+                </div>
+              </div>
+
+              <!-- 3-cell info row -->
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%;">
+                <div style="padding: 10px 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; text-align: center;">
+                  <div style="font-family: var(--font-mono); font-size: 8px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(240,237,232,0.4); margin-bottom: 4px;">Started</div>
+                  <div style="font-size: 13px; font-weight: 600; color: #f0ede8;">10:42 PM</div>
+                </div>
+                <div style="padding: 10px 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; text-align: center;">
+                  <div style="font-family: var(--font-mono); font-size: 8px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(240,237,232,0.4); margin-bottom: 4px;">Plan</div>
+                  <div style="font-size: 13px; font-weight: 600; color: #f0ede8;">16h</div>
+                </div>
+                <div style="padding: 10px 8px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; text-align: center;">
+                  <div style="font-family: var(--font-mono); font-size: 8px; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: rgba(240,237,232,0.4); margin-bottom: 4px;">Ends</div>
+                  <div style="font-size: 13px; font-weight: 600; color: #f0ede8;">2:42 PM</div>
+                </div>
+              </div>
+
+              <!-- Action chips -->
+              <div style="display: grid; grid-template-columns: 1fr 1.6fr; gap: 8px; width: 100%;">
+                <div style="padding: 14px 12px; background: rgba(123,104,238,0.1); border: 1px solid rgba(123,104,238,0.3); border-radius: 100px; color: #7B68EE; font-size: 13px; font-weight: 600; text-align: center;">+ Extend 1h</div>
+                <div style="padding: 14px 16px; background: rgba(214,69,69,0.08); border: 1px solid rgba(214,69,69,0.25); border-radius: 100px; color: #f0ede8; font-size: 13px; font-weight: 600; display: flex; align-items: center; justify-content: space-between;">
+                  <span>Swipe to end fast</span>
+                  <span style="width: 22px; height: 22px; border-radius: 50%; background: #fff; color: #1a1a22; display: flex; align-items: center; justify-content: center; font-size: 12px;">→</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="proto-foot reveal">
+        <div class="proto-notes">
+          <div class="proto-notes-label">What's wired</div>
+          <ul>
+            <li>Three self-contained screens — selection (3 taps to start), active (refined 168px ring with phase color amber → gold → green), summary (cycles + XP celebration). None scroll.</li>
+            <li>Setup drops from <strong>8 scroll-wheel pickers</strong> (`simpleScrollSnaps[]` × 8 at <code>FastingPopup.cs:24–25</code>) to "Just now / Earlier today" + 5 preset cards (16:8 / 18:6 / 20:4 / 24h / Custom).</li>
+            <li>Active ring drops from ~300px screen-eater to <strong>168px refined</strong>, color tweens by phase, soft heartbeat-lite pulse every ~4s. Same <code>OuterRoundedFillFixed.shader</code> AJE-10 + AJE-65 use.</li>
+            <li><strong>Swipe-to-end</strong> instead of single-tap stop — prevents fat-finger cancellation mid-fast.</li>
+            <li><strong>Killed the 100 XP manual-end-time gate</strong> at <code>FastingPopup.cs:632–645</code>. Custom durations are free for everyone now (the gate was friction without value once Coach's Instincts became the headline Max-only feature). <em>One open question for you: confirm that's OK.</em></li>
+            <li>Backend touches stay the same — <code>NetworkAPImanager.weeklyFasting()</code>, <code>AddEnergyToTodayCheckIn("fasting", ...)</code>, <code>PlayerPrefs</code> save/load. No new model fields for v1.</li>
+            <li>Replaces the always-visible bar chart with a small "N-day streak" pill; the full chart moves into a tap-into Stats sub-screen so it stops contributing to viewport overflow.</li>
+            <li>Full Unity hand-off spec at <code>SPEC_fasting.md</code>: TL;DR, 17-row element table, GSAP→DOTween mapping, files Abdul touches.</li>
+          </ul>
+        </div>
+        <div class="proto-cta">
+          <div class="label">Open prototype</div>
+          <a class="link" href="https://fasting-tracker.vercel.app" target="_blank" rel="noopener">
+            <span>fasting-tracker</span>
+            <span class="arrow">→</span>
+          </a>
+          <div class="ticket"><a href="https://linear.app/ajeo/issue/AJE-66" target="_blank" rel="noopener">AJE-66</a></div>
         </div>
       </div>
     </div>

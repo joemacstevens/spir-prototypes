@@ -1,0 +1,1590 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SPiR Health · Fasting Tracker · AJE-66</title>
+  <meta name="description" content="A focused mini-app revamp of the SPiR Health Fasting Tracker. Selection → active fast → completion summary, no overflow scrolling." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+  <style>
+    /* ============================================================
+       DESIGN TOKENS — Extract to Unity serialized fields
+       Maps to: FastingPopup prefab + new BreathFastTokens.asset
+       ============================================================ */
+    :root {
+      /* Phase colors — fasting timeline */
+      --color-amber: #F5A623;       /* 0–33% (early — building hunger) */
+      --color-amber-hi: #FFB94A;
+      --color-gold: #C29A2F;        /* 33–66% (fat-burning window) */
+      --color-gold-hi: #DDB148;
+      --color-green: #5FD063;       /* 66–100% (autophagy / nearing completion) */
+      --color-green-hi: #72E876;
+      --color-extend: #7B68EE;      /* extend / bonus modifier */
+
+      /* Phone interior — same SPiR dark base AJE-10 / breathing-module use */
+      --color-bg: #0A0A0F;
+      --color-bg-2: #14141C;
+      --color-card-bg: rgba(255, 255, 255, 0.04);
+      --color-card-bg-hi: rgba(255, 255, 255, 0.07);
+      --color-card-border: rgba(255, 255, 255, 0.08);
+      --color-card-border-hi: rgba(255, 255, 255, 0.16);
+      --color-text-primary: #F0EDE8;
+      --color-text-secondary: rgba(240, 237, 232, 0.65);
+      --color-text-muted: rgba(240, 237, 232, 0.4);
+
+      /* Sizing */
+      --ring-size: 168px;          /* refined ring (was ~300px in current Unity panel) */
+      --ring-stroke: 8;
+      --card-radius: 18px;
+      --pill-radius: 100px;
+
+      /* Timing (transitions) */
+      --t-fast: 0.18s;
+      --t-med: 0.32s;
+      --t-slow: 0.5s;
+
+      /* Phone shell */
+      --viewport-width: 390px;
+      --viewport-height: 844px;
+      --safe-top: 54px;
+      --safe-bottom: 34px;
+
+      /* ----- PAGE CHROME (Ajeo brand kit, matches AJE-10 / AJE-11 / AJE-65) ----- */
+      --chrome-bg: #F5F2EC;
+      --chrome-bg-2: #FAF7F1;
+      --chrome-surface: #E8E5DF;
+      --chrome-border: #D4CFC4;
+      --chrome-border-hi: #BEB7A8;
+      --chrome-text: #2D2D2D;
+      --chrome-text-soft: #4A4A4A;
+      --chrome-text-muted: #7B7B7B;
+      --chrome-gold: #8B7D5B;
+      --chrome-purple: #7B68EE;
+      --chrome-amber: #F5A623;
+      --chrome-teal: #3DD4C0;
+      --chrome-gradient: linear-gradient(135deg, #2D2D2D 0%, #8B7D5B 100%);
+
+      --font-primary: 'Inter', system-ui, sans-serif;
+      --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-primary);
+      background: var(--chrome-bg);
+      min-height: 100vh;
+      color: var(--chrome-text);
+      -webkit-font-smoothing: antialiased;
+    }
+    .device-frame { color: var(--color-text-primary); }
+
+    /* ============================================================
+       PAGE CHROME — topbar / workspace / phone-wrap / docs
+       (parallels prototypes/breathing-module + todays-status-revamp)
+       ============================================================ */
+    .topbar {
+      position: sticky; top: 0; z-index: 60;
+      background: rgba(245,242,236,0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--chrome-border);
+    }
+    .topbar-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 14px 32px;
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    }
+    .ajeo-wordmark {
+      font-weight: 700; font-size: 22px; letter-spacing: -0.02em;
+      color: var(--chrome-text);
+      text-decoration: none;
+      display: inline-flex; align-items: baseline; flex-shrink: 0;
+    }
+    .ajeo-wordmark .j { position: relative; }
+    .ajeo-wordmark .j-dot {
+      position: absolute; top: -2px; left: 0.32em;
+      width: 6px; height: 6px;
+      background: var(--chrome-gold);
+      border-radius: 50%;
+      animation: ajeo-pulse 2.4s ease-in-out infinite;
+    }
+    @keyframes ajeo-pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.78; }
+    }
+    .topbar-divider { width: 1px; height: 18px; background: var(--chrome-border); flex-shrink: 0; }
+    .title-block { display: flex; align-items: baseline; gap: 14px; flex-shrink: 0; }
+    .title-main { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--chrome-text); }
+    .title-sub { font-size: 11px; font-weight: 500; letter-spacing: 0.14em; text-transform: uppercase; color: var(--chrome-text-muted); }
+    .topbar-meta { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+    .chip {
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      padding: 5px 11px; border-radius: 100px;
+      border: 1px solid var(--chrome-border);
+      color: var(--chrome-text-muted);
+      background: rgba(255,255,255,0.4);
+    }
+    .chip.priority { color: var(--chrome-amber); border-color: rgba(245,166,35,0.35); background: rgba(245,166,35,0.08); }
+    .chip.status { color: var(--chrome-teal); border-color: rgba(61,212,192,0.35); background: rgba(61,212,192,0.08); }
+    .chip.ticket { color: var(--chrome-purple); border-color: rgba(123,104,238,0.35); background: rgba(123,104,238,0.08); }
+    .chip.ticket a { color: inherit; text-decoration: none; }
+    .chip.ticket a:hover { text-decoration: underline; }
+
+    .workspace {
+      max-width: 1200px; margin: 0 auto;
+      padding: 56px 32px 96px;
+      display: grid;
+      grid-template-columns: 440px 1fr;
+      gap: 56px; align-items: start;
+    }
+    @media (max-width: 980px) {
+      .workspace { grid-template-columns: 1fr; gap: 40px; padding: 32px 20px 64px; }
+    }
+    .phone-wrap { position: sticky; top: 96px; display: flex; flex-direction: column; align-items: center; }
+    @media (max-width: 980px) { .phone-wrap { position: static; } }
+    .phone-label {
+      font-size: 10px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--chrome-text-muted);
+      margin-bottom: 16px;
+      text-align: center;
+    }
+
+    /* ----- DOCS PANEL ----- */
+    .docs { color: var(--chrome-text); max-width: 660px; }
+    .docs-eyebrow {
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--chrome-gold);
+      margin-bottom: 14px;
+    }
+    .docs h1 {
+      font-size: 38px; font-weight: 700; line-height: 1.1;
+      letter-spacing: -0.02em; margin-bottom: 18px;
+      color: var(--chrome-text);
+    }
+    .docs h1 .gradient-text {
+      background: var(--chrome-gradient);
+      -webkit-background-clip: text; background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .docs .docs-intro {
+      font-size: 17px; line-height: 1.55;
+      color: var(--chrome-text-soft);
+      margin-bottom: 32px;
+    }
+    .ticket-ref {
+      display: grid; grid-template-columns: 140px 1fr;
+      gap: 8px 18px;
+      padding: 16px 18px;
+      background: rgba(255,255,255,0.5);
+      border: 1px solid var(--chrome-border);
+      border-radius: 12px;
+      margin-bottom: 36px;
+      font-size: 13px;
+    }
+    .ticket-ref dt { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--chrome-text-muted); align-self: center; }
+    .ticket-ref dd { color: var(--chrome-text); align-self: center; word-break: break-word; }
+    .ticket-ref dd a { color: var(--chrome-purple); text-decoration: none; }
+    .ticket-ref dd a:hover { text-decoration: underline; }
+    .ticket-ref dd code { font-family: var(--font-mono); font-size: 12px; padding: 2px 6px; background: rgba(0,0,0,0.05); border-radius: 4px; }
+
+    .doc-section { margin-bottom: 36px; }
+    .doc-section h2 {
+      font-size: 14px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--chrome-text-muted);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--chrome-border);
+    }
+    .doc-section p { font-size: 14.5px; line-height: 1.6; color: var(--chrome-text-soft); margin-bottom: 12px; }
+    .doc-section p strong { color: var(--chrome-text); font-weight: 600; }
+    .doc-section ul { list-style: none; padding: 0; }
+    .doc-section ul li {
+      font-size: 14.5px; line-height: 1.6;
+      color: var(--chrome-text-soft);
+      padding: 8px 0 8px 22px;
+      position: relative;
+    }
+    .doc-section ul li::before {
+      content: ''; position: absolute; left: 4px; top: 17px;
+      width: 6px; height: 6px;
+      border-radius: 50%; background: var(--chrome-gold);
+    }
+    .doc-section code { font-family: var(--font-mono); font-size: 12.5px; padding: 2px 6px; background: rgba(0,0,0,0.05); border-radius: 4px; }
+    .doc-section a { color: var(--chrome-purple); text-decoration: none; font-weight: 500; }
+    .doc-section a:hover { text-decoration: underline; }
+
+    .annotation-grid { display: grid; gap: 10px; }
+    .annotation {
+      display: grid; grid-template-columns: 32px 1fr;
+      gap: 14px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.5);
+      border: 1px solid var(--chrome-border);
+      border-radius: 10px;
+    }
+    .annotation-num {
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: var(--chrome-gradient);
+      color: #fff;
+      font-size: 13px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .annotation-body { font-size: 13.5px; line-height: 1.55; color: var(--chrome-text-soft); }
+    .annotation-title { font-weight: 600; font-size: 14px; color: var(--chrome-text); margin-bottom: 4px; }
+
+    .info, .warn, .ok {
+      padding: 12px 14px; border-radius: 8px;
+      font-size: 13.5px; line-height: 1.55;
+      color: var(--chrome-text-soft);
+      margin: 14px 0;
+    }
+    .info { background: rgba(123,104,238,0.07); border: 1px solid rgba(123,104,238,0.2); }
+    .info strong { color: var(--chrome-purple); }
+    .warn { background: rgba(245,166,35,0.07); border: 1px solid rgba(245,166,35,0.25); }
+    .warn strong { color: var(--chrome-amber); }
+    .ok { background: rgba(95,208,99,0.08); border: 1px solid rgba(95,208,99,0.3); }
+    .ok strong { color: #3aa03e; }
+
+    /* ============================================================
+       DEVICE FRAME — phone interior
+       Maps to: FastingPopup.prefab Canvas
+       ============================================================ */
+    .device-frame {
+      width: var(--viewport-width);
+      height: var(--viewport-height);
+      background: var(--color-bg);
+      position: relative;
+      overflow: hidden;
+      border-radius: 40px;
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.08),
+        0 25px 80px rgba(0, 0, 0, 0.6),
+        0 0 120px rgba(245, 166, 35, 0.05);
+    }
+    .device-frame::before {
+      content: '';
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse at 30% 15%, rgba(245,166,35,0.08) 0%, transparent 60%),
+        radial-gradient(ellipse at 70% 85%, rgba(95,208,99,0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ============================================================
+       SCREEN STAGING — three screens, none scroll, fade swap
+       ============================================================ */
+    .screen {
+      position: absolute; inset: 0;
+      padding: var(--safe-top) 24px var(--safe-bottom);
+      display: flex; flex-direction: column;
+      opacity: 1;
+      transition: opacity var(--t-med) ease;
+      z-index: 1;
+    }
+    .screen.hidden { opacity: 0; pointer-events: none; }
+
+    /* ============================================================
+       HEADER — used across all three screens
+       ============================================================ */
+    .header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 22px;
+      flex-shrink: 0;
+    }
+    .back-btn, .header-action {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: var(--color-text-primary);
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      transition: background var(--t-fast);
+    }
+    .back-btn:hover, .header-action:hover { background: rgba(255,255,255,0.12); }
+    .header-title {
+      font-size: 14px; font-weight: 600;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      color: var(--color-text-secondary);
+    }
+
+    /* ============================================================
+       SELECTION SCREEN
+       ============================================================ */
+    .selection-body {
+      flex: 1; display: flex; flex-direction: column;
+      gap: 18px; overflow: hidden;
+    }
+    .step-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 8px;
+    }
+    .step-q {
+      font-size: 19px; font-weight: 700;
+      color: var(--color-text-primary);
+      margin-bottom: 10px;
+      letter-spacing: -0.01em;
+    }
+
+    /* When-did-you-stop chips */
+    .when-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .when-chip {
+      padding: 12px 14px;
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all var(--t-fast);
+      text-align: center;
+    }
+    .when-chip:hover { background: var(--color-card-bg-hi); border-color: var(--color-card-border-hi); }
+    .when-chip.active {
+      background: rgba(245,166,35,0.12);
+      border-color: var(--color-amber);
+      box-shadow: 0 0 0 1px var(--color-amber);
+    }
+    .when-chip-name { font-size: 13px; font-weight: 600; color: var(--color-text-primary); }
+    .when-chip-sub { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+
+    /* Earlier-today hour slider — appears under "Earlier today" */
+    .hour-slider-wrap {
+      padding: 14px 16px;
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: 12px;
+      margin-top: 4px;
+      max-height: 0; opacity: 0;
+      overflow: hidden;
+      transition: max-height var(--t-med) ease, opacity var(--t-med) ease, margin-top var(--t-med) ease, padding var(--t-med) ease;
+    }
+    .hour-slider-wrap.visible {
+      max-height: 130px; opacity: 1;
+      margin-top: 8px; padding: 14px 16px;
+    }
+    .hour-slider-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+    .hour-slider-label { font-size: 11px; color: var(--color-text-muted); letter-spacing: 0.12em; text-transform: uppercase; }
+    .hour-slider-value { font-size: 18px; font-weight: 600; color: var(--color-amber); }
+    .hour-slider {
+      -webkit-appearance: none; appearance: none;
+      width: 100%; height: 4px;
+      background: rgba(255,255,255,0.08);
+      border-radius: 100px;
+      outline: none;
+    }
+    .hour-slider::-webkit-slider-thumb {
+      -webkit-appearance: none; appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--color-amber);
+      cursor: pointer;
+      box-shadow: 0 0 12px rgba(245,166,35,0.6);
+    }
+    .hour-slider::-moz-range-thumb {
+      width: 18px; height: 18px;
+      border-radius: 50%; border: none;
+      background: var(--color-amber);
+      cursor: pointer;
+    }
+
+    /* Preset cards row */
+    .preset-cards {
+      display: flex; gap: 8px;
+      overflow-x: auto;
+      padding: 4px 0 8px;
+      scroll-snap-type: x mandatory;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .preset-cards::-webkit-scrollbar { display: none; }
+    .preset-card {
+      flex: 0 0 96px;
+      padding: 12px 8px;
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: 14px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--t-fast);
+      scroll-snap-align: start;
+      position: relative;
+    }
+    .preset-card:hover { background: var(--color-card-bg-hi); border-color: var(--color-card-border-hi); }
+    .preset-card.active {
+      background: rgba(245,166,35,0.12);
+      border-color: var(--color-amber);
+      box-shadow: 0 0 0 1px var(--color-amber), 0 0 18px rgba(245,166,35,0.25);
+    }
+    .preset-card .preset-num {
+      font-size: 22px; font-weight: 700;
+      color: var(--color-text-primary);
+      letter-spacing: -0.02em;
+    }
+    .preset-card .preset-unit {
+      font-family: var(--font-mono);
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-top: 2px;
+    }
+    .preset-card .preset-desc {
+      font-size: 11px;
+      color: var(--color-text-secondary);
+      margin-top: 6px;
+      line-height: 1.3;
+    }
+
+    /* Custom hours sub-picker — appears under preset cards row when Custom selected */
+    .custom-wrap {
+      padding: 12px 16px;
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: 12px;
+      max-height: 0; opacity: 0; overflow: hidden;
+      transition: max-height var(--t-med) ease, opacity var(--t-med) ease, margin-top var(--t-med) ease, padding var(--t-med) ease;
+    }
+    .custom-wrap.visible {
+      max-height: 110px; opacity: 1;
+      margin-top: 4px;
+      padding: 12px 16px;
+    }
+
+    /* Live preview row above the start button */
+    .live-preview {
+      padding: 14px 16px;
+      background: rgba(245,166,35,0.07);
+      border: 1px solid rgba(245,166,35,0.2);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: auto;
+      flex-shrink: 0;
+    }
+    .live-preview-text {
+      font-size: 12px; color: var(--color-text-secondary);
+      line-height: 1.4;
+    }
+    .live-preview-text strong { color: var(--color-text-primary); font-weight: 600; }
+    .live-preview-end {
+      text-align: right;
+      font-size: 11px; color: var(--color-text-muted);
+      letter-spacing: 0.04em;
+    }
+    .live-preview-end .end-time { font-size: 14px; color: var(--color-amber); font-weight: 600; }
+
+    /* Hold-to-start button */
+    .hold-btn-wrap { margin-top: 12px; flex-shrink: 0; }
+    .hold-btn {
+      position: relative;
+      display: block; width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--color-amber), var(--color-amber-hi));
+      border: 0; border-radius: var(--pill-radius);
+      color: #fff;
+      font-family: var(--font-primary);
+      font-size: 15px; font-weight: 700;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(245,166,35,0.35);
+      transition: opacity var(--t-fast);
+    }
+    .hold-btn[disabled] { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+    .hold-btn-fill {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--color-green), var(--color-green-hi));
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 0.05s linear;
+      z-index: 1;
+    }
+    .hold-btn-label {
+      position: relative; z-index: 2;
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px;
+    }
+    .hold-btn-hint {
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: rgba(255,255,255,0.7);
+      text-align: center; margin-top: 8px;
+    }
+
+    /* ============================================================
+       ACTIVE FAST SCREEN
+       ============================================================ */
+    .active-body {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      padding-top: 4px;
+    }
+
+    /* Phase eyebrow at top */
+    .phase-eyebrow {
+      font-family: var(--font-mono);
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--color-amber);
+      transition: color var(--t-slow) ease;
+    }
+
+    /* Refined ring (~168px, NOT the current ~300px screen-eater) */
+    .ring-wrap {
+      position: relative;
+      width: var(--ring-size); height: var(--ring-size);
+      display: flex; align-items: center; justify-content: center;
+    }
+    /* Glow halo behind ring — color matches active phase */
+    .ring-glow {
+      position: absolute; inset: -8px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(245,166,35,0.22) 0%, rgba(245,166,35,0) 70%);
+      filter: blur(6px);
+      transition: background var(--t-slow) ease;
+    }
+    .ring-svg {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      transform: rotate(-90deg);
+    }
+    .ring-track { fill: none; stroke: rgba(255,255,255,0.06); stroke-width: 8; }
+    .ring-fill {
+      fill: none;
+      stroke: var(--color-amber);
+      stroke-width: 8;
+      stroke-linecap: round;
+      transition: stroke var(--t-slow) ease, stroke-dashoffset 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+      filter: drop-shadow(0 0 4px rgba(245,166,35,0.6));
+    }
+    .ring-time {
+      position: relative; z-index: 1;
+      text-align: center;
+    }
+    .ring-time-h {
+      font-family: var(--font-mono);
+      font-size: 32px; font-weight: 700;
+      color: var(--color-text-primary);
+      letter-spacing: -0.02em;
+      line-height: 1;
+    }
+    .ring-time-sub {
+      font-family: var(--font-mono);
+      font-size: 9px; font-weight: 500;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-top: 6px;
+    }
+
+    /* Info row — start / end / progress */
+    .info-row {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      width: 100%;
+    }
+    .info-cell {
+      padding: 10px 8px;
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: 12px;
+      text-align: center;
+    }
+    .info-cell-label {
+      font-family: var(--font-mono);
+      font-size: 8px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-bottom: 4px;
+    }
+    .info-cell-value {
+      font-size: 13px; font-weight: 600;
+      color: var(--color-text-primary);
+    }
+
+    /* Streak chip — small, not a chart */
+    .streak-chip {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px;
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: var(--pill-radius);
+      font-size: 11px; font-weight: 500;
+      color: var(--color-text-secondary);
+    }
+    .streak-chip-dot {
+      width: 6px; height: 6px;
+      background: var(--color-green);
+      border-radius: 50%;
+      box-shadow: 0 0 8px rgba(95,208,99,0.6);
+    }
+
+    /* Action chips at bottom (Extend / End-with-swipe) */
+    .actions-row {
+      display: grid; grid-template-columns: 1fr 1.6fr;
+      gap: 8px;
+      width: 100%;
+    }
+    .action-extend {
+      padding: 14px 12px;
+      background: rgba(123,104,238,0.1);
+      border: 1px solid rgba(123,104,238,0.3);
+      border-radius: var(--pill-radius);
+      color: var(--color-extend);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      transition: background var(--t-fast);
+    }
+    .action-extend:hover { background: rgba(123,104,238,0.18); }
+
+    /* Swipe-to-end track */
+    .swipe-end {
+      position: relative;
+      padding: 14px 16px;
+      background: rgba(214,69,69,0.08);
+      border: 1px solid rgba(214,69,69,0.25);
+      border-radius: var(--pill-radius);
+      overflow: hidden;
+      cursor: grab;
+      user-select: none;
+    }
+    .swipe-end-fill {
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, rgba(214,69,69,0.6), rgba(214,69,69,0.85));
+      transform-origin: left;
+      transform: scaleX(0);
+      transition: transform 0.05s linear;
+      z-index: 1;
+    }
+    .swipe-end-content {
+      position: relative; z-index: 2;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .swipe-end-label {
+      font-size: 13px; font-weight: 600;
+      color: #fff;
+      letter-spacing: 0.04em;
+    }
+    .swipe-end-thumb {
+      width: 22px; height: 22px;
+      border-radius: 50%;
+      background: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      color: var(--color-card-bg);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+
+    /* ============================================================
+       SUMMARY SCREEN
+       ============================================================ */
+    .summary-body {
+      flex: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: space-between;
+      padding-top: 16px;
+    }
+    .summary-celebration {
+      text-align: center; margin-top: 12px;
+    }
+    .summary-emoji {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    .summary-title {
+      font-size: 22px; font-weight: 700;
+      color: var(--color-text-primary);
+      margin-bottom: 6px;
+      letter-spacing: -0.01em;
+    }
+    .summary-sub {
+      font-size: 13px;
+      color: var(--color-text-secondary);
+      margin-bottom: 8px;
+    }
+
+    .summary-stats {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+    }
+    .summary-stat {
+      padding: 14px 12px;
+      background: var(--color-card-bg);
+      border: 1px solid var(--color-card-border);
+      border-radius: var(--card-radius);
+      text-align: center;
+    }
+    .summary-stat-value {
+      font-size: 24px; font-weight: 700;
+      color: var(--color-text-primary);
+      letter-spacing: -0.02em;
+    }
+    .summary-stat-label {
+      font-family: var(--font-mono);
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--color-text-muted);
+      margin-top: 4px;
+    }
+
+    .summary-xp {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, rgba(95,208,99,0.12), rgba(0,250,58,0.06));
+      border: 1px solid rgba(95,208,99,0.3);
+      border-radius: var(--card-radius);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .summary-xp-glow {
+      position: absolute; inset: 0;
+      background: radial-gradient(circle at 50% 50%, rgba(95,208,99,0.2), transparent 70%);
+      pointer-events: none;
+    }
+    .summary-xp-num {
+      font-size: 32px; font-weight: 700;
+      color: var(--color-green-hi);
+      letter-spacing: -0.02em;
+      position: relative;
+    }
+    .summary-xp-label {
+      font-family: var(--font-mono);
+      font-size: 9px; font-weight: 600;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: rgba(95,208,99,0.85);
+      margin-top: 4px;
+      position: relative;
+    }
+
+    .summary-actions {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      width: 100%;
+    }
+    .summary-btn {
+      padding: 14px;
+      border-radius: var(--pill-radius);
+      font-size: 13px; font-weight: 600;
+      cursor: pointer;
+      transition: background var(--t-fast);
+      border: 1px solid var(--color-card-border);
+      background: var(--color-card-bg);
+      color: var(--color-text-primary);
+    }
+    .summary-btn:hover { background: var(--color-card-bg-hi); }
+    .summary-btn.primary {
+      background: linear-gradient(135deg, var(--color-amber), var(--color-amber-hi));
+      border: 0;
+      color: #fff;
+      box-shadow: 0 6px 16px rgba(245,166,35,0.3);
+    }
+    .summary-btn.primary:hover { filter: brightness(1.05); }
+
+    /* ============================================================
+       RESPONSIVE — small viewport: phone stays at 390 max
+       ============================================================ */
+    @media screen and (max-width: 430px) {
+      .workspace { padding-left: 8px; padding-right: 8px; }
+      .topbar-inner { padding-left: 16px; padding-right: 16px; }
+      .device-frame {
+        width: 100%; max-width: 390px;
+        height: 80vh; max-height: 844px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="topbar">
+    <div class="topbar-inner">
+      <a href="https://spir-presentation.vercel.app" class="ajeo-wordmark" target="_blank" rel="noopener" aria-label="Ajeo">a<span class="j">j<span class="j-dot"></span></span>eo</a>
+      <span class="topbar-divider"></span>
+      <div class="title-block">
+        <span class="title-main">Fasting Tracker</span>
+        <span class="title-sub">Mini-app revamp</span>
+      </div>
+      <div class="topbar-meta">
+        <span class="chip ticket"><a href="https://linear.app/ajeo/issue/AJE-66/fasting-tracker-full-mini-app-revamp-replaces-giant-ring-8-wheel">AJE-66</a></span>
+        <span class="chip priority">High Priority</span>
+        <span class="chip status">Backlog</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="workspace">
+
+    <div class="phone-wrap">
+      <div class="phone-label">Fasting Tracker · 390 × 844</div>
+      <div class="device-frame" id="app">
+
+        <!-- ===== SELECTION SCREEN ===== -->
+        <div class="screen" id="selection-screen">
+          <div class="header">
+            <button class="back-btn" aria-label="Back">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <span class="header-title">Start a fast</span>
+            <button class="header-action" aria-label="Help">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            </button>
+          </div>
+
+          <div class="selection-body">
+            <div>
+              <div class="step-eyebrow">Step 1 of 2</div>
+              <div class="step-q">When did you stop eating?</div>
+              <div class="when-row">
+                <div class="when-chip active" data-when="now">
+                  <div class="when-chip-name">Just now</div>
+                  <div class="when-chip-sub" id="now-time">10:42 PM</div>
+                </div>
+                <div class="when-chip" data-when="earlier">
+                  <div class="when-chip-name">Earlier today</div>
+                  <div class="when-chip-sub">Pick the hour</div>
+                </div>
+              </div>
+              <div class="hour-slider-wrap" id="hour-slider-wrap">
+                <div class="hour-slider-row">
+                  <span class="hour-slider-label">Hours ago</span>
+                  <span class="hour-slider-value"><span id="hours-ago-val">2</span>h ago</span>
+                </div>
+                <input type="range" min="1" max="12" value="2" class="hour-slider" id="hour-slider"/>
+                <div style="font-size: 10px; color: var(--color-text-muted); margin-top: 6px; text-align: center;">Started at <span id="earlier-start-time">8:42 PM</span></div>
+              </div>
+            </div>
+
+            <div>
+              <div class="step-eyebrow">Step 2 of 2</div>
+              <div class="step-q">How long?</div>
+              <div class="preset-cards" id="preset-cards">
+                <div class="preset-card active" data-hours="16">
+                  <div class="preset-num">16:8</div>
+                  <div class="preset-unit">Most popular</div>
+                  <div class="preset-desc">The classic</div>
+                </div>
+                <div class="preset-card" data-hours="18">
+                  <div class="preset-num">18:6</div>
+                  <div class="preset-unit">Moderate</div>
+                  <div class="preset-desc">Extended burn</div>
+                </div>
+                <div class="preset-card" data-hours="20">
+                  <div class="preset-num">20:4</div>
+                  <div class="preset-unit">Advanced</div>
+                  <div class="preset-desc">Warrior fast</div>
+                </div>
+                <div class="preset-card" data-hours="24">
+                  <div class="preset-num">24h</div>
+                  <div class="preset-unit">One meal</div>
+                  <div class="preset-desc">Full reset</div>
+                </div>
+                <div class="preset-card" data-hours="custom">
+                  <div class="preset-num" style="font-size: 18px; padding-top: 4px;">Custom</div>
+                  <div class="preset-unit">Flexible</div>
+                  <div class="preset-desc">12–48 hrs</div>
+                </div>
+              </div>
+              <div class="custom-wrap" id="custom-wrap">
+                <div class="hour-slider-row">
+                  <span class="hour-slider-label">Duration</span>
+                  <span class="hour-slider-value"><span id="custom-hours-val">14</span>h</span>
+                </div>
+                <input type="range" min="12" max="48" value="14" class="hour-slider" id="custom-slider"/>
+              </div>
+            </div>
+
+            <div class="live-preview">
+              <div class="live-preview-text">
+                Your <strong id="preview-duration">16h</strong> fast<br/>
+                <span style="color: var(--color-text-muted);">starts <span id="preview-start">now</span></span>
+              </div>
+              <div class="live-preview-end">
+                <div>Ends</div>
+                <div class="end-time" id="preview-end">2:42 PM tomorrow</div>
+              </div>
+            </div>
+
+            <div class="hold-btn-wrap">
+              <button class="hold-btn" id="hold-start-btn">
+                <span class="hold-btn-fill" id="hold-start-fill"></span>
+                <span class="hold-btn-label">
+                  <span>HOLD TO START</span>
+                </span>
+              </button>
+              <div class="hold-btn-hint">Press &amp; hold for 1 second</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== ACTIVE FAST SCREEN ===== -->
+        <div class="screen hidden" id="active-screen">
+          <div class="header">
+            <button class="back-btn" id="active-back" aria-label="Back to selection">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
+            <span class="header-title">Fasting</span>
+            <div class="streak-chip">
+              <span class="streak-chip-dot"></span>
+              <span>4-day streak</span>
+            </div>
+          </div>
+
+          <div class="active-body">
+            <div class="phase-eyebrow" id="phase-label">Building hunger · 0h 12m in</div>
+
+            <div class="ring-wrap" id="ring-wrap">
+              <div class="ring-glow" id="ring-glow"></div>
+              <svg class="ring-svg" viewBox="0 0 168 168">
+                <circle class="ring-track" cx="84" cy="84" r="76"/>
+                <circle class="ring-fill" id="ring-fill" cx="84" cy="84" r="76" stroke-dasharray="477.5" stroke-dashoffset="477.5"/>
+              </svg>
+              <div class="ring-time">
+                <div class="ring-time-h" id="ring-time-h">15:48</div>
+                <div class="ring-time-sub" id="ring-time-sub"><span id="progress-pct">1</span>% &middot; <span id="time-remaining">15h 48m left</span></div>
+              </div>
+            </div>
+
+            <div class="info-row">
+              <div class="info-cell">
+                <div class="info-cell-label">Started</div>
+                <div class="info-cell-value" id="started-display">10:42 PM</div>
+              </div>
+              <div class="info-cell">
+                <div class="info-cell-label">Plan</div>
+                <div class="info-cell-value" id="plan-display">16h</div>
+              </div>
+              <div class="info-cell">
+                <div class="info-cell-label">Ends</div>
+                <div class="info-cell-value" id="ends-display">2:42 PM</div>
+              </div>
+            </div>
+
+            <div class="actions-row">
+              <button class="action-extend" id="extend-btn">+ Extend 1h</button>
+              <div class="swipe-end" id="swipe-end">
+                <span class="swipe-end-fill" id="swipe-end-fill"></span>
+                <div class="swipe-end-content">
+                  <span class="swipe-end-label">Swipe to end fast</span>
+                  <span class="swipe-end-thumb" id="swipe-end-thumb">→</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== SUMMARY SCREEN ===== -->
+        <div class="screen hidden" id="summary-screen">
+          <div class="header">
+            <button class="back-btn" id="summary-close" aria-label="Close">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+            <span class="header-title">Fast complete</span>
+            <div style="width: 36px;"></div>
+          </div>
+
+          <div class="summary-body">
+            <div class="summary-celebration">
+              <div class="summary-emoji">🟢</div>
+              <div class="summary-title" id="summary-title">16h 0m fast complete</div>
+              <div class="summary-sub" id="summary-sub">10:42 PM &rarr; 2:42 PM &middot; 16:8</div>
+            </div>
+
+            <div class="summary-stats">
+              <div class="summary-stat">
+                <div class="summary-stat-value" id="stat-duration">16h 0m</div>
+                <div class="summary-stat-label">Duration</div>
+              </div>
+              <div class="summary-stat">
+                <div class="summary-stat-value">5</div>
+                <div class="summary-stat-label">Day streak</div>
+              </div>
+            </div>
+
+            <div class="summary-xp">
+              <div class="summary-xp-glow"></div>
+              <div class="summary-xp-num" id="xp-earned">+25 XP</div>
+              <div class="summary-xp-label">Earned this fast</div>
+            </div>
+
+            <div class="summary-actions">
+              <button class="summary-btn" id="summary-done">Done</button>
+              <button class="summary-btn primary" id="summary-restart">Start another</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ====================== DOCS PANEL ====================== -->
+    <div class="docs">
+      <div class="docs-eyebrow">AJE-66 · Fasting Tracker · Mini-app revamp</div>
+      <h1>From sprawling popup<br/>to <span class="gradient-text">a focused mini-app.</span></h1>
+      <p class="docs-intro">
+        The current Fasting popup is functional but loud — a giant <code>fillImage</code> ring and 90pt countdown dominate the screen, eight scroll-wheel pickers handle setup, and <code>VerticalLayoutGroup</code> padding hacks (top=1300, bottom=2200 → top=150, bottom=3000) try to hide it all from the viewport. This prototype rebuilds the experience as a focused mini-app with three self-contained screens — selection, active, summary — none of which need to scroll.
+      </p>
+
+      <dl class="ticket-ref">
+        <dt>Ticket</dt>
+        <dd><a href="https://linear.app/ajeo/issue/AJE-66/fasting-tracker-full-mini-app-revamp-replaces-giant-ring-8-wheel">AJE-66</a> · Backlog · created from your 2026-05-06 23:01 SMS ("the Fasting Clock/Tracker needs a revamp")</dd>
+        <dt>Owning panel</dt>
+        <dd><code>Assets/My Scripts/FastingPopup.cs:9</code> — <code>FastingPopup : SingletonBehaviourUI&lt;FastingPopup&gt;</code> (921 lines)</dd>
+        <dt>Live spec</dt>
+        <dd><a href="./SPEC_fasting.md">SPEC_fasting.md</a> — full Unity hand-off (TL;DR, element table, GSAP→DOTween mapping, files Abdul touches, open feasibility flags)</dd>
+        <dt>Hands off to / from</dt>
+        <dd><a href="../todays-status-revamp/">AJE-10 Today's Status</a> (the Soundscape edit row replaced what used to be the Fasting Window edit row — the standalone Fasting Tracker is this prototype) · <a href="../breathing-module/">AJE-65 Breathing module</a> (mirror mini-app structure) · <a href="https://linear.app/ajeo/issue/AJE-12">AJE-12 XP gates</a> (we killed the 100 XP manual-end-time gate — see feasibility flags)</dd>
+        <dt>Source</dt>
+        <dd><code><a href="./index.html">index.html</a></code> — single static file, GSAP via CDN, no build step</dd>
+      </dl>
+
+      <div class="doc-section">
+        <h2>What changes vs your current in-app screen</h2>
+        <p>Three screens, each focused on one moment in the fasting flow:</p>
+        <ul>
+          <li><strong>Selection screen</strong> — "When did you stop eating?" (Just now / Earlier today + hour slider) → preset cards (16:8 / 18:6 / 20:4 / 24h / Custom) → live preview of when the fast ends → <strong>hold-to-start</strong> with a 1-second progress fill on the button (replaces the 8-scroll-wheel start + end pickers, lines 109–201, 162–199)</li>
+          <li><strong>Active fast screen</strong> — refined ring (<strong>168px, not 300px+</strong>) with phase color (amber → gold → green over the duration), soft pulse, time inside. Below: 3 info cells (Started / Plan / Ends), then <strong>Extend 1h</strong> button + <strong>swipe-to-end</strong> track (replaces the single-tap stop that risked accidental cancellation)</li>
+          <li><strong>Completion summary</strong> — celebration emoji + "16h 0m fast complete", Duration + Day streak stat cards, XP-earned celebration block, "Done" / "Start another" buttons</li>
+        </ul>
+        <div class="info"><strong>Layout: nothing scrolls.</strong> Each screen is sized to fit a 390 × 844 viewport with safe-area padding. The current panel uses extreme <code>VerticalLayoutGroup</code> padding values (1300–3000 px) to push content on/off screen — that's the "scrolls off the page" problem you flagged. Mini-app structure replaces the padding hacks entirely.</div>
+        <div class="warn"><strong>Killed the 100 XP manual-end-time gate</strong> at <code>FastingPopup.cs:632–645</code>. With Coach's Instincts as the Max-only AI feature ([AJE-11](../paywall-revamp/)), gating the basic ability to set a custom fast length felt like friction without value. Custom is now free for everyone. <strong>Confirm with you before Abdul implements.</strong></div>
+      </div>
+
+      <div class="doc-section">
+        <h2>Annotated walkthrough</h2>
+        <div class="annotation-grid">
+          <div class="annotation">
+            <div class="annotation-num">1</div>
+            <div class="annotation-body">
+              <div class="annotation-title">"When did you stop eating?" chips + Earlier-today slider</div>
+              Two <code>Button</code>s in a 1:1 grid. Tapping "Earlier today" reveals a child <code>GameObject</code> with a <code>UnityEngine.UI.Slider</code> (range 1–12 hours). On change, recompute start time = <code>DateTime.Now.AddHours(-value)</code> and update the live preview row at the bottom. Removes the four scroll wheels for start time at <code>FastingPopup.cs:109–152</code> entirely.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">2</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Preset card carousel (16:8 / 18:6 / 20:4 / 24h / Custom)</div>
+              <code>HorizontalScrollSnap</code> (or <code>ScrollRect</code> with <code>HorizontalLayoutGroup</code>) of 5 <code>FastingPresetCard.prefab</code> instances. Each card: bg <code>Image</code> + duration <code>TMP_Text</code> + tag <code>TMP_Text</code> + description <code>TMP_Text</code>. Tap to select; selected card gets the amber glow border. Replaces the four end-time scroll wheels at <code>FastingPopup.cs:162–199</code>. <strong>Custom</strong> reveals a single <code>UnityEngine.UI.Slider</code> (12–48h) — no XP gate.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">3</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Live preview row</div>
+              <code>TMP_Text</code> bound to start-chip + preset-card selection. Recomputes end time on any change: <code>endTime = startTime.Add(TimeSpan.FromHours(presetHours))</code>. Pure derived state; no new model.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">4</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Hold-to-start button</div>
+              Reuse the existing <code>LongPressButton</code> component currently driving <code>startFastingBtn</code> (<code>FastingPopup.cs:225, 310</code>). Hold duration: 1 second. The fill is now an inset <code>Image</code> with <code>Type = Filled, Fill Method = Horizontal</code> tweening from <code>fillAmount = 0</code> to <code>1</code> via <code>image.DOFillAmount(1, 1f)</code>. On complete, transition to active screen and start the existing <code>StartCounter()</code> flow at <code>FastingPopup.cs:291</code> (PlayerPrefs save unchanged).
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">5</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Refined ring (168px) with phase color</div>
+              Replaces the existing screen-eating <code>fillImage</code> at <code>FastingPopup.cs:30</code>. <code>Image</code> with <code>Type = Filled, Fill Method = Radial360, Fill Origin = Top, Clockwise = true</code>, sized 168 × 168. Use the existing <code>OuterRoundedFillFixed.shader</code> for rounded caps + glow (same shader AJE-10 / AJE-65 use — visual language matches across all four screens). Color tweens between three phases: amber (0–33%), gold (33–66%), green (66–100%). Drive via <code>DOTween.To(() =&gt; ring.color, x =&gt; ring.color = x, targetColor, 0.5f)</code> on phase boundary cross.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">6</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Soft pulse on tick (heartbeat-lite)</div>
+              Subtle scale pulse on the ring every 4 seconds: <code>ring.transform.DOScale(1.02f, 0.4f).SetEase(Ease.InOutSine).SetLoops(-1, LoopType.Yoyo)</code> with a 4-second pause between yoyos via a <code>DOTween.Sequence</code>. <strong>Not</strong> the full liquid-wave from <code>SCOPE_Fasting_Screen.md</code> — that's a bigger animation lift; the heartbeat-lite reads "alive" without overdoing it.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">7</div>
+            <div class="annotation-body">
+              <div class="annotation-title">3-cell info row (Started / Plan / Ends)</div>
+              <code>HorizontalLayoutGroup</code> with three <code>FastingInfoCell.prefab</code> instances. Each: label <code>TMP_Text</code> + value <code>TMP_Text</code>. Bound to the same start/duration values driving the ring. Replaces the start/end <code>TMP_Text</code> labels currently at <code>FastingPopup.cs:27–28</code>.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">8</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Extend 1h button</div>
+              Single <code>Button</code> in purple — taps add 1 hour to the end time. Update <code>PlayerPrefs.SetString("EndTime", ...)</code>, recompute total duration, animate the ring to the new <code>fillAmount</code> via <code>image.DOFillAmount</code>. Optional small toast confirmation. Maps to a future enhancement of <code>extendFastingBtn</code> at <code>FastingPopup.cs:23</code>.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">9</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Swipe-to-end track (replaces single-tap stop)</div>
+              Replaces the bare-tap stop button at <code>FastingPopup.cs:216–224</code>. Drag thumb across the track to confirm. Below 80% drag distance: track resets on release. Above 80%: triggers existing <code>StopFasting()</code> flow + plays a small breakaway animation. Prevents fat-finger cancellation during a multi-hour fast.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">10</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Streak chip</div>
+              Tiny pill in the top-right of the active screen showing "N-day streak". Reads from a new <code>DataConfig.fastingStreak</code> int (or computes locally from <code>weeklyFastingData</code> already fetched at <code>FastingPopup.cs:50</code>). Quiet visual — replaces the full <code>BarChartFeedFasting</code> chart that takes up vertical real estate at the bottom of the current panel. <strong>Move the bar chart to a tap-into "Stats" view</strong> rather than always-visible.
+            </div>
+          </div>
+          <div class="annotation">
+            <div class="annotation-num">11</div>
+            <div class="annotation-body">
+              <div class="annotation-title">Completion summary</div>
+              On fast completion (existing trigger at <code>FastingPopup.cs:444–449</code>), transition to summary screen instead of going straight back to selection. Reuse <code>FastingCompletePopup.cs</code>'s confetti via <code>GameManager.SpawnEffect(confettiBlue)</code> on first show (<code>FastingPopup.cs:405</code>). Two-card stat grid + XP celebration block (<code>DOPunchScale</code> on first show). "Done" returns to home screen; "Start another" loops back to selection.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="doc-section">
+        <h2>Files Abdul will touch</h2>
+        <ul>
+          <li><code>Assets/My Scripts/FastingPopup.cs</code> — refactor to a screen-state-machine pattern (selection / active / summary). Drop the eight <code>SimpleScrollSnap</code> references, drop the <code>VerticalLayoutGroup</code> padding hacks, keep <code>InitializeTimer()</code> / <code>StartCounter()</code> / <code>Update()</code> tick logic, repurpose <code>StopFasting()</code> as the swipe-to-end completion, kill the manual-end-time XP gate at <code>:632–645</code>.</li>
+          <li><code>Assets/Resources/Prefabs/UI/Panels/FastingPopup.prefab</code> — new hierarchy: 3 screen <code>GameObjects</code> as siblings, each with their own <code>CanvasGroup</code> for fade swaps. Drop the eight scroll-wheel pickers entirely.</li>
+          <li><strong>New:</strong> <code>Assets/Resources/Prefabs/UI/FastingPresetCard.prefab</code> — sub-prefab for the 5 preset cards (instantiate from a config or bake all 5 into the prefab).</li>
+          <li><strong>New:</strong> <code>Assets/Resources/Prefabs/UI/FastingInfoCell.prefab</code> — sub-prefab for the 3 info cells on the active screen.</li>
+          <li><strong>New:</strong> <code>Assets/Resources/Prefabs/UI/FastingSwipeEnd.prefab</code> — swipe-to-end track with drag detection (use Unity's <code>EventSystems.IDragHandler</code>).</li>
+          <li><strong>Reuse:</strong> <code>OuterRoundedFillFixed.shader</code> for the ring (matches AJE-10 / AJE-65), <code>LongPressButton</code> for hold-to-start, <code>BarChartFeedFasting.cs</code> moved into a separate "Stats" sub-screen.</li>
+        </ul>
+        <p><strong>Existing helpers reused, no changes:</strong> <code>SingletonBehaviourUI&lt;T&gt;</code>, <code>NetworkAPImanager.weeklyFasting()</code> + <code>AddEnergyToTodayCheckIn("fasting", ...)</code>, <code>PlayerPrefs</code> save/load (StartTime / EndTime / TimerRunning), <code>GameManager.SpawnEffect(confettiBlue)</code>, <code>FastingCompletePopup.cs</code> as the underlying completion handler.</p>
+        <p><strong>External callers (don't break):</strong> <code>CheckInsPanel.cs</code>, <code>FooterMenu.cs</code>, <code>HomeScreenPanel.cs</code>, <code>FocusModePanel.cs</code>, <code>FiveHoursBeforeBedTimePopup.cs</code> all call <code>FastingPopup.Show()</code> — that entry point stays. Just lands on the selection screen if no fast is active, or jumps to the active screen if one is.</p>
+      </div>
+
+      <div class="doc-section">
+        <h2>Open feasibility flags</h2>
+        <ul>
+          <li><strong>Manual end-time XP gate killed</strong> — confirm with you before Abdul ships. The gate was at <code>FastingPopup.cs:632–645</code>; charging 100 XP just to set a non-preset end time felt like friction. With Coach's Instincts now the Max-only AI ([AJE-11](../paywall-revamp/)), this small gate looks vestigial.</li>
+          <li><strong>Bar chart move</strong> — current <code>BarChartFeedFasting</code> is always visible at the bottom of the active screen and contributes to the overflow problem. Spec moves it into a tap-into "Stats" sub-screen accessed via a chevron from the streak chip. Confirm OK to move.</li>
+          <li><strong>Active screen entry behavior</strong> — when <code>FastingPopup.Show()</code> is called and a fast is already active (PlayerPrefs <code>TimerRunning=true</code>), the spec lands directly on the active screen and skips selection. Today's behavior at <code>FastingPopup.cs:25–73</code> isn't explicit about this; confirm.</li>
+          <li><strong>Pulse animation density</strong> — heartbeat-lite (<code>DOScale(1.02, 0.4f)</code> every 4s) reads "alive" but is much subtler than <code>SCOPE_Fasting_Screen.md</code>'s liquid-wave fill. If you want louder, we add the wave shader; if you want quieter, we drop the pulse and rely on phase color alone.</li>
+          <li><strong>Notifications during a fast</strong> — out of scope here. The current panel doesn't fire phase-cross notifications ("You're in your fat-burning window now"); worth a separate ticket if product wants them.</li>
+        </ul>
+      </div>
+
+      <div class="doc-section">
+        <h2>How this fits with the rest of the work</h2>
+        <p>This is the fourth Linear-tracked prototype that hands off to dev as a coherent set. Index lives at <a href="../AJE_PROTOTYPES.md">AJE_PROTOTYPES.md</a>.</p>
+        <ul>
+          <li><a href="../todays-status-revamp/">Today's Status (AJE-10)</a> — its old "Fasting Window" edit row got renamed to Soundscape per your 2026-05-01 SMS. The standalone Fasting Tracker is now this prototype.</li>
+          <li><a href="../breathing-module/">Breathing module (AJE-65)</a> — same mini-app arc (selection → active → summary), same chrome treatment, same shader (<code>OuterRoundedFillFixed</code>) for the ring.</li>
+          <li><a href="../paywall-revamp/">Paywall (AJE-11)</a> — the killed 100 XP manual-end-time gate makes more sense now that Coach's Instincts is the headline Max-only feature; the gate was friction without value.</li>
+          <li><a href="https://linear.app/ajeo/issue/AJE-12">XP gate popup (AJE-12)</a> — fasting doesn't currently route through it. If product wants a future "extend +1h" XP cost, that's where the popup would fire.</li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* ============================================================
+       FASTING TRACKER — Prototype state machine + interactions
+       Mirrors: FastingPopup.cs (921 lines)
+       ============================================================ */
+    (function () {
+      'use strict';
+
+      // ---- Helpers ----
+      function fmt12(d) {
+        var h = d.getHours();
+        var m = d.getMinutes();
+        var ampm = h >= 12 ? 'PM' : 'AM';
+        h = h % 12; if (h === 0) h = 12;
+        return h + ':' + (m < 10 ? '0' + m : m) + ' ' + ampm;
+      }
+      function isTomorrow(now, then) {
+        var n = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        var t = new Date(then.getFullYear(), then.getMonth(), then.getDate());
+        return t.getTime() > n.getTime();
+      }
+      function fmtDuration(ms) {
+        var h = Math.floor(ms / 3600000);
+        var m = Math.floor((ms % 3600000) / 60000);
+        if (h === 0) return m + 'm';
+        if (m === 0) return h + 'h';
+        return h + 'h ' + m + 'm';
+      }
+      function pad(n) { return n < 10 ? '0' + n : '' + n; }
+
+      // ---- State ----
+      var state = {
+        screen: 'selection',
+        whenChoice: 'now',      // 'now' | 'earlier'
+        hoursAgo: 2,            // for 'earlier'
+        presetHours: 16,        // 16, 18, 20, 24, or null (= custom)
+        customHours: 14,
+        startTime: null,        // Date set on hold-start completion
+        endTime: null,
+        // For active screen the prototype runs an accelerated clock so the
+        // visual changes are observable without waiting hours.
+        protoSpeedMs: 16 * 1000  // proto: a "16h" fast finishes in ~16 seconds
+      };
+
+      // ---- DOM ----
+      var $ = function (sel) { return document.querySelector(sel); };
+      var $$ = function (sel) { return Array.prototype.slice.call(document.querySelectorAll(sel)); };
+
+      var screens = {
+        selection: $('#selection-screen'),
+        active: $('#active-screen'),
+        summary: $('#summary-screen')
+      };
+
+      function showScreen(name) {
+        Object.keys(screens).forEach(function (k) {
+          screens[k].classList.toggle('hidden', k !== name);
+        });
+        state.screen = name;
+      }
+
+      // ---- Selection: when chips ----
+      var nowTimeEl = $('#now-time');
+      var hourSliderWrap = $('#hour-slider-wrap');
+      var hourSlider = $('#hour-slider');
+      var hoursAgoVal = $('#hours-ago-val');
+      var earlierStartTime = $('#earlier-start-time');
+
+      function updateNowDisplay() { nowTimeEl.textContent = fmt12(new Date()); }
+      updateNowDisplay();
+      setInterval(updateNowDisplay, 30000);
+
+      $$('.when-chip').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          $$('.when-chip').forEach(function (c) { c.classList.remove('active'); });
+          chip.classList.add('active');
+          state.whenChoice = chip.dataset.when;
+          hourSliderWrap.classList.toggle('visible', state.whenChoice === 'earlier');
+          updateLivePreview();
+        });
+      });
+
+      hourSlider.addEventListener('input', function () {
+        state.hoursAgo = parseInt(hourSlider.value, 10);
+        hoursAgoVal.textContent = state.hoursAgo;
+        var earlier = new Date(Date.now() - state.hoursAgo * 3600000);
+        earlierStartTime.textContent = fmt12(earlier);
+        updateLivePreview();
+      });
+
+      // ---- Selection: preset cards ----
+      var customWrap = $('#custom-wrap');
+      var customSlider = $('#custom-slider');
+      var customHoursVal = $('#custom-hours-val');
+
+      $$('.preset-card').forEach(function (card) {
+        card.addEventListener('click', function () {
+          $$('.preset-card').forEach(function (c) { c.classList.remove('active'); });
+          card.classList.add('active');
+          var v = card.dataset.hours;
+          if (v === 'custom') {
+            state.presetHours = null;
+            customWrap.classList.add('visible');
+          } else {
+            state.presetHours = parseInt(v, 10);
+            customWrap.classList.remove('visible');
+          }
+          updateLivePreview();
+        });
+      });
+
+      customSlider.addEventListener('input', function () {
+        state.customHours = parseInt(customSlider.value, 10);
+        customHoursVal.textContent = state.customHours;
+        updateLivePreview();
+      });
+
+      // ---- Live preview ----
+      var previewDuration = $('#preview-duration');
+      var previewStart = $('#preview-start');
+      var previewEnd = $('#preview-end');
+
+      function getPlanHours() {
+        return state.presetHours == null ? state.customHours : state.presetHours;
+      }
+      function getStartTime(now) {
+        now = now || new Date();
+        if (state.whenChoice === 'earlier') {
+          return new Date(now.getTime() - state.hoursAgo * 3600000);
+        }
+        return now;
+      }
+      function updateLivePreview() {
+        var hours = getPlanHours();
+        previewDuration.textContent = hours + 'h';
+        var now = new Date();
+        var start = getStartTime(now);
+        previewStart.textContent = state.whenChoice === 'earlier'
+          ? state.hoursAgo + 'h ago at ' + fmt12(start)
+          : 'now';
+        var end = new Date(start.getTime() + hours * 3600000);
+        previewEnd.textContent = fmt12(end) + (isTomorrow(now, end) ? ' tomorrow' : '');
+      }
+      updateLivePreview();
+
+      // ---- Hold-to-start ----
+      var holdBtn = $('#hold-start-btn');
+      var holdFill = $('#hold-start-fill');
+      var holdDuration = 1000;
+      var holdStartTs = 0;
+      var holdRaf = null;
+      var holdAborted = false;
+
+      function holdStart(e) {
+        e.preventDefault();
+        holdStartTs = performance.now();
+        holdAborted = false;
+        holdRaf = requestAnimationFrame(holdTick);
+      }
+      function holdTick() {
+        var elapsed = performance.now() - holdStartTs;
+        var pct = Math.min(1, elapsed / holdDuration);
+        holdFill.style.transform = 'scaleX(' + pct + ')';
+        if (pct >= 1) {
+          completeHoldStart();
+          return;
+        }
+        holdRaf = requestAnimationFrame(holdTick);
+      }
+      function holdReset() {
+        cancelAnimationFrame(holdRaf);
+        holdAborted = true;
+        holdFill.style.transition = 'transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)';
+        holdFill.style.transform = 'scaleX(0)';
+        setTimeout(function () { holdFill.style.transition = 'transform 0.05s linear'; }, 260);
+      }
+      function completeHoldStart() {
+        // Lock in start + end times
+        var now = new Date();
+        state.startTime = getStartTime(now);
+        state.endTime = new Date(state.startTime.getTime() + getPlanHours() * 3600000);
+        // Brief flash then transition
+        holdFill.style.transform = 'scaleX(1)';
+        setTimeout(function () {
+          showActiveScreen();
+          // reset for next visit
+          holdFill.style.transition = 'none';
+          holdFill.style.transform = 'scaleX(0)';
+          setTimeout(function () { holdFill.style.transition = 'transform 0.05s linear'; }, 50);
+        }, 240);
+      }
+      holdBtn.addEventListener('pointerdown', holdStart);
+      holdBtn.addEventListener('pointerup', function () { if (!holdAborted) holdReset(); });
+      holdBtn.addEventListener('pointerleave', function () { if (!holdAborted) holdReset(); });
+      holdBtn.addEventListener('pointercancel', holdReset);
+
+      // ---- Active screen ----
+      var ringFill = $('#ring-fill');
+      var ringGlow = $('#ring-glow');
+      var ringTimeH = $('#ring-time-h');
+      var ringTimeSub = $('#ring-time-sub');
+      var progressPct = $('#progress-pct');
+      var timeRemaining = $('#time-remaining');
+      var phaseLabel = $('#phase-label');
+      var startedDisplay = $('#started-display');
+      var planDisplay = $('#plan-display');
+      var endsDisplay = $('#ends-display');
+
+      var ringCircumference = 2 * Math.PI * 76; // r=76 -> ~477.5
+      ringFill.setAttribute('stroke-dasharray', ringCircumference.toFixed(2));
+
+      var activeRaf = null;
+      var protoStartedAt = null;
+
+      function showActiveScreen() {
+        showScreen('active');
+        startedDisplay.textContent = fmt12(state.startTime);
+        planDisplay.textContent = getPlanHours() + 'h';
+        endsDisplay.textContent = fmt12(state.endTime);
+        protoStartedAt = performance.now();
+        activeRaf = requestAnimationFrame(activeTick);
+      }
+      function activeTick() {
+        var elapsed = performance.now() - protoStartedAt;
+        var pct = Math.min(1, elapsed / state.protoSpeedMs);
+        // Map proto-elapsed to displayed elapsed within the planned hours
+        var planMs = getPlanHours() * 3600000;
+        var displayElapsedMs = pct * planMs;
+        var displayRemainMs = planMs - displayElapsedMs;
+
+        // Ring fill (stroke-dashoffset goes from full to 0)
+        ringFill.setAttribute('stroke-dashoffset', (ringCircumference * (1 - pct)).toFixed(2));
+
+        // Time inside ring: HH:MM (remaining)
+        var remH = Math.floor(displayRemainMs / 3600000);
+        var remM = Math.floor((displayRemainMs % 3600000) / 60000);
+        ringTimeH.textContent = pad(remH) + ':' + pad(remM);
+
+        progressPct.textContent = Math.floor(pct * 100);
+        timeRemaining.textContent = fmtDuration(displayRemainMs) + ' left';
+
+        // Phase color + label
+        var color, label, glowColor;
+        if (pct < 0.33) {
+          color = 'var(--color-amber)';
+          label = 'Building hunger · ' + fmtDuration(displayElapsedMs) + ' in';
+          glowColor = 'rgba(245,166,35,0.22)';
+        } else if (pct < 0.66) {
+          color = 'var(--color-gold)';
+          label = 'Fat-burning window · ' + fmtDuration(displayElapsedMs) + ' in';
+          glowColor = 'rgba(194,154,47,0.22)';
+        } else if (pct < 1) {
+          color = 'var(--color-green)';
+          label = 'Approaching completion · ' + fmtDuration(displayRemainMs) + ' to go';
+          glowColor = 'rgba(95,208,99,0.25)';
+        } else {
+          color = 'var(--color-green-hi)';
+          label = 'Fast complete';
+          glowColor = 'rgba(114,232,118,0.3)';
+        }
+        ringFill.style.stroke = color;
+        ringFill.style.filter = 'drop-shadow(0 0 4px ' + glowColor + ')';
+        ringGlow.style.background = 'radial-gradient(circle, ' + glowColor + ' 0%, transparent 70%)';
+        phaseLabel.style.color = color;
+        phaseLabel.textContent = label;
+
+        if (pct >= 1) {
+          cancelAnimationFrame(activeRaf);
+          // Auto-show summary after a short celebration pause
+          setTimeout(showSummaryScreen, 800);
+          return;
+        }
+        activeRaf = requestAnimationFrame(activeTick);
+      }
+
+      // Heartbeat-lite pulse on the ring (DOTween-equivalent: DOScale Yoyo with delay)
+      var ringWrap = $('#ring-wrap');
+      gsap.to(ringWrap, {
+        scale: 1.025,
+        duration: 0.35,
+        ease: 'sine.inOut',
+        repeat: -1,
+        yoyo: true,
+        repeatDelay: 3.6
+      });
+
+      // ---- Extend ----
+      $('#extend-btn').addEventListener('click', function () {
+        // Add 1 hour to end time, recompute proto speed proportionally
+        if (!state.endTime) return;
+        state.endTime = new Date(state.endTime.getTime() + 3600000);
+        state.protoSpeedMs += (state.protoSpeedMs / getPlanHours());
+        state.presetHours = state.presetHours == null ? state.customHours + 1 : state.presetHours + 1;
+        if (state.customHours) state.customHours += 1;
+        endsDisplay.textContent = fmt12(state.endTime);
+        planDisplay.textContent = getPlanHours() + 'h';
+        // small flash
+        gsap.fromTo($('#extend-btn'), { scale: 0.96 }, { scale: 1, duration: 0.25, ease: 'back.out(2)' });
+      });
+
+      // ---- Swipe to end ----
+      var swipeEnd = $('#swipe-end');
+      var swipeFill = $('#swipe-end-fill');
+      var swipeThumb = $('#swipe-end-thumb');
+      var swipeDragging = false;
+      var swipeStartX = 0;
+      var swipeWidth = 0;
+      var swipePct = 0;
+
+      function swipeBegin(e) {
+        swipeDragging = true;
+        swipeStartX = e.clientX;
+        swipeWidth = swipeEnd.getBoundingClientRect().width;
+        swipeEnd.style.cursor = 'grabbing';
+      }
+      function swipeMove(e) {
+        if (!swipeDragging) return;
+        var dx = Math.max(0, e.clientX - swipeStartX);
+        swipePct = Math.min(1, dx / swipeWidth);
+        swipeFill.style.transform = 'scaleX(' + swipePct + ')';
+        swipeThumb.style.transform = 'translateX(' + (swipePct * (swipeWidth - 60)) + 'px)';
+        if (swipePct >= 0.85) confirmEnd();
+      }
+      function swipeEndDrag() {
+        if (!swipeDragging) return;
+        swipeDragging = false;
+        swipeEnd.style.cursor = 'grab';
+        if (swipePct < 0.85) {
+          // reset
+          swipeFill.style.transition = 'transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)';
+          swipeThumb.style.transition = 'transform 0.25s cubic-bezier(0.22, 1, 0.36, 1)';
+          swipeFill.style.transform = 'scaleX(0)';
+          swipeThumb.style.transform = 'translateX(0)';
+          setTimeout(function () {
+            swipeFill.style.transition = 'transform 0.05s linear';
+            swipeThumb.style.transition = '';
+          }, 260);
+          swipePct = 0;
+        }
+      }
+      function confirmEnd() {
+        swipeDragging = false;
+        cancelAnimationFrame(activeRaf);
+        showSummaryScreen();
+      }
+      swipeEnd.addEventListener('pointerdown', swipeBegin);
+      window.addEventListener('pointermove', swipeMove);
+      window.addEventListener('pointerup', swipeEndDrag);
+      window.addEventListener('pointercancel', swipeEndDrag);
+
+      // ---- Summary ----
+      var summaryTitle = $('#summary-title');
+      var summarySub = $('#summary-sub');
+      var statDuration = $('#stat-duration');
+      var xpEarned = $('#xp-earned');
+      var summaryEmoji = $('.summary-emoji');
+
+      function showSummaryScreen() {
+        showScreen('summary');
+        var elapsed = performance.now() - protoStartedAt;
+        var pct = Math.min(1, elapsed / state.protoSpeedMs);
+        var planMs = getPlanHours() * 3600000;
+        var actualMs = pct * planMs;
+        var actualH = Math.floor(actualMs / 3600000);
+        var actualM = Math.floor((actualMs % 3600000) / 60000);
+        var totalH = getPlanHours();
+
+        var completed = pct >= 0.99;
+        statDuration.textContent = actualH + 'h ' + (actualM < 10 ? '0' : '') + actualM + 'm';
+        if (completed) {
+          summaryEmoji.textContent = '🟢';
+          summaryTitle.textContent = totalH + 'h 0m fast complete';
+          summarySub.textContent = fmt12(state.startTime) + ' → ' + fmt12(state.endTime) + ' · ' + totalH + ':' + (24 - totalH);
+          xpEarned.textContent = '+' + (totalH < 16 ? 15 : totalH < 20 ? 25 : 40) + ' XP';
+        } else {
+          summaryEmoji.textContent = '🟡';
+          summaryTitle.textContent = 'Fast ended early';
+          summarySub.textContent = 'Made it ' + actualH + 'h ' + (actualM < 10 ? '0' : '') + actualM + 'm of ' + totalH + 'h';
+          xpEarned.textContent = '+' + Math.max(5, Math.floor(actualMs / 3600000) * 2) + ' XP';
+        }
+
+        // Celebration pop on the XP block
+        gsap.fromTo('.summary-xp', { scale: 0.92, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(1.7)', delay: 0.15 });
+        gsap.fromTo('.summary-emoji', { scale: 0.3, rotate: -15 }, { scale: 1, rotate: 0, duration: 0.6, ease: 'back.out(2)' });
+      }
+
+      $('#summary-restart').addEventListener('click', function () {
+        // reset state to defaults and go back to selection
+        state.startTime = null;
+        state.endTime = null;
+        showScreen('selection');
+      });
+      $('#summary-done').addEventListener('click', function () {
+        showScreen('selection');
+      });
+      $('#summary-close').addEventListener('click', function () {
+        showScreen('selection');
+      });
+      $('#active-back').addEventListener('click', function () {
+        cancelAnimationFrame(activeRaf);
+        showScreen('selection');
+      });
+    })();
+  </script>
+
+</body>
+</html>
