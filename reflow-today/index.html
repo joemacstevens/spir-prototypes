@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Optimize my day — Reflow reference</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Poppins:wght@400;500;600&family=Rubik:wght@500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <!-- Left: the phone. Everything inside .phone is user-facing and uses only the settled vocabulary. -->
+  <section class="stage">
+    <div class="phone" id="phone">
+      <div class="statusbar"><span id="sb-time">9:41</span><div class="island"></div><span class="icons">5G ▮▮▮</span></div>
+      <div class="screen" id="screen"></div>
+      <div id="overlays"></div>
+      <nav class="tabbar" id="tabbar"></nav>
+    </div>
+    <div class="stage-caption" id="stage-caption">TODAY · 390 × 844</div>
+  </section>
+
+  <!-- Right: scenario + inspection. Internal terms are fine here. -->
+  <main class="panel" id="panel">
+    <div class="panel-inner">
+      <h1>Optimize my day — how it works</h1>
+      <p class="sub">A reference for Timeline Reflow on Today. The phone is what the user sees; this panel stages the day and shows the scheduler's work. Nothing here talks to Supabase. The scheduler is a pure function (<span class="m">scheduler.js</span>, RF-2); the energy curve is the live app's model, ported.</p>
+      <div class="cols">
+        <div>
+          <div class="card" id="card-scenario"></div>
+          <div class="card" id="card-option"></div>
+          <div class="card" id="card-habits"></div>
+          <div class="card" id="card-calendar"></div>
+          <div class="card" id="card-contracts"></div>
+        </div>
+        <div>
+          <div class="card" id="card-run"></div>
+          <div class="card" id="card-why"></div>
+          <div class="card" id="card-config"></div>
+          <div class="card" id="card-copy"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="scheduler.js"></script>
+  <script src="fixtures.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
